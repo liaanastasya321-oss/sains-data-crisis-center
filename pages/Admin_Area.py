@@ -3,6 +3,7 @@ import pandas as pd
 import gspread
 from google.oauth2.service_account import Credentials
 import os
+import json # <--- Wajib ada buat baca Secrets
 
 st.set_page_config(page_title="Admin Area", page_icon="🔐", layout="wide")
 
@@ -48,25 +49,38 @@ with st.sidebar:
     # Tombol Logout (Reset)
     if st.button("🚪 Logout"):
         st.cache_data.clear()
-        st.experimental_rerun()
+        st.rerun() # Ganti experimental_rerun jadi rerun (versi baru streamlit)
 
 # Cek Password
 if password == "advokasikeren123":
     
     # ==========================================
-    # KONEKSI DATABASE (ANTI-NYASAR) 🔗
+    # KONEKSI DATABASE (DUAL MODE: CLOUD & LOKAL) 🔗
     # ==========================================
     scopes = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
     
-    if os.path.exists("credentials.json"):
-        creds_file = "credentials.json"
-    else:
-        creds_file = "../credentials.json"
-        
     try:
-        creds = Credentials.from_service_account_file(creds_file, scopes=scopes)
+        # 1. Cek apakah ada di Streamlit Cloud (Pakai Secrets)
+        if "google_credentials" in st.secrets:
+            creds_dict = json.loads(st.secrets["google_credentials"])
+            creds = Credentials.from_service_account_info(creds_dict, scopes=scopes)
+        
+        # 2. Cek apakah ada file lokal credentials.json
+        elif os.path.exists("credentials.json"):
+            creds = Credentials.from_service_account_file("credentials.json", scopes=scopes)
+        
+        # 3. Cek di folder luar (opsional)
+        elif os.path.exists("../credentials.json"):
+            creds = Credentials.from_service_account_file("../credentials.json", scopes=scopes)
+            
+        else:
+            st.error("⚠️ File Kunci (Credentials) tidak ditemukan!")
+            st.stop()
+
+        # Buka Koneksi ke Sheet "Laporan"
         client = gspread.authorize(creds)
         sheet = client.open("Database_Advokasi").worksheet("Laporan")
+        
     except Exception as e:
         st.error(f"Gagal koneksi database: {e}")
         st.stop()
@@ -82,15 +96,20 @@ if password == "advokasikeren123":
         st.cache_data.clear()
 
     # Ambil Data
-    data = sheet.get_all_records()
-    df = pd.DataFrame(data)
+    try:
+        data = sheet.get_all_records()
+        df = pd.DataFrame(data)
+    except:
+        df = pd.DataFrame()
 
     if not df.empty:
         # Tampilkan Statistik Singkat
         c1, c2, c3 = st.columns(3)
         c1.metric("Total Laporan", len(df))
-        c2.metric("Perlu Tindakan (Pending)", len(df[df['Status'] == 'Pending']))
-        c3.metric("Masalah Selesai", len(df[df['Status'] == 'Selesai']))
+        # Pastikan kolom Status ada
+        if 'Status' in df.columns:
+            c2.metric("Perlu Tindakan (Pending)", len(df[df['Status'] == 'Pending']))
+            c3.metric("Masalah Selesai", len(df[df['Status'] == 'Selesai']))
         
         st.write("### 📋 Database Lengkap")
         
@@ -114,13 +133,20 @@ if password == "advokasikeren123":
             c_id, c_status = st.columns(2)
             
             with c_id:
-                # Pilih Nomor Baris (Berdasarkan kolom 'Nomor Baris' tadi)
+                # Pilih Nomor Baris
                 nomor_baris = st.selectbox("Pilih Nomor Baris (Lihat tabel di atas):", df['Nomor Baris'].tolist())
                 
-                # Tampilkan info singkat baris yang dipilih biar gak salah edit
-                info_nama = df[df['Nomor Baris'] == nomor_baris]['Nama Mahasiswa'].values[0]
-                info_masalah = df[df['Nomor Baris'] == nomor_baris]['Kategori Masalah'].values[0]
-                st.info(f"Mengedit Data: **{info_nama}** - {info_masalah}")
+                # Tampilkan info singkat baris yang dipilih
+                if not df[df['Nomor Baris'] == nomor_baris].empty:
+                    # Ambil nama kolom secara dinamis biar gak error kalau nama kolom beda dikit
+                    col_nama = 'Nama' if 'Nama' in df.columns else 'Nama Mahasiswa'
+                    col_masalah = 'Kategori' if 'Kategori' in df.columns else 'Kategori Masalah'
+                    
+                    # Cek keberadaan kolom sebelum akses
+                    val_nama = df[df['Nomor Baris'] == nomor_baris][col_nama].values[0] if col_nama in df.columns else "Tanpa Nama"
+                    val_masalah = df[df['Nomor Baris'] == nomor_baris][col_masalah].values[0] if col_masalah in df.columns else "-"
+                    
+                    st.info(f"Mengedit Data: **{val_nama}** - {val_masalah}")
                 
             with c_status:
                 status_baru = st.selectbox("Ubah Status Menjadi:", ["Pending", "Proses", "Selesai"])
@@ -129,16 +155,15 @@ if password == "advokasikeren123":
             
             if tombol_update:
                 try:
-                    # Cari lokasi Kolom 'Status' (Biasanya kolom ke-7)
-                    # Kita cari index kolom 'Status' + 1 (karena gspread mulai dari 1)
+                    # Cari lokasi Kolom 'Status' (Index + 1 karena gspread base-1)
                     kolom_status_index = df.columns.get_loc("Status") + 1 
                     
                     # Update Cells di Google Sheets
-                    # update_cell(baris, kolom, nilai)
                     sheet.update_cell(nomor_baris, kolom_status_index, status_baru)
                     
-                    st.success(f"Berhasil! Laporan {info_nama} sekarang statusnya: {status_baru}")
+                    st.success(f"Berhasil update status jadi: {status_baru}")
                     st.cache_data.clear() # Reset cache biar tabel update
+                    st.rerun() # Refresh otomatis
                     
                 except Exception as e:
                     st.error(f"Gagal update: {e}")
