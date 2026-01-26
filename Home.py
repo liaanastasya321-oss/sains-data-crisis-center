@@ -42,14 +42,6 @@ st.markdown("""
         color: #e2e8f0 !important;
     }
 
-    /* --- PENGATURAN TAMPILAN ELEMENT --- */
-    /* Kita biarkan Header & Menu TETAP MUNCUL */
-    /* #MainMenu {visibility: hidden;} */
-    /* header {visibility: hidden;} */
-    
-    /* Cuma Footer bawaan Streamlit yang kita sembunyikan biar bersih */
-    footer {visibility: hidden;}
-
     /* CUSTOM CARDS */
     .pro-card {
         background: white;
@@ -79,33 +71,26 @@ st.markdown("""
         font-weight: 600;
         padding: 0.5rem 1rem;
         box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);
-        width: 100%; /* Biar tombol full width */
+        width: 100%;
     }
     .stButton > button:hover { background-color: #1d4ed8; }
 </style>
 """, unsafe_allow_html=True)
 
 # ==========================================
-# KONEKSI DATABASE (DUAL MODE: LOKAL & CLOUD) 🔗
+# KONEKSI DATABASE (DUAL MODE) 🔗
 # ==========================================
 scopes = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
 
 try:
-    # Cek 1: Apakah ada di Streamlit Cloud (Pakai Secrets)?
     if "google_credentials" in st.secrets:
         creds_dict = json.loads(st.secrets["google_credentials"])
         creds = Credentials.from_service_account_info(creds_dict, scopes=scopes)
-    
-    # Cek 2: Apakah ada file lokal credentials.json?
     elif os.path.exists("credentials.json"):
         creds = Credentials.from_service_account_file("credentials.json", scopes=scopes)
-    
-    # Cek 3: Cek di folder luar (opsional)
     elif os.path.exists("../credentials.json"):
         creds = Credentials.from_service_account_file("../credentials.json", scopes=scopes)
-        
     else:
-        st.warning("⚠️ File credentials belum ditemukan. Mode offline.")
         creds = None
 
     if creds:
@@ -115,16 +100,15 @@ try:
     else:
         data_pengumuman = []
 
-except Exception as e:
+except Exception:
     data_pengumuman = []
 
 # ==========================================
-# HERO SECTION (Wajah Utama Website)
+# HERO SECTION
 # ==========================================
 col_spacer_l, col_main, col_spacer_r = st.columns([1, 8, 1])
 
 with col_main:
-    # Header
     st.markdown("""
     <div style="text-align: center; padding-top: 40px; padding-bottom: 40px;">
         <h1 style="font-size: 3rem; margin-bottom: 10px;">Sains Data <span style="color:#2563eb;">Crisis Center</span></h1>
@@ -135,12 +119,12 @@ with col_main:
     </div>
     """, unsafe_allow_html=True)
 
-    # --- MENU NAVIGASI UTAMA (4 KOLOM) ---
+    # --- MENU NAVIGASI (4 KOLOM) ---
     c1, c2, c3, c4 = st.columns(4)
     
     with c1:
         st.markdown("""
-        <div class="pro-card" style="text-align:center; border-top: 4px solid #ef4444; min-height: 200px;">
+        <div class="pro-card" style="text-align:center; border-top: 4px solid #ef4444; min-height: 180px;">
             <h3>📝 Lapor</h3>
             <p style="font-size:0.8rem; color:#64748b;">Laporkan kendala akademik & fasilitas.</p>
         </div>
@@ -150,7 +134,7 @@ with col_main:
         
     with c2:
         st.markdown("""
-        <div class="pro-card" style="text-align:center; border-top: 4px solid #10b981; min-height: 200px;">
+        <div class="pro-card" style="text-align:center; border-top: 4px solid #10b981; min-height: 180px;">
             <h3>🔍 Cek Status</h3>
             <p style="font-size:0.8rem; color:#64748b;">Pantau progres laporanmu di sini.</p>
         </div>
@@ -160,7 +144,7 @@ with col_main:
 
     with c3:
         st.markdown("""
-        <div class="pro-card" style="text-align:center; border-top: 4px solid #3b82f6; min-height: 200px;">
+        <div class="pro-card" style="text-align:center; border-top: 4px solid #3b82f6; min-height: 180px;">
             <h3>📊 Data</h3>
             <p style="font-size:0.8rem; color:#64748b;">Transparansi data advokasi himpunan.</p>
         </div>
@@ -170,7 +154,7 @@ with col_main:
         
     with c4:
         st.markdown("""
-        <div class="pro-card" style="text-align:center; border-top: 4px solid #f59e0b; min-height: 200px;">
+        <div class="pro-card" style="text-align:center; border-top: 4px solid #f59e0b; min-height: 180px;">
             <h3>🤖 Bot AI</h3>
             <p style="font-size:0.8rem; color:#64748b;">Tanya jawab otomatis 24 jam.</p>
         </div>
@@ -179,7 +163,7 @@ with col_main:
              st.switch_page("pages/Sadas_Bot.py")
 
     # ==========================================
-    # OFFICIAL ANNOUNCEMENTS (Mading Pro)
+    # PENGUMUMAN (DIJAMIN RAPI)
     # ==========================================
     st.write("---")
     st.subheader("📢 Informasi Resmi Himpunan")
@@ -196,23 +180,17 @@ with col_main:
             else:
                 badge_color = "#dbeafe"; text_color = "#1e40af"; border_l = "#3b82f6"
 
-            # Render Kartu HTML
+            # Render HTML (Perhatikan: Bagian ini rapat kiri supaya tidak terbaca sebagai code block)
             html_content = f"""
-            <div class="pro-card" style="border-left: 5px solid {border_l}; display: flex; flex-direction: column; gap: 8px;">
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <span style="background-color:{badge_color}; color:{text_color}; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 700;">
-                        {tipe.upper()}
-                    </span>
-                    <span style="font-size: 0.85rem; color: #94a3b8; font-weight:500;">📅 {item.get('Tanggal','-')}</span>
-                </div>
-                <div style="font-size: 1.1rem; font-weight: 700; color: #0f172a;">
-                    {item.get('Judul','-')}
-                </div>
-                <div style="font-size: 0.95rem; color: #475569; line-height: 1.6;">
-                    {item.get('Isi','-')}
-                </div>
-            </div>
-            """
+<div class="pro-card" style="border-left: 5px solid {border_l}; display: flex; flex-direction: column; gap: 8px;">
+<div style="display:flex; justify-content:space-between; align-items:center;">
+<span style="background-color:{badge_color}; color:{text_color}; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 700;">{tipe.upper()}</span>
+<span style="font-size: 0.85rem; color: #94a3b8; font-weight:500;">📅 {item.get('Tanggal','-')}</span>
+</div>
+<div style="font-size: 1.1rem; font-weight: 700; color: #0f172a;">{item.get('Judul','-')}</div>
+<div style="font-size: 0.95rem; color: #475569; line-height: 1.6;">{item.get('Isi','-')}</div>
+</div>
+"""
             st.markdown(html_content, unsafe_allow_html=True)
     else:
         st.markdown("""
