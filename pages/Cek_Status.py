@@ -3,6 +3,7 @@ import pandas as pd
 import gspread
 from google.oauth2.service_account import Credentials
 import os
+import json # <--- Wajib buat baca Secrets di Cloud
 
 # 1. Konfigurasi Halaman
 st.set_page_config(page_title="Cek Status Laporan", page_icon="🔍")
@@ -46,21 +47,34 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ==========================================
-# KONEKSI DATABASE
+# KONEKSI DATABASE (DUAL MODE: CLOUD & LOKAL) 🔗
 # ==========================================
 scopes = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
 
-if os.path.exists("credentials.json"):
-    creds_file = "credentials.json"
-else:
-    creds_file = "../credentials.json"
-
 try:
-    creds = Credentials.from_service_account_file(creds_file, scopes=scopes)
+    # 1. Cek apakah ada di Streamlit Cloud (Pakai Secrets)
+    if "google_credentials" in st.secrets:
+        creds_dict = json.loads(st.secrets["google_credentials"])
+        creds = Credentials.from_service_account_info(creds_dict, scopes=scopes)
+    
+    # 2. Cek apakah ada file lokal credentials.json
+    elif os.path.exists("credentials.json"):
+        creds = Credentials.from_service_account_file("credentials.json", scopes=scopes)
+    
+    # 3. Cek di folder luar (opsional)
+    elif os.path.exists("../credentials.json"):
+        creds = Credentials.from_service_account_file("../credentials.json", scopes=scopes)
+        
+    else:
+        st.error("⚠️ File Kunci (Credentials) tidak ditemukan!")
+        st.stop()
+
+    # Buka Koneksi ke Sheet "Laporan"
     client = gspread.authorize(creds)
     sheet = client.open("Database_Advokasi").worksheet("Laporan")
+    
 except Exception as e:
-    st.error(f"Koneksi Database Error: {e}")
+    st.error(f"Koneksi Database Gagal: {e}")
     st.stop()
 
 # ==========================================
@@ -80,55 +94,59 @@ st.divider()
 
 # Logika Pencarian
 if tombol_cari and npm_input:
-    # 1. Ambil Data Terbaru
-    data = sheet.get_all_records()
-    df = pd.DataFrame(data)
-    
-    # 2. Pastikan kolom NPM dibaca sebagai string (teks) biar akurat
-    df['NPM'] = df['NPM'].astype(str)
-    
-    # 3. Filter Data berdasarkan NPM
-    hasil_cari = df[df['NPM'] == npm_input]
-    
-    if not hasil_cari.empty:
-        st.success(f"Ditemukan {len(hasil_cari)} laporan untuk NPM: {npm_input}")
+    try:
+        # 1. Ambil Data Terbaru
+        data = sheet.get_all_records()
+        df = pd.DataFrame(data)
         
-        # Tampilkan dalam bentuk Kartu Cantik
-        # Kita balik urutannya biar laporan terbaru di paling atas
-        for index, row in hasil_cari.iloc[::-1].iterrows():
+        # 2. Pastikan kolom NPM dibaca sebagai string (teks) biar akurat
+        df['NPM'] = df['NPM'].astype(str)
+        
+        # 3. Filter Data berdasarkan NPM
+        hasil_cari = df[df['NPM'] == npm_input]
+        
+        if not hasil_cari.empty:
+            st.success(f"Ditemukan {len(hasil_cari)} laporan untuk NPM: {npm_input}")
             
-            # Tentukan warna & ikon berdasarkan status
-            status = row['Status']
-            if status == "Selesai":
-                css_class = "status-selesai"
-                icon = "✅"
-                ket_status = "MASALAH SELESAI"
-            elif status == "Proses":
-                css_class = "status-proses"
-                icon = "⏳"
-                ket_status = "SEDANG DITINDAK"
-            else: # Pending
-                css_class = "status-pending"
-                icon = "🔴"
-                ket_status = "MENUNGGU ANTREAN"
-            
-            # Render HTML Kartu
-            st.markdown(f"""
-            <div class="result-card {css_class}">
-                <div style="display:flex; justify-content:space-between;">
-                    <span style="font-weight:bold; font-size:1.1rem;">{row['Kategori Masalah']}</span>
-                    <span style="color:gray; font-size:0.8rem;">📅 {row['Waktu Lapor']}</span>
+            # Tampilkan dalam bentuk Kartu Cantik
+            # Kita balik urutannya biar laporan terbaru di paling atas
+            for index, row in hasil_cari.iloc[::-1].iterrows():
+                
+                # Tentukan warna & ikon berdasarkan status
+                status = row['Status']
+                if status == "Selesai":
+                    css_class = "status-selesai"
+                    icon = "✅"
+                    ket_status = "MASALAH SELESAI"
+                elif status == "Proses":
+                    css_class = "status-proses"
+                    icon = "⏳"
+                    ket_status = "SEDANG DITINDAK"
+                else: # Pending
+                    css_class = "status-pending"
+                    icon = "🔴"
+                    ket_status = "MENUNGGU ANTREAN"
+                
+                # Render HTML Kartu
+                st.markdown(f"""
+                <div class="result-card {css_class}">
+                    <div style="display:flex; justify-content:space-between;">
+                        <span style="font-weight:bold; font-size:1.1rem;">{row['Kategori Masalah']}</span>
+                        <span style="color:gray; font-size:0.8rem;">📅 {row['Waktu Lapor']}</span>
+                    </div>
+                    <p style="margin-top:10px; color:#475569;">"{row['Detail Keluhan']}"</p>
+                    <div style="margin-top:15px; font-weight:bold;">
+                        Status: {icon} {ket_status}
+                    </div>
                 </div>
-                <p style="margin-top:10px; color:#475569;">"{row['Detail Keluhan']}"</p>
-                <div style="margin-top:15px; font-weight:bold;">
-                    Status: {icon} {ket_status}
-                </div>
-            </div>
-            """, unsafe_allow_html=True)
+                """, unsafe_allow_html=True)
+                
+        else:
+            st.warning(f"Belum ada laporan ditemukan untuk NPM: **{npm_input}**.")
+            st.info("Pastikan NPM yang kamu ketik benar atau coba lapor dulu di menu 'Lapor Masalah'.")
             
-    else:
-        st.warning(f"Belum ada laporan ditemukan untuk NPM: **{npm_input}**.")
-        st.info("Pastikan NPM yang kamu ketik benar atau coba lapor dulu di menu 'Lapor Masalah'.")
+    except Exception as e:
+        st.error("Terjadi kesalahan saat mencari data. Coba lagi nanti.")
 
 elif tombol_cari and not npm_input:
     st.error("Isi NPM dulu dong kak! 😅")
