@@ -37,6 +37,7 @@ st.markdown("""
         border-radius: 8px;
         border: 1px solid #cbd5e1;
         background-color: white;
+        color: #334155;
     }
 
     /* Tombol Kirim (Solid Blue) */
@@ -156,7 +157,7 @@ with st.container():
                         data_baru = [waktu, nama, npm, jurusan, kategori, keluhan, "Pending", link_bukti]
                         sheet.append_row(data_baru)
                         
-                        # SUKSES (TANPA BALON)
+                        # --- PESAN SUKSES (DIJAMIN GAK ADA BALON) ---
                         st.success("✅ Laporan berhasil dikirim! Terima kasih atas masukan Anda.")
                         
                         if upload_status == "Gagal" and bukti_file:
