@@ -3,6 +3,7 @@ import gspread
 from google.oauth2.service_account import Credentials
 import os
 import json
+from PIL import Image # Import Modul Gambar
 
 # 1. SETUP HALAMAN
 st.set_page_config(
@@ -20,7 +21,7 @@ st.markdown("""
     /* IMPORT FONT (Poppins) */
     @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
 
-    /* BACKGROUND GRADASI BERGERAK (ANIMATED GRADIENT) */
+    /* BACKGROUND GRADASI BERGERAK */
     .stApp {
         background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
         background-size: 400% 400%;
@@ -34,31 +35,32 @@ st.markdown("""
         100% {background-position: 0% 50%;}
     }
 
-    /* --- PERBAIKAN HEADER (JURUS TRANSPARAN) --- */
-    /* Membuat Header Bawaan Streamlit jadi tembus pandang */
+    /* --- SIDEBAR DARK NAVY --- */
+    section[data-testid="stSidebar"] {
+        background-color: #0f172a !important;
+        border-right: 1px solid rgba(255,255,255,0.1);
+    }
+    section[data-testid="stSidebar"] * { color: #f1f5f9 !important; }
+    button[kind="header"] { color: white !important; }
+
+    /* --- HEADER TRANSPARAN --- */
     header[data-testid="stHeader"] {
         background-color: transparent !important;
         background: transparent !important;
-        backdrop-filter: blur(0px) !important; /* Hilangkan blur bawaan */
+        backdrop-filter: blur(0px) !important;
     }
-    
-    /* Mengubah warna ikon garis tiga & titik tiga jadi Putih biar kontras */
-    header[data-testid="stHeader"] * {
-        color: white !important; 
-    }
+    header[data-testid="stHeader"] * { color: white !important; }
 
-    /* Sembunyikan Footer Bawaan */
-    footer {visibility: hidden;}
-    
-    /* Padding Container */
+    /* Layout Spacing */
     .block-container {
         padding-top: 3rem; 
         padding-bottom: 5rem;
     }
+    footer {visibility: hidden;}
 
     /* JUDUL HERO UTAMA */
     .hero-title {
-        font-size: 3.5rem;
+        font-size: 3rem; /* Sedikit dikecilkan biar muat logo */
         font-weight: 800;
         color: white;
         text-align: center;
@@ -67,12 +69,25 @@ st.markdown("""
         line-height: 1.2;
     }
     .hero-subtitle {
-        font-size: 1.1rem;
+        font-size: 1rem;
         color: rgba(255,255,255,0.95);
         text-align: center;
         margin-bottom: 3rem;
         font-weight: 400;
-        margin-top: 10px;
+        margin-top: 5px;
+    }
+
+    /* LOGO IMAGE STYLE (Biar rata tengah) */
+    div[data-testid="stImage"] {
+        display: flex;
+        justify-content: center;
+    }
+    div[data-testid="stImage"] img {
+        filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3)); /* Bayangan logo */
+        transition: transform 0.3s;
+    }
+    div[data-testid="stImage"] img:hover {
+        transform: scale(1.1); /* Efek zoom dikit pas disentuh */
     }
 
     /* KARTU KACA (GLASS CARD) */
@@ -94,13 +109,11 @@ st.markdown("""
         justify-content: center;
         align-items: center;
     }
-    
     .glass-card:hover {
         transform: translateY(-10px);
         background: rgba(255, 255, 255, 0.35);
         border-color: white;
     }
-
     .glass-card h1 { font-size: 3rem; margin: 0; }
     .glass-card h3 { color: white; font-weight: 700; margin: 10px 0 5px 0; font-size: 1.2rem;}
     .glass-card p { color: rgba(255,255,255,0.9); font-size: 0.85rem; line-height: 1.4;}
@@ -163,10 +176,28 @@ except:
     data_pengumuman = []
 
 # ==========================================
-# 1. HERO SECTION
+# 1. HERO SECTION (DENGAN LOGO) 🏛️
 # ==========================================
-st.markdown('<div class="hero-title">SAINS DATA <br>CRISIS CENTER</div>', unsafe_allow_html=True)
-st.markdown('<div class="hero-subtitle">Platform Advokasi & Pelayanan Mahasiswa Terintegrasi</div>', unsafe_allow_html=True)
+# Layout: Logo Kiri (1) - Judul Tengah (6) - Logo Kanan (1)
+col_logo1, col_text, col_logo2 = st.columns([1.5, 6, 1.5])
+
+with col_logo1:
+    # Cek apakah file logo UIN ada
+    if os.path.exists("logo_uin.png"):
+        st.image("logo_uin.png", width=130) # Sesuaikan width jika terlalu besar
+    else:
+        st.write("") # Kosong jika file tidak ada
+
+with col_text:
+    st.markdown('<div class="hero-title">SAINS DATA <br>CRISIS CENTER</div>', unsafe_allow_html=True)
+    st.markdown('<div class="hero-subtitle">Platform Advokasi & Pelayanan Mahasiswa Terintegrasi</div>', unsafe_allow_html=True)
+
+with col_logo2:
+    # Cek apakah file logo Himpunan ada
+    if os.path.exists("logo_him.png"):
+        st.image("logo_him.png", width=130)
+    else:
+        st.write("") 
 
 # ==========================================
 # 2. MENU NAVIGATION (GLASS CARDS)
@@ -236,7 +267,7 @@ with col_news:
             elif tipe == "Penting": border = "#ffa502"
             else: border = "#2ed573"
 
-            # HTML Rapat Kiri (NO INDENTATION) - Teks putih biar kontras
+            # HTML Rapat Kiri
             st.markdown(f"""
 <div class="announce-item" style="border-left: 5px solid {border};">
 <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
