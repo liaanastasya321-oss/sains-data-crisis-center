@@ -5,6 +5,7 @@ from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseUpload
 from datetime import datetime
 import os
+import json # <--- Wajib ada buat baca Secrets
 
 # 1. Konfigurasi Halaman
 st.set_page_config(page_title="Lapor Masalah", page_icon="📝")
@@ -77,32 +78,40 @@ st.markdown("""
 ID_FOLDER_DRIVE = "1n7n4NNuQiGMsSjHynqwD-aMRvO0W-K4n"
 
 # ==========================================
-# KONEKSI DATABASE & DRIVE 🔗
+# KONEKSI DATABASE & DRIVE (DUAL MODE) 🔗
 # ==========================================
 scopes = [
     "https://www.googleapis.com/auth/spreadsheets",
     "https://www.googleapis.com/auth/drive"
 ]
 
-# Cek lokasi file credentials (Anti-Nyasar)
-if os.path.exists("credentials.json"):
-    creds_file = "credentials.json"
-else:
-    creds_file = "../credentials.json"
-
 try:
-    creds = Credentials.from_service_account_file(creds_file, scopes=scopes)
+    # 1. Cek Streamlit Cloud (Secrets)
+    if "google_credentials" in st.secrets:
+        creds_dict = json.loads(st.secrets["google_credentials"])
+        creds = Credentials.from_service_account_info(creds_dict, scopes=scopes)
     
-    # 1. Koneksi ke Google Sheets (Tulis Data)
+    # 2. Cek File Lokal
+    elif os.path.exists("credentials.json"):
+        creds = Credentials.from_service_account_file("credentials.json", scopes=scopes)
+        
+    elif os.path.exists("../credentials.json"):
+        creds = Credentials.from_service_account_file("../credentials.json", scopes=scopes)
+        
+    else:
+        st.error("⚠️ File Kunci (Credentials) tidak ditemukan!")
+        st.stop()
+    
+    # Koneksi ke Google Sheets (Tulis Data)
     client = gspread.authorize(creds)
     sheet = client.open("Database_Advokasi").worksheet("Laporan")
     
-    # 2. Koneksi ke Google Drive (Upload File)
+    # Koneksi ke Google Drive (Upload File)
     service_drive = build('drive', 'v3', credentials=creds)
     
 except Exception as e:
     st.error(f"⚠️ Koneksi Gagal: {e}")
-    st.info("Pastikan file 'credentials.json' ada.")
+    st.info("Hubungi admin jika masalah berlanjut.")
     st.stop()
 
 # ==========================================
@@ -143,7 +152,7 @@ with st.container():
                     # --- PROSES 1: UPLOAD KE DRIVE (Versi Anti-Macet) ---
                     if bukti_file is not None:
                         try:
-                            # Rename file biar rapi: Bukti_Nama_Jam.png
+                            # Rename file biar rapi
                             ext = bukti_file.name.split('.')[-1]
                             nama_file_drive = f"Bukti_{nama.replace(' ','_')}_{waktu.replace('/','-').replace(':','-')}.{ext}"
                             
@@ -169,7 +178,6 @@ with st.container():
                             # Kalau upload gagal (kuota penuh), kita CUEKIN errornya, tapi catat.
                             upload_status = "Gagal"
                             link_bukti = "Gagal Upload (Kuota Google Penuh)"
-                            # Kita tidak pakai st.stop() biar data teks tetap tersimpan!
                     
                     # --- PROSES 2: SIMPAN KE SHEETS ---
                     # Urutan Kolom: [Waktu, Nama, NPM, Jurusan, Kategori, Keluhan, Status, LINK BUKTI]
