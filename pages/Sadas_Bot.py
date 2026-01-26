@@ -2,7 +2,10 @@ import streamlit as st
 import time
 
 st.set_page_config(page_title="Sadas Bot AI", page_icon="🤖")
-# --- AWAL BAGIAN DESAIN (COPY DARI SINI) ---
+
+# ==========================================
+# 🎨 MASTER DESIGN SYSTEM (CHAT STYLE)
+# ==========================================
 st.markdown("""
 <style>
     /* Background Gradient Halus */
@@ -10,147 +13,113 @@ st.markdown("""
         background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
     }
 
-    /* Sidebar Keren (Navy Blue) */
+    /* Sidebar Navy */
     [data-testid="stSidebar"] {
         background-color: #1e293b;
         border-right: 2px solid #334155;
     }
     [data-testid="stSidebar"] * {
-        color: #f8fafc !important; /* Teks Sidebar Putih */
+        color: #f8fafc !important;
     }
 
-    /* Kartu Metric (Kotak Angka) */
-    div[data-testid="stMetric"] {
-        background-color: white;
-        padding: 15px;
-        border-radius: 15px;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        border-left: 5px solid #3b82f6; /* Aksen Biru */
-    }
-    
-    /* Judul Besar */
-    h1 {
-        color: #1e3a8a;
-        font-family: 'Helvetica', sans-serif;
-        text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
-    }
-    
-    /* Tombol Cantik */
-    .stButton > button {
-        background: linear-gradient(90deg, #2563eb, #0ea5e9);
-        color: white;
-        border-radius: 25px;
-        height: 50px;
-        font-weight: bold;
-        border: none;
-        box-shadow: 0 4px 10px rgba(37, 99, 235, 0.3);
-        transition: 0.3s;
-    }
-    .stButton > button:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 6px 15px rgba(37, 99, 235, 0.4);
-    }
-
-    /* Input Box Lebih Modern */
-    .stTextInput > div > div > input, .stTextArea > div > div > textarea {
-        border-radius: 10px;
-        border: 1px solid #cbd5e1;
-    }
-</style>
-""", unsafe_allow_html=True)
-# --- AKHIR BAGIAN DESAIN ---
-# --- BAGIAN DESAIN (CSS CHAT WHATSAPP STYLE) 🎨 ---
-st.markdown("""
-<style>
-    /* Background Gradient */
-    .stApp {background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);}
-    
-    /* Bubble Chat User (Kanan, Biru) */
+    /* BUBBLE CHAT USER (Kanan - Biru) */
     .stChatMessage[data-testid="stChatMessage"]:nth-child(odd) {
         background-color: #dbeafe;
         border-radius: 20px 20px 0 20px;
         border: 1px solid #bfdbfe;
+        color: #1e3a8a;
     }
-    
-    /* Bubble Chat Bot (Kiri, Putih) */
+
+    /* BUBBLE CHAT BOT (Kiri - Putih) */
     .stChatMessage[data-testid="stChatMessage"]:nth-child(even) {
         background-color: #ffffff;
         border-radius: 20px 20px 20px 0;
         border: 1px solid #e2e8f0;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        color: #334155;
     }
     
     /* Tombol Kirim */
     .stChatInput button {
         background-color: #2563eb !important;
         color: white !important;
+        border-radius: 50%;
     }
-    
-    /* Tombol Hapus di Sidebar */
-    div.stButton > button:first-child {
-        background-color: #ef4444; /* Merah */
-        color: white;
-        border-radius: 10px;
-        width: 100%;
+
+    /* Tombol Hapus Chat di Sidebar */
+    div.stButton > button {
+        background-color: #ef4444; 
+        color: white; 
+        border-radius: 8px; 
         border: none;
+        width: 100%;
+        font-weight: bold;
+        transition: 0.3s;
     }
     div.stButton > button:hover {
         background-color: #dc2626;
-        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+        box-shadow: 0 4px 12px rgba(220, 38, 38, 0.4);
     }
 </style>
 """, unsafe_allow_html=True)
-# -----------------------------------------------------
 
-# === FITUR HAPUS CHAT (SIDEBAR) 🗑️ ===
+# ==========================================
+# SIDEBAR (OPSI CHAT) ⚙️
+# ==========================================
 with st.sidebar:
     st.header("⚙️ Pengaturan")
-    st.write("Kalau chat sudah kepenuhan, klik tombol di bawah ini:")
+    st.write("Klik tombol di bawah jika ingin menghapus riwayat percakapan.")
     
-    # Tombol Reset
-    if st.button("🗑️ Bersihkan Riwayat Chat"):
-        st.session_state.messages = [] # Kosongkan memori
-        st.session_state.messages.append({"role": "assistant", "content": "Halo! Chat sudah dibersihkan. Ada yang bisa Sadas Bot bantu lagi? (KIP, UKT, Nilai)"})
-        st.rerun() # Refresh otomatis
+    if st.button("🗑️ Hapus Riwayat Chat"):
+        st.session_state.messages = [] # Reset Chat
+        st.session_state.messages.append({"role": "assistant", "content": "Halo! Riwayat chat sudah dibersihkan. Mau tanya apa lagi? 😊"})
+        st.rerun()
 
-# === JUDUL UTAMA ===
+# ==========================================
+# HALAMAN UTAMA (CHATBOT) 🤖
+# ==========================================
 st.title("🤖 Sadas Bot")
-st.caption("Asisten Pintar Himpunan Mahasiswa Sains Data - Siap Bantu 24 Jam!")
+st.caption("Asisten Virtual Himpunan Mahasiswa Sains Data - Siap Bantu 24 Jam!")
 
-# === KAMUS JAWABAN ===
+# --- KAMUS KECERDASAN BUATAN (SEDERHANA) ---
+# Kamu bisa tambah kata kunci di sini sesuka hati!
 kamus_jawaban = {
-    "kip": "Info **KIP Kuliah**: Pastikan berkas SKTM & Slip Gaji siap. Cek: kip-kuliah.kemdikbud.go.id",
-    "ukt": "Soal **UKT**: Banding UKT dibuka awal semester. Syarat: Surat PHK/Keterangan Tidak Mampu.",
-    "cuti": "**Cuti Akademik** maksimal H-2 minggu sebelum KRS. Hubungi Dosen PA dulu ya.",
-    "nilai": "Jika **Nilai Error**, lapor via menu 'Lapor Masalah' di kiri. Lampirkan bukti screenshot.",
-    "skripsi": "Semangat pejuang **Skripsi**! Syarat sempro: Lulus 110 SKS & Tidak ada nilai D.",
-    "lab": "Jadwal **Lab Komputer** ada di mading Lt. 3 atau tanya Kak Aslab."
+    "kip": "🎓 **Info KIP Kuliah:**\nPastikan kamu menyiapkan berkas SKTM, Slip Gaji Orang Tua, dan Foto Rumah. \nInfo lengkap cek: [kip-kuliah.kemdikbud.go.id](https://kip-kuliah.kemdikbud.go.id)",
+    "ukt": "💰 **Info UKT:**\nBanding UKT biasanya dibuka awal semester ganjil. Syarat utamanya adalah surat keterangan penurunan pendapatan orang tua atau PHK.",
+    "cuti": "📅 **Cuti Akademik:**\nPengajuan maksimal H-2 minggu sebelum KRSan. Jangan lupa konsultasi ke Dosen Pembimbing Akademik (PA) dulu ya!",
+    "nilai": "📈 **Masalah Nilai:**\nJika ada nilai error atau belum keluar, silakan lapor lewat menu **'📝 Lapor Masalah'** di sidebar. Sertakan bukti screenshot siakad.",
+    "skripsi": "🎓 **Pejuang Skripsi:**\nSyarat seminar proposal (Sempro) adalah sudah lulus minimal 110 SKS dan tidak ada nilai D. Semangat!",
+    "lab": "💻 **Fasilitas Lab:**\nLab Komputer ada di Gedung C Lt. 3. Jadwal praktikum bisa dilihat di mading depan lab atau tanya Asisten Lab.",
+    "halo": "Halo juga! 👋 Ada yang bisa Sadas Bot bantu hari ini?",
+    "terima kasih": "Sama-sama! Senang bisa membantu. 😊",
+    "makasih": "Sama-sama! Jangan sungkan tanya lagi ya. 👍"
 }
 
-# === INISIALISASI CHAT ===
+# --- INISIALISASI CHAT ---
 if "messages" not in st.session_state:
-    st.session_state.messages = [{"role": "assistant", "content": "Halo! Ada yang bisa Sadas Bot bantu? (Tanya soal: KIP, UKT, Nilai, dll)"}]
+    st.session_state.messages = [{"role": "assistant", "content": "Halo! 👋 Saya Sadas Bot.\n\nSilakan tanya tentang: **KIP, UKT, Cuti, Nilai, atau Skripsi**."}]
 
-# === TAMPILKAN HISTORY CHAT ===
+# --- TAMPILKAN RIWAYAT CHAT ---
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
-# === LOGIKA JAWAB OTOMATIS ===
-if prompt := st.chat_input("Ketik pertanyaanmu di sini..."):
-    # 1. Tampilkan Chat User
+# --- INPUT USER ---
+if prompt := st.chat_input("Ketik pertanyaanmu... (Contoh: Syarat KIP apa?)"):
+    
+    # 1. Tampilkan Pesan User
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
         st.markdown(prompt)
 
-    # 2. Bot Mikir & Jawab
+    # 2. Proses Jawaban Bot
     with st.chat_message("assistant"):
-        with st.spinner("Sadas Bot sedang mengetik..."):
-            time.sleep(1) # Delay biar natural
+        with st.spinner("Sadas Bot sedang berpikir..."):
+            time.sleep(1.5) # Efek mikir biar natural
             
-            response = "Maaf, saya belum paham. Coba kata kunci: KIP, UKT, Nilai, Lab."
+            response = "Maaf, saya belum mengerti pertanyaan itu. 🙏\n\nCoba gunakan kata kunci: **KIP, UKT, Nilai, Lab, Skripsi, atau Cuti**."
             
-            # Cari kata kunci
+            # Cari kata kunci dalam kalimat user
             prompt_lower = prompt.lower()
             for key, val in kamus_jawaban.items():
                 if key in prompt_lower:
@@ -159,5 +128,5 @@ if prompt := st.chat_input("Ketik pertanyaanmu di sini..."):
             
             st.markdown(response)
             
-    # 3. Simpan Jawaban Bot
+    # 3. Simpan Jawaban ke Memori
     st.session_state.messages.append({"role": "assistant", "content": response})
