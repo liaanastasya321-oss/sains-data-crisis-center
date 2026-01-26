@@ -9,7 +9,7 @@ st.set_page_config(
     page_title="Sains Data Crisis Center",
     page_icon="💎",
     layout="wide",
-    initial_sidebar_state="collapsed" # Sidebar sembunyi biar full screen
+    initial_sidebar_state="expanded" # Sidebar TETAP MUNCUL
 )
 
 # ==========================================
@@ -17,7 +17,7 @@ st.set_page_config(
 # ==========================================
 st.markdown("""
 <style>
-    /* IMPORT FONT (Poppins - Font paling populer untuk UI Modern) */
+    /* IMPORT FONT (Poppins - Font Modern) */
     @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
 
     /* BACKGROUND GRADASI BERGERAK (ANIMATED GRADIENT) */
@@ -34,9 +34,18 @@ st.markdown("""
         100% {background-position: 0% 50%;}
     }
 
-    /* HILANGKAN ATRIBUT BAWAAN */
-    header, footer {visibility: hidden;}
-    .block-container {padding-top: 2rem; padding-bottom: 5rem;}
+    /* --- PENGATURAN HEADER & FOOTER --- */
+    /* Header (Tombol Kanan/Kiri) TETAP DITAMPILKAN */
+    /* header {visibility: hidden;} <--- INI KITA MATIKAN BIAR MUNCUL */
+    
+    /* Footer bawaan "Made with Streamlit" kita sembunyikan biar bersih */
+    footer {visibility: hidden;}
+    
+    /* Padding Container biar judul gak ketabrak Header */
+    .block-container {
+        padding-top: 3rem; 
+        padding-bottom: 5rem;
+    }
 
     /* JUDUL HERO UTAMA */
     .hero-title {
@@ -46,13 +55,15 @@ st.markdown("""
         text-align: center;
         text-shadow: 0 4px 10px rgba(0,0,0,0.2);
         margin-bottom: 0;
+        line-height: 1.2;
     }
     .hero-subtitle {
-        font-size: 1.2rem;
-        color: rgba(255,255,255,0.9);
+        font-size: 1.1rem;
+        color: rgba(255,255,255,0.95);
         text-align: center;
         margin-bottom: 3rem;
-        font-weight: 300;
+        font-weight: 400;
+        margin-top: 10px;
     }
 
     /* KARTU KACA (GLASS CARD) */
@@ -68,15 +79,22 @@ st.markdown("""
         transition: transform 0.3s ease;
         margin-bottom: 20px;
         color: white;
+        height: 220px; /* Tinggi rata */
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
     }
     
     .glass-card:hover {
         transform: translateY(-10px); /* Efek melayang saat disentuh */
         background: rgba(255, 255, 255, 0.35);
+        border-color: white;
     }
 
-    .glass-card h3 { color: white; font-weight: 700; margin-bottom: 5px;}
-    .glass-card p { color: rgba(255,255,255,0.8); font-size: 0.9rem;}
+    .glass-card h1 { font-size: 3rem; margin: 0; }
+    .glass-card h3 { color: white; font-weight: 700; margin: 10px 0 5px 0; font-size: 1.2rem;}
+    .glass-card p { color: rgba(255,255,255,0.9); font-size: 0.85rem; line-height: 1.4;}
 
     /* TOMBOL BUTTON (MODERN PILL SHAPE) */
     .stButton > button {
@@ -89,6 +107,7 @@ st.markdown("""
         box-shadow: 0 4px 15px rgba(0,0,0,0.1);
         width: 100%;
         transition: 0.3s;
+        margin-top: -10px; /* Naikin dikit biar nempel kartu */
     }
     .stButton > button:hover {
         background: #f8fafc;
@@ -98,12 +117,13 @@ st.markdown("""
 
     /* PENGUMUMAN LIST */
     .announce-item {
-        background: rgba(0, 0, 0, 0.3); /* Hitam transparan */
+        background: rgba(0, 0, 0, 0.4); /* Hitam transparan lebih gelap biar baca enak */
         border-radius: 15px;
         padding: 20px;
         margin-bottom: 15px;
         border-left: 5px solid #23d5ab;
         color: white;
+        backdrop-filter: blur(5px);
     }
 </style>
 """, unsafe_allow_html=True)
@@ -193,7 +213,7 @@ with c4:
 # ==========================================
 st.write("")
 st.write("")
-st.markdown("<h3 style='color:white; text-align:center; margin-bottom: 20px;'>📢 Update Terbaru</h3>", unsafe_allow_html=True)
+st.markdown("<h3 style='color:white; text-align:center; margin-bottom: 20px; text-shadow: 0 2px 4px rgba(0,0,0,0.3);'>📢 Update Terbaru</h3>", unsafe_allow_html=True)
 
 col_spacer_l, col_news, col_spacer_r = st.columns([1, 6, 1])
 
@@ -207,20 +227,20 @@ with col_news:
             elif tipe == "Penting": border = "#ffa502"
             else: border = "#2ed573"
 
-            # HTML Rapat Kiri (NO INDENTATION)
+            # HTML Rapat Kiri (NO INDENTATION) - Teks putih biar kontras
             st.markdown(f"""
 <div class="announce-item" style="border-left: 5px solid {border};">
 <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
-<strong style="text-transform:uppercase; color:#f1f2f6;">{tipe}</strong>
+<strong style="text-transform:uppercase; color:#f1f2f6; font-size:0.8rem; background:rgba(255,255,255,0.2); padding:2px 8px; border-radius:4px;">{tipe}</strong>
 <small style="color:#dfe4ea;">{item.get('Tanggal','-')}</small>
 </div>
-<h3 style="margin:0; font-size:1.2rem; color:white;">{item.get('Judul','-')}</h3>
+<h3 style="margin:5px 0; font-size:1.3rem; color:white; font-weight:700;">{item.get('Judul','-')}</h3>
 <p style="margin-top:5px; color:#f1f2f6; line-height:1.5;">{item.get('Isi','-')}</p>
 </div>
 """, unsafe_allow_html=True)
     else:
         st.markdown("""
-        <div class="glass-card" style="text-align:center;">
+        <div class="glass-card" style="text-align:center; height:auto; padding:20px;">
             <p>Belum ada pengumuman.</p>
         </div>
         """, unsafe_allow_html=True)
@@ -228,4 +248,4 @@ with col_news:
 # Footer Spacing
 st.write("")
 st.write("")
-st.markdown("<div style='text-align:center; color:rgba(255,255,255,0.6); font-size:0.8rem;'>© 2026 Sains Data Crisis Center</div>", unsafe_allow_html=True)
+st.markdown("<div style='text-align:center; color:rgba(255,255,255,0.8); font-size:0.8rem; padding-bottom:20px;'>© 2026 Sains Data Crisis Center</div>", unsafe_allow_html=True)
