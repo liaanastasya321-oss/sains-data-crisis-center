@@ -13,14 +13,14 @@ st.set_page_config(
 )
 
 # ==========================================
-# 💎 MASTER DESIGN SYSTEM (FINAL)
+# 💎 MASTER DESIGN SYSTEM (GLASSMORPHISM)
 # ==========================================
 st.markdown("""
 <style>
     /* IMPORT FONT (Poppins) */
     @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
 
-    /* BACKGROUND GRADASI BERGERAK */
+    /* BACKGROUND GRADASI BERGERAK (ANIMATED GRADIENT) */
     .stApp {
         background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
         background-size: 400% 400%;
@@ -34,42 +34,27 @@ st.markdown("""
         100% {background-position: 0% 50%;}
     }
 
-    /* --- SIDEBAR DARK NAVY (INI YANG BARU) --- */
-    section[data-testid="stSidebar"] {
-        background-color: #0f172a !important; /* Warna Biru Gelap (Dark Navy) */
-        border-right: 1px solid rgba(255,255,255,0.1);
-    }
-    
-    /* Ubah semua teks di Sidebar jadi Putih */
-    section[data-testid="stSidebar"] * {
-        color: #f1f5f9 !important; /* Putih terang */
-    }
-    
-    /* Tombol X (Close Sidebar) di Mobile juga putih */
-    button[kind="header"] {
-        color: white !important;
-    }
-
-    /* --- HEADER TRANSPARAN --- */
+    /* --- PERBAIKAN HEADER (JURUS TRANSPARAN) --- */
+    /* Membuat Header Bawaan Streamlit jadi tembus pandang */
     header[data-testid="stHeader"] {
         background-color: transparent !important;
         background: transparent !important;
-        backdrop-filter: blur(0px) !important;
+        backdrop-filter: blur(0px) !important; /* Hilangkan blur bawaan */
     }
     
-    /* Ikon Header Putih */
+    /* Mengubah warna ikon garis tiga & titik tiga jadi Putih biar kontras */
     header[data-testid="stHeader"] * {
         color: white !important; 
     }
 
-    /* Padding Konten Utama */
+    /* Sembunyikan Footer Bawaan */
+    footer {visibility: hidden;}
+    
+    /* Padding Container */
     .block-container {
         padding-top: 3rem; 
         padding-bottom: 5rem;
     }
-    
-    /* Sembunyikan Footer */
-    footer {visibility: hidden;}
 
     /* JUDUL HERO UTAMA */
     .hero-title {
@@ -251,7 +236,7 @@ with col_news:
             elif tipe == "Penting": border = "#ffa502"
             else: border = "#2ed573"
 
-            # HTML Rapat Kiri (NO INDENTATION)
+            # HTML Rapat Kiri (NO INDENTATION) - Teks putih biar kontras
             st.markdown(f"""
 <div class="announce-item" style="border-left: 5px solid {border};">
 <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
