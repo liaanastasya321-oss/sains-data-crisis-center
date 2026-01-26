@@ -76,6 +76,7 @@ st.markdown("""
         font-weight: 600;
         padding: 0.5rem 1rem;
         box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);
+        width: 100%; /* Biar tombol full width */
     }
     .stButton > button:hover { background-color: #1d4ed8; }
 </style>
@@ -84,7 +85,6 @@ st.markdown("""
 # ==========================================
 # KONEKSI DATABASE (DUAL MODE: LOKAL & CLOUD) 🔗
 # ==========================================
-# Ini bagian penting biar gak error di GitHub atau Lokal
 scopes = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
 
 try:
@@ -113,8 +113,6 @@ try:
         data_pengumuman = []
 
 except Exception as e:
-    # Kalau error koneksi, jangan bikin web mati, tapi kosongkan data aja
-    # st.error(f"Error Database: {e}") # Aktifkan ini kalau mau liat errornya
     data_pengumuman = []
 
 # ==========================================
@@ -134,38 +132,53 @@ with col_main:
     </div>
     """, unsafe_allow_html=True)
 
-    # Menu Cepat
-    c1, c2, c3 = st.columns(3)
+    # --- MENU NAVIGASI UTAMA (4 KOLOM) ---
+    # Saya ubah jadi 4 kolom biar Cek Status masuk juga
+    c1, c2, c3, c4 = st.columns(4)
     
     with c1:
         st.markdown("""
-        <div class="pro-card" style="text-align:center; border-top: 4px solid #ef4444;">
-            <h3>📝 Lapor Masalah</h3>
-            <p style="font-size:0.9rem; color:#64748b;">Punya kendala akademik atau fasilitas? Laporkan di sini secara aman.</p>
+        <div class="pro-card" style="text-align:center; border-top: 4px solid #ef4444; min-height: 200px;">
+            <h3>📝 Lapor</h3>
+            <p style="font-size:0.8rem; color:#64748b;">Laporkan kendala akademik & fasilitas.</p>
         </div>
         """, unsafe_allow_html=True)
-        if st.button("Buka Lapor Masalah", key="btn_lapor", use_container_width=True):
-             st.switch_page("pages/1_📝_Lapor_Masalah.py")
+        # PERBAIKAN: Nama file disesuaikan dengan GitHub (Tanpa Emoji)
+        if st.button("Buat Laporan", key="btn_lapor"):
+             st.switch_page("pages/Lapor_Masalah.py")
         
     with c2:
         st.markdown("""
-        <div class="pro-card" style="text-align:center; border-top: 4px solid #3b82f6;">
-            <h3>📊 Dashboard</h3>
-            <p style="font-size:0.9rem; color:#64748b;">Pantau status penanganan masalah secara real-time dan transparan.</p>
+        <div class="pro-card" style="text-align:center; border-top: 4px solid #10b981; min-height: 200px;">
+            <h3>🔍 Cek Status</h3>
+            <p style="font-size:0.8rem; color:#64748b;">Pantau progres laporanmu di sini.</p>
         </div>
         """, unsafe_allow_html=True)
-        if st.button("Lihat Dashboard", key="btn_dash", use_container_width=True):
-             st.switch_page("pages/2_📊_Dashboard_Publik.py")
-        
+        # PERBAIKAN: Menambahkan tombol Cek Status
+        if st.button("Cek Progres", key="btn_status"):
+             st.switch_page("pages/Cek_Status.py")
+
     with c3:
         st.markdown("""
-        <div class="pro-card" style="text-align:center; border-top: 4px solid #f59e0b;">
-            <h3>🤖 Sadas Bot</h3>
-            <p style="font-size:0.9rem; color:#64748b;">Asisten AI 24 jam. Tanya info beasiswa, UKT, dan akademik.</p>
+        <div class="pro-card" style="text-align:center; border-top: 4px solid #3b82f6; min-height: 200px;">
+            <h3>📊 Data</h3>
+            <p style="font-size:0.8rem; color:#64748b;">Transparansi data advokasi himpunan.</p>
         </div>
         """, unsafe_allow_html=True)
-        if st.button("Tanya Bot", key="btn_bot", use_container_width=True):
-             st.switch_page("pages/4_🤖_Sadas_Bot.py")
+        # PERBAIKAN: Nama file disesuaikan dengan GitHub (Tanpa Emoji)
+        if st.button("Lihat Data", key="btn_dash"):
+             st.switch_page("pages/Dashboard_Publik.py")
+        
+    with c4:
+        st.markdown("""
+        <div class="pro-card" style="text-align:center; border-top: 4px solid #f59e0b; min-height: 200px;">
+            <h3>🤖 Bot AI</h3>
+            <p style="font-size:0.8rem; color:#64748b;">Tanya jawab otomatis 24 jam.</p>
+        </div>
+        """, unsafe_allow_html=True)
+        # PERBAIKAN: Nama file disesuaikan dengan GitHub (Tanpa Emoji)
+        if st.button("Tanya Bot", key="btn_bot"):
+             st.switch_page("pages/Sadas_Bot.py")
 
     # ==========================================
     # OFFICIAL ANNOUNCEMENTS (Mading Pro)
