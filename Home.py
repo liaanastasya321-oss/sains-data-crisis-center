@@ -145,7 +145,7 @@ with col_main:
     with c3:
         st.markdown("""
         <div class="pro-card" style="text-align:center; border-top: 4px solid #3b82f6; min-height: 180px;">
-            <h3>Dashboad Publik</h3>
+            <h3>Data</h3>
             <p style="font-size:0.8rem; color:#64748b;">Transparansi data advokasi himpunan.</p>
         </div>
         """, unsafe_allow_html=True)
