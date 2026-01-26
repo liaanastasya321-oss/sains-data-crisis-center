@@ -2,11 +2,12 @@ import streamlit as st
 import gspread
 from google.oauth2.service_account import Credentials
 import os
+import json
 
 # 1. SETUP HALAMAN (Wajib Paling Atas)
 st.set_page_config(
     page_title="Sains Data Crisis Center",
-    page_icon="🛡️", # Ikon tameng (lebih berwibawa)
+    page_icon="🛡️",
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -16,43 +17,43 @@ st.set_page_config(
 # ==========================================
 st.markdown("""
 <style>
-    /* IMPORT FONT MODERN (Inter) - Font standar startup dunia */
+    /* IMPORT FONT MODERN (Inter) */
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
 
     /* RESET & BASE STYLE */
     html, body, [class*="css"] {
         font-family: 'Inter', sans-serif;
-        color: #1e293b; /* Abu-abu gelap (bukan hitam pekat) biar elegan */
+        color: #1e293b;
     }
 
     /* BACKGROUND BERSIH */
     .stApp {
-        background-color: #f8fafc; /* Slate-50 (Putih keabu-abuan sangat muda) */
+        background-color: #f8fafc;
         background-image: radial-gradient(#e2e8f0 1px, transparent 1px);
-        background-size: 20px 20px; /* Efek titik-titik halus ala blueprint */
+        background-size: 20px 20px;
     }
 
     /* SIDEBAR PROFESIONAL */
     [data-testid="stSidebar"] {
-        background-color: #0f172a; /* Slate-900 (Hampir hitam, Navy Deep) */
+        background-color: #0f172a;
         border-right: 1px solid #1e293b;
     }
     [data-testid="stSidebar"] h1, [data-testid="stSidebar"] span, [data-testid="stSidebar"] p {
-        color: #e2e8f0 !important; /* Teks sidebar putih gading */
+        color: #e2e8f0 !important;
     }
 
     /* HILANGKAN ELEMENT MENGGANGGU */
-    #MainMenu {visibility: hidden;} /* Titik tiga di pojok kanan */
-    footer {visibility: hidden;}    /* Tulisan 'Made with Streamlit' */
-    header {visibility: hidden;}    /* Garis merah di atas */
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    header {visibility: hidden;}
 
-    /* CUSTOM CARDS (PENGUMUMAN DLL) */
+    /* CUSTOM CARDS */
     .pro-card {
         background: white;
         padding: 24px;
         border-radius: 12px;
         border: 1px solid #e2e8f0;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); /* Bayangan super halus */
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
         margin-bottom: 16px;
         transition: transform 0.2s;
     }
@@ -63,19 +64,12 @@ st.markdown("""
     }
 
     /* TYPOGRAPHY */
-    h1 {
-        font-weight: 800;
-        letter-spacing: -0.025em;
-        color: #0f172a;
-    }
-    h3 {
-        font-weight: 600;
-        color: #334155;
-    }
+    h1 { font-weight: 800; letter-spacing: -0.025em; color: #0f172a; }
+    h3 { font-weight: 600; color: #334155; }
     
     /* TOMBOL PRIMARY */
     .stButton > button {
-        background-color: #2563eb; /* Royal Blue */
+        background-color: #2563eb;
         color: white;
         border: none;
         border-radius: 8px;
@@ -83,38 +77,53 @@ st.markdown("""
         padding: 0.5rem 1rem;
         box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);
     }
-    .stButton > button:hover {
-        background-color: #1d4ed8;
-    }
+    .stButton > button:hover { background-color: #1d4ed8; }
 </style>
 """, unsafe_allow_html=True)
 
 # ==========================================
-# LOGIC DATABASE (Tetap Sama)
+# KONEKSI DATABASE (DUAL MODE: LOKAL & CLOUD) 🔗
 # ==========================================
+# Ini bagian penting biar gak error di GitHub atau Lokal
 scopes = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
-if os.path.exists("credentials.json"):
-    creds_file = "credentials.json"
-else:
-    creds_file = "../credentials.json"
 
 try:
-    creds = Credentials.from_service_account_file(creds_file, scopes=scopes)
-    client = gspread.authorize(creds)
-    sheet = client.open("Database_Advokasi").worksheet("Pengumuman")
-    data_pengumuman = sheet.get_all_records()
-except:
+    # Cek 1: Apakah ada di Streamlit Cloud (Pakai Secrets)?
+    if "google_credentials" in st.secrets:
+        creds_dict = json.loads(st.secrets["google_credentials"])
+        creds = Credentials.from_service_account_info(creds_dict, scopes=scopes)
+    
+    # Cek 2: Apakah ada file lokal credentials.json?
+    elif os.path.exists("credentials.json"):
+        creds = Credentials.from_service_account_file("credentials.json", scopes=scopes)
+    
+    # Cek 3: Cek di folder luar (opsional)
+    elif os.path.exists("../credentials.json"):
+        creds = Credentials.from_service_account_file("../credentials.json", scopes=scopes)
+        
+    else:
+        st.warning("⚠️ File credentials belum ditemukan. Mode offline.")
+        creds = None
+
+    if creds:
+        client = gspread.authorize(creds)
+        sheet = client.open("Database_Advokasi").worksheet("Pengumuman")
+        data_pengumuman = sheet.get_all_records()
+    else:
+        data_pengumuman = []
+
+except Exception as e:
+    # Kalau error koneksi, jangan bikin web mati, tapi kosongkan data aja
+    # st.error(f"Error Database: {e}") # Aktifkan ini kalau mau liat errornya
     data_pengumuman = []
 
 # ==========================================
 # HERO SECTION (Wajah Utama Website)
 # ==========================================
-# Kita bikin layout yang "Center" dan berwibawa
-
 col_spacer_l, col_main, col_spacer_r = st.columns([1, 8, 1])
 
 with col_main:
-    # Header Tanpa Gambar Kartun (Lebih Serius)
+    # Header
     st.markdown("""
     <div style="text-align: center; padding-top: 40px; padding-bottom: 40px;">
         <h1 style="font-size: 3rem; margin-bottom: 10px;">Sains Data <span style="color:#2563eb;">Crisis Center</span></h1>
@@ -125,7 +134,7 @@ with col_main:
     </div>
     """, unsafe_allow_html=True)
 
-    # Menu Cepat (Quick Actions) - Pakai 3 Kolom
+    # Menu Cepat
     c1, c2, c3 = st.columns(3)
     
     with c1:
@@ -135,7 +144,8 @@ with col_main:
             <p style="font-size:0.9rem; color:#64748b;">Punya kendala akademik atau fasilitas? Laporkan di sini secara aman.</p>
         </div>
         """, unsafe_allow_html=True)
-        st.info("👈 Akses menu di Sidebar")
+        if st.button("Buka Lapor Masalah", key="btn_lapor", use_container_width=True):
+             st.switch_page("pages/1_📝_Lapor_Masalah.py")
         
     with c2:
         st.markdown("""
@@ -144,6 +154,8 @@ with col_main:
             <p style="font-size:0.9rem; color:#64748b;">Pantau status penanganan masalah secara real-time dan transparan.</p>
         </div>
         """, unsafe_allow_html=True)
+        if st.button("Lihat Dashboard", key="btn_dash", use_container_width=True):
+             st.switch_page("pages/2_📊_Dashboard_Publik.py")
         
     with c3:
         st.markdown("""
@@ -152,6 +164,8 @@ with col_main:
             <p style="font-size:0.9rem; color:#64748b;">Asisten AI 24 jam. Tanya info beasiswa, UKT, dan akademik.</p>
         </div>
         """, unsafe_allow_html=True)
+        if st.button("Tanya Bot", key="btn_bot", use_container_width=True):
+             st.switch_page("pages/4_🤖_Sadas_Bot.py")
 
     # ==========================================
     # OFFICIAL ANNOUNCEMENTS (Mading Pro)
@@ -171,7 +185,7 @@ with col_main:
             else:
                 badge_color = "#dbeafe"; text_color = "#1e40af"; border_l = "#3b82f6"
 
-            # Render Kartu HTML Murni (Lebih Fleksibel dari st.info)
+            # Render Kartu HTML
             html_content = f"""
             <div class="pro-card" style="border-left: 5px solid {border_l}; display: flex; flex-direction: column; gap: 8px;">
                 <div style="display:flex; justify-content:space-between; align-items:center;">
