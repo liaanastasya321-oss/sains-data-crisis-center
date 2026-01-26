@@ -139,7 +139,7 @@ with col_main:
     with c1:
         st.markdown("""
         <div class="pro-card" style="text-align:center; border-top: 4px solid #dc2626; min-height: 190px;">
-            <h3 style="margin-top:0;">📝 Lapor</h3>
+            <h3 style="margin-top:0;">Lapor</h3>
             <p style="font-size:0.9rem;">Sampaikan kendala akademik & fasilitas secara resmi.</p>
         </div>
         """, unsafe_allow_html=True)
@@ -149,7 +149,7 @@ with col_main:
     with c2:
         st.markdown("""
         <div class="pro-card" style="text-align:center; border-top: 4px solid #059669; min-height: 190px;">
-            <h3 style="margin-top:0;">🔍 Cek Status</h3>
+            <h3 style="margin-top:0;">Cek Status</h3>
             <p style="font-size:0.9rem;">Pantau tindak lanjut laporan Anda di sini.</p>
         </div>
         """, unsafe_allow_html=True)
@@ -159,7 +159,7 @@ with col_main:
     with c3:
         st.markdown("""
         <div class="pro-card" style="text-align:center; border-top: 4px solid #2563eb; min-height: 190px;">
-            <h3 style="margin-top:0;">📊 Statistik</h3>
+            <h3 style="margin-top:0;">Statistik</h3>
             <p style="font-size:0.9rem;">Transparansi data advokasi himpunan (Dashboard).</p>
         </div>
         """, unsafe_allow_html=True)
@@ -169,7 +169,7 @@ with col_main:
     with c4:
         st.markdown("""
         <div class="pro-card" style="text-align:center; border-top: 4px solid #d97706; min-height: 190px;">
-            <h3 style="margin-top:0;">🤖 AI Help</h3>
+            <h3 style="margin-top:0;">AI Help</h3>
             <p style="font-size:0.9rem;">Layanan informasi otomatis 24 jam (Chatbot).</p>
         </div>
         """, unsafe_allow_html=True)
@@ -180,7 +180,7 @@ with col_main:
     # PENGUMUMAN
     # ==========================================
     st.write("---")
-    st.markdown("<h2 style='text-align: center; margin-bottom: 30px;'>📢 Informasi Resmi Himpunan</h2>", unsafe_allow_html=True)
+    st.markdown("<h2 style='text-align: center; margin-bottom: 30px;'>Informasi Resmi Himpunan</h2>", unsafe_allow_html=True)
 
     if len(data_pengumuman) > 0:
         for item in reversed(data_pengumuman):
@@ -212,3 +212,4 @@ with col_main:
             <h3 style="color: #9ca3af; margin:0;">Belum ada informasi terbaru</h3>
         </div>
         """, unsafe_allow_html=True)
+
