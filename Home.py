@@ -9,7 +9,7 @@ st.set_page_config(
     page_title="Sains Data Crisis Center",
     page_icon="💎",
     layout="wide",
-    initial_sidebar_state="expanded" # Sidebar TETAP MUNCUL
+    initial_sidebar_state="expanded"
 )
 
 # ==========================================
@@ -17,7 +17,7 @@ st.set_page_config(
 # ==========================================
 st.markdown("""
 <style>
-    /* IMPORT FONT (Poppins - Font Modern) */
+    /* IMPORT FONT (Poppins) */
     @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
 
     /* BACKGROUND GRADASI BERGERAK (ANIMATED GRADIENT) */
@@ -34,14 +34,23 @@ st.markdown("""
         100% {background-position: 0% 50%;}
     }
 
-    /* --- PENGATURAN HEADER & FOOTER --- */
-    /* Header (Tombol Kanan/Kiri) TETAP DITAMPILKAN */
-    /* header {visibility: hidden;} <--- INI KITA MATIKAN BIAR MUNCUL */
+    /* --- PERBAIKAN HEADER (JURUS TRANSPARAN) --- */
+    /* Membuat Header Bawaan Streamlit jadi tembus pandang */
+    header[data-testid="stHeader"] {
+        background-color: transparent !important;
+        background: transparent !important;
+        backdrop-filter: blur(0px) !important; /* Hilangkan blur bawaan */
+    }
     
-    /* Footer bawaan "Made with Streamlit" kita sembunyikan biar bersih */
+    /* Mengubah warna ikon garis tiga & titik tiga jadi Putih biar kontras */
+    header[data-testid="stHeader"] * {
+        color: white !important; 
+    }
+
+    /* Sembunyikan Footer Bawaan */
     footer {visibility: hidden;}
     
-    /* Padding Container biar judul gak ketabrak Header */
+    /* Padding Container */
     .block-container {
         padding-top: 3rem; 
         padding-bottom: 5rem;
@@ -79,7 +88,7 @@ st.markdown("""
         transition: transform 0.3s ease;
         margin-bottom: 20px;
         color: white;
-        height: 220px; /* Tinggi rata */
+        height: 220px;
         display: flex;
         flex-direction: column;
         justify-content: center;
@@ -87,7 +96,7 @@ st.markdown("""
     }
     
     .glass-card:hover {
-        transform: translateY(-10px); /* Efek melayang saat disentuh */
+        transform: translateY(-10px);
         background: rgba(255, 255, 255, 0.35);
         border-color: white;
     }
@@ -96,7 +105,7 @@ st.markdown("""
     .glass-card h3 { color: white; font-weight: 700; margin: 10px 0 5px 0; font-size: 1.2rem;}
     .glass-card p { color: rgba(255,255,255,0.9); font-size: 0.85rem; line-height: 1.4;}
 
-    /* TOMBOL BUTTON (MODERN PILL SHAPE) */
+    /* TOMBOL BUTTON */
     .stButton > button {
         background: white;
         color: #e73c7e;
@@ -107,7 +116,7 @@ st.markdown("""
         box-shadow: 0 4px 15px rgba(0,0,0,0.1);
         width: 100%;
         transition: 0.3s;
-        margin-top: -10px; /* Naikin dikit biar nempel kartu */
+        margin-top: -10px;
     }
     .stButton > button:hover {
         background: #f8fafc;
@@ -117,7 +126,7 @@ st.markdown("""
 
     /* PENGUMUMAN LIST */
     .announce-item {
-        background: rgba(0, 0, 0, 0.4); /* Hitam transparan lebih gelap biar baca enak */
+        background: rgba(0, 0, 0, 0.4);
         border-radius: 15px;
         padding: 20px;
         margin-bottom: 15px;
