@@ -125,7 +125,7 @@ with col_main:
     with c1:
         st.markdown("""
         <div class="pro-card" style="text-align:center; border-top: 4px solid #ef4444; min-height: 180px;">
-            <h3>📝 Lapor</h3>
+            <h3>Lapor</h3>
             <p style="font-size:0.8rem; color:#64748b;">Laporkan kendala akademik & fasilitas.</p>
         </div>
         """, unsafe_allow_html=True)
@@ -135,7 +135,7 @@ with col_main:
     with c2:
         st.markdown("""
         <div class="pro-card" style="text-align:center; border-top: 4px solid #10b981; min-height: 180px;">
-            <h3>🔍 Cek Status</h3>
+            <h3>Cek Status</h3>
             <p style="font-size:0.8rem; color:#64748b;">Pantau progres laporanmu di sini.</p>
         </div>
         """, unsafe_allow_html=True)
@@ -145,7 +145,7 @@ with col_main:
     with c3:
         st.markdown("""
         <div class="pro-card" style="text-align:center; border-top: 4px solid #3b82f6; min-height: 180px;">
-            <h3>📊 Data</h3>
+            <h3>Data</h3>
             <p style="font-size:0.8rem; color:#64748b;">Transparansi data advokasi himpunan.</p>
         </div>
         """, unsafe_allow_html=True)
@@ -155,7 +155,7 @@ with col_main:
     with c4:
         st.markdown("""
         <div class="pro-card" style="text-align:center; border-top: 4px solid #f59e0b; min-height: 180px;">
-            <h3>🤖 Bot AI</h3>
+            <h3>Bot AI</h3>
             <p style="font-size:0.8rem; color:#64748b;">Tanya jawab otomatis 24 jam.</p>
         </div>
         """, unsafe_allow_html=True)
@@ -166,7 +166,7 @@ with col_main:
     # PENGUMUMAN (DIJAMIN RAPI)
     # ==========================================
     st.write("---")
-    st.subheader("📢 Informasi Resmi Himpunan")
+    st.subheader("Informasi Resmi Himpunan")
 
     if len(data_pengumuman) > 0:
         for item in reversed(data_pengumuman):
@@ -185,7 +185,7 @@ with col_main:
 <div class="pro-card" style="border-left: 5px solid {border_l}; display: flex; flex-direction: column; gap: 8px;">
 <div style="display:flex; justify-content:space-between; align-items:center;">
 <span style="background-color:{badge_color}; color:{text_color}; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 700;">{tipe.upper()}</span>
-<span style="font-size: 0.85rem; color: #94a3b8; font-weight:500;">📅 {item.get('Tanggal','-')}</span>
+<span style="font-size: 0.85rem; color: #94a3b8; font-weight:500;"> {item.get('Tanggal','-')}</span>
 </div>
 <div style="font-size: 1.1rem; font-weight: 700; color: #0f172a;">{item.get('Judul','-')}</div>
 <div style="font-size: 0.95rem; color: #475569; line-height: 1.6;">{item.get('Isi','-')}</div>
@@ -198,3 +198,4 @@ with col_main:
             <p>Tidak ada pengumuman aktif saat ini.</p>
         </div>
         """, unsafe_allow_html=True)
+
