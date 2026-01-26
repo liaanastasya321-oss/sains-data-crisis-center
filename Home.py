@@ -7,109 +7,104 @@ import json
 # 1. SETUP HALAMAN
 st.set_page_config(
     page_title="Sains Data Crisis Center",
-    page_icon="🏛️",
+    page_icon="💎",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="collapsed" # Sidebar sembunyi biar full screen
 )
 
 # ==========================================
-# 🎨 MASTER DESIGN SYSTEM (WEBSITE STYLE)
+# 💎 MASTER DESIGN SYSTEM (GLASSMORPHISM)
 # ==========================================
 st.markdown("""
 <style>
-    /* IMPORT FONT (Source Sans 3) */
-    @import url('https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@300;400;600;700&display=swap');
+    /* IMPORT FONT (Poppins - Font paling populer untuk UI Modern) */
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
 
-    /* RESET STYLE */
-    html, body, [class*="css"] {
-        font-family: 'Source Sans 3', sans-serif;
-        color: #334155;
+    /* BACKGROUND GRADASI BERGERAK (ANIMATED GRADIENT) */
+    .stApp {
+        background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+        background-size: 400% 400%;
+        animation: gradient 15s ease infinite;
+        font-family: 'Poppins', sans-serif;
+    }
+    
+    @keyframes gradient {
+        0% {background-position: 0% 50%;}
+        50% {background-position: 100% 50%;}
+        100% {background-position: 0% 50%;}
     }
 
-    /* HILANGKAN PADDING ATAS BAWAAN STREAMLIT BIAR FULL SCREEN */
-    .block-container {
-        padding-top: 0rem;
-        padding-bottom: 0rem;
-        max-width: 100%;
-    }
+    /* HILANGKAN ATRIBUT BAWAAN */
+    header, footer {visibility: hidden;}
+    .block-container {padding-top: 2rem; padding-bottom: 5rem;}
 
-    /* --- HERO SECTION (BAGIAN ATAS BIRU) --- */
-    .hero-container {
-        background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
-        padding: 4rem 2rem;
-        text-align: center;
-        color: white;
-        margin-bottom: 2rem;
-        border-bottom: 5px solid #fbbf24; /* Garis emas di bawah header */
-    }
+    /* JUDUL HERO UTAMA */
     .hero-title {
         font-size: 3.5rem;
-        font-weight: 700;
-        margin-bottom: 0.5rem;
-        letter-spacing: -1px;
-        color: #ffffff !important;
+        font-weight: 800;
+        color: white;
+        text-align: center;
+        text-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        margin-bottom: 0;
     }
     .hero-subtitle {
         font-size: 1.2rem;
+        color: rgba(255,255,255,0.9);
+        text-align: center;
+        margin-bottom: 3rem;
         font-weight: 300;
-        color: #e2e8f0 !important;
-        max-width: 800px;
-        margin: 0 auto;
     }
 
-    /* --- KARTU MENU --- */
-    .nav-card {
-        background: white;
-        border-radius: 12px;
-        padding: 1.5rem;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-        border-top: 4px solid #cbd5e1; /* Default border */
-        transition: transform 0.2s, box-shadow 0.2s;
-        height: 100%;
+    /* KARTU KACA (GLASS CARD) */
+    .glass-card {
+        background: rgba(255, 255, 255, 0.25);
+        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        border-radius: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        padding: 25px;
         text-align: center;
-    }
-    .nav-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease;
+        margin-bottom: 20px;
+        color: white;
     }
     
-    /* WARNA BORDE KARTU */
-    .border-red { border-top-color: #ef4444; }
-    .border-green { border-top-color: #10b981; }
-    .border-blue { border-top-color: #3b82f6; }
-    .border-orange { border-top-color: #f59e0b; }
+    .glass-card:hover {
+        transform: translateY(-10px); /* Efek melayang saat disentuh */
+        background: rgba(255, 255, 255, 0.35);
+    }
 
-    /* TOMBOL BUTTON */
+    .glass-card h3 { color: white; font-weight: 700; margin-bottom: 5px;}
+    .glass-card p { color: rgba(255,255,255,0.8); font-size: 0.9rem;}
+
+    /* TOMBOL BUTTON (MODERN PILL SHAPE) */
     .stButton > button {
+        background: white;
+        color: #e73c7e;
+        border-radius: 50px;
+        border: none;
+        padding: 10px 20px;
+        font-weight: 700;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
         width: 100%;
-        border-radius: 6px;
-        font-weight: 600;
-        margin-top: 10px;
+        transition: 0.3s;
+    }
+    .stButton > button:hover {
+        background: #f8fafc;
+        transform: scale(1.05);
+        color: #23a6d5;
     }
 
-    /* --- PENGUMUMAN --- */
-    .announce-card {
-        background: #f8fafc;
-        border-left: 4px solid #3b82f6;
-        padding: 1rem;
-        margin-bottom: 1rem;
-        border-radius: 0 8px 8px 0;
+    /* PENGUMUMAN LIST */
+    .announce-item {
+        background: rgba(0, 0, 0, 0.3); /* Hitam transparan */
+        border-radius: 15px;
+        padding: 20px;
+        margin-bottom: 15px;
+        border-left: 5px solid #23d5ab;
+        color: white;
     }
-    
-    /* FOOTER */
-    .custom-footer {
-        text-align: center;
-        padding: 2rem;
-        background-color: #f1f5f9;
-        color: #64748b;
-        font-size: 0.9rem;
-        margin-top: 3rem;
-        border-top: 1px solid #e2e8f0;
-    }
-    
-    /* HIDE DEFAULT ELEMENTS */
-    header {visibility: hidden;}
-    footer {visibility: hidden;}
 </style>
 """, unsafe_allow_html=True)
 
@@ -135,115 +130,102 @@ try:
         data_pengumuman = sheet.get_all_records()
     else:
         data_pengumuman = []
-
 except:
     data_pengumuman = []
 
 # ==========================================
-# 1. HERO SECTION (HTML MURNI)
+# 1. HERO SECTION
 # ==========================================
-# Ini trik biar header nempel di atas kayak website beneran
-st.markdown("""
-<div class="hero-container">
-    <div class="hero-title">SAINS DATA CRISIS CENTER</div>
-    <div class="hero-subtitle">
-        Sistem Layanan Advokasi Terpadu & Terintegrasi<br>
-        Himpunan Mahasiswa Sains Data UIN Raden Intan Lampung
+st.markdown('<div class="hero-title">SAINS DATA <br>CRISIS CENTER</div>', unsafe_allow_html=True)
+st.markdown('<div class="hero-subtitle">Platform Advokasi & Pelayanan Mahasiswa Terintegrasi</div>', unsafe_allow_html=True)
+
+# ==========================================
+# 2. MENU NAVIGATION (GLASS CARDS)
+# ==========================================
+c1, c2, c3, c4 = st.columns(4)
+
+with c1:
+    st.markdown("""
+    <div class="glass-card">
+        <h1>📝</h1>
+        <h3>Lapor Aja</h3>
+        <p>Ada masalah akademik? Lapor di sini, kerahasiaan terjamin.</p>
     </div>
-</div>
-""", unsafe_allow_html=True)
+    """, unsafe_allow_html=True)
+    if st.button("Buat Laporan", key="btn1"):
+        st.switch_page("pages/Lapor_Masalah.py")
 
-# ==========================================
-# 2. MENU NAVIGATION GRID
-# ==========================================
-# Kita kasih container biar tidak terlalu lebar
-with st.container():
-    col_l, col_content, col_r = st.columns([1, 10, 1])
-    
-    with col_content:
-        # Baris Menu
-        c1, c2, c3, c4 = st.columns(4)
-
-        with c1:
-            st.markdown("""
-            <div class="nav-card border-red">
-                <h3 style="margin:0; color:#1e293b;">📝 Lapor</h3>
-                <p style="font-size:0.85rem; color:#64748b; margin-bottom:0;">Layanan pengaduan akademik & fasilitas.</p>
-            </div>
-            """, unsafe_allow_html=True)
-            if st.button("Buat Laporan", key="btn_lapor"):
-                st.switch_page("pages/Lapor_Masalah.py")
-
-        with c2:
-            st.markdown("""
-            <div class="nav-card border-green">
-                <h3 style="margin:0; color:#1e293b;">🔍 Tracking</h3>
-                <p style="font-size:0.85rem; color:#64748b; margin-bottom:0;">Cek status tindak lanjut laporan Anda.</p>
-            </div>
-            """, unsafe_allow_html=True)
-            if st.button("Cek Status", key="btn_status"):
-                st.switch_page("pages/Cek_Status.py")
-
-        with c3:
-            st.markdown("""
-            <div class="nav-card border-blue">
-                <h3 style="margin:0; color:#1e293b;">📊 Data</h3>
-                <p style="font-size:0.85rem; color:#64748b; margin-bottom:0;">Dashboard transparansi data advokasi.</p>
-            </div>
-            """, unsafe_allow_html=True)
-            if st.button("Lihat Data", key="btn_dash"):
-                st.switch_page("pages/Dashboard_Publik.py")
-
-        with c4:
-            st.markdown("""
-            <div class="nav-card border-orange">
-                <h3 style="margin:0; color:#1e293b;">🤖 Bot AI</h3>
-                <p style="font-size:0.85rem; color:#64748b; margin-bottom:0;">Asisten virtual 24 jam (Tanya Jawab).</p>
-            </div>
-            """, unsafe_allow_html=True)
-            if st.button("Mulai Chat", key="btn_bot"):
-                st.switch_page("pages/Sadas_Bot.py")
-
-        # ==========================================
-        # 3. PENGUMUMAN SECTION
-        # ==========================================
-        st.write("")
-        st.write("")
-        st.markdown("<h3 style='border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; margin-top: 30px;'>📢 Papan Informasi Terbaru</h3>", unsafe_allow_html=True)
-
-        if len(data_pengumuman) > 0:
-            for item in reversed(data_pengumuman):
-                tipe = item.get('Tipe', 'Info')
-                
-                if tipe == "Urgent":
-                    border_color = "#ef4444"; bg_badge = "#fee2e2"; txt_badge = "#991b1b"
-                elif tipe == "Penting":
-                    border_color = "#f59e0b"; bg_badge = "#fef3c7"; txt_badge = "#92400e"
-                else:
-                    border_color = "#3b82f6"; bg_badge = "#dbeafe"; txt_badge = "#1e40af"
-
-                # HTML Rapat Kiri (PENTING AGAR TIDAK BOCOR)
-                # Gunakan satu baris panjang atau f-string tanpa indentasi di dalam tag
-                st.markdown(f"""
-<div style="background: white; border-left: 5px solid {border_color}; padding: 20px; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); margin-bottom: 15px;">
-    <div style="display:flex; justify-content:space-between; margin-bottom: 10px;">
-        <span style="background:{bg_badge}; color:{txt_badge}; padding: 4px 10px; border-radius: 4px; font-size: 0.75rem; font-weight: 700;">{tipe.upper()}</span>
-        <span style="font-size: 0.85rem; color: #64748b;">{item.get('Tanggal','-')}</span>
+with c2:
+    st.markdown("""
+    <div class="glass-card">
+        <h1>🔍</h1>
+        <h3>Pantau Status</h3>
+        <p>Cek sejauh mana laporanmu diproses oleh tim kami.</p>
     </div>
-    <div style="font-size: 1.1rem; font-weight: 700; color: #1e293b; margin-bottom: 5px;">{item.get('Judul','-')}</div>
-    <div style="font-size: 0.95rem; color: #475569; line-height: 1.5;">{item.get('Isi','-')}</div>
-</div>
-""", unsafe_allow_html=True)
+    """, unsafe_allow_html=True)
+    if st.button("Cek Progres", key="btn2"):
+        st.switch_page("pages/Cek_Status.py")
 
-        else:
-            st.info("Belum ada pengumuman resmi.")
+with c3:
+    st.markdown("""
+    <div class="glass-card">
+        <h1>📊</h1>
+        <h3>Transparansi</h3>
+        <p>Lihat data statistik keluhan mahasiswa secara real-time.</p>
+    </div>
+    """, unsafe_allow_html=True)
+    if st.button("Lihat Data", key="btn3"):
+        st.switch_page("pages/Dashboard_Publik.py")
+
+with c4:
+    st.markdown("""
+    <div class="glass-card">
+        <h1>🤖</h1>
+        <h3>Tanya Bot</h3>
+        <p>Bingung soal UKT/KRS? Tanya AI kami, aktif 24 jam.</p>
+    </div>
+    """, unsafe_allow_html=True)
+    if st.button("Chat AI", key="btn4"):
+        st.switch_page("pages/Sadas_Bot.py")
 
 # ==========================================
-# 4. FOOTER (KAKI WEBSITE)
+# 3. PENGUMUMAN (GLASS LIST)
 # ==========================================
-st.markdown("""
-<div class="custom-footer">
-    &copy; 2026 Sains Data Crisis Center - UIN Raden Intan Lampung<br>
-    <small>Dibuat dengan ❤️ oleh Divisi Advokasi</small>
+st.write("")
+st.write("")
+st.markdown("<h3 style='color:white; text-align:center; margin-bottom: 20px;'>📢 Update Terbaru</h3>", unsafe_allow_html=True)
+
+col_spacer_l, col_news, col_spacer_r = st.columns([1, 6, 1])
+
+with col_news:
+    if len(data_pengumuman) > 0:
+        for item in reversed(data_pengumuman):
+            tipe = item.get('Tipe', 'Info')
+            
+            # Warna Border Kiri
+            if tipe == "Urgent": border = "#ff4757"
+            elif tipe == "Penting": border = "#ffa502"
+            else: border = "#2ed573"
+
+            # HTML Rapat Kiri (NO INDENTATION)
+            st.markdown(f"""
+<div class="announce-item" style="border-left: 5px solid {border};">
+<div style="display:flex; justify-content:space-between; margin-bottom:5px;">
+<strong style="text-transform:uppercase; color:#f1f2f6;">{tipe}</strong>
+<small style="color:#dfe4ea;">{item.get('Tanggal','-')}</small>
+</div>
+<h3 style="margin:0; font-size:1.2rem; color:white;">{item.get('Judul','-')}</h3>
+<p style="margin-top:5px; color:#f1f2f6; line-height:1.5;">{item.get('Isi','-')}</p>
 </div>
 """, unsafe_allow_html=True)
+    else:
+        st.markdown("""
+        <div class="glass-card" style="text-align:center;">
+            <p>Belum ada pengumuman.</p>
+        </div>
+        """, unsafe_allow_html=True)
+
+# Footer Spacing
+st.write("")
+st.write("")
+st.markdown("<div style='text-align:center; color:rgba(255,255,255,0.6); font-size:0.8rem;'>© 2026 Sains Data Crisis Center</div>", unsafe_allow_html=True)
