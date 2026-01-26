@@ -7,45 +7,85 @@ from wordcloud import WordCloud
 import matplotlib.pyplot as plt
 import os
 import re 
-import json # <--- Wajib buat baca Secrets di Cloud
+import json
 
 st.set_page_config(page_title="Dashboard Publik", page_icon="📊", layout="wide")
 
-# --- BAGIAN DESAIN (CSS) ---
+# ==========================================
+# 💎 MASTER DESIGN SYSTEM (DEEP TECH THEME)
+# ==========================================
 st.markdown("""
 <style>
-    .stApp {background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);}
-    [data-testid="stSidebar"] {background-color: #1e293b; border-right: 2px solid #334155;}
-    [data-testid="stSidebar"] * {color: #f8fafc !important;}
-    div[data-testid="stMetric"] {background-color: white; border-radius: 15px; padding: 15px; border-left: 5px solid #3b82f6; box-shadow: 0 4px 6px rgba(0,0,0,0.1);}
-    h1 {color: #1e3a8a; font-family: 'Helvetica', sans-serif;}
+    /* IMPORT FONT (Poppins) */
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
+
+    /* BACKGROUND GRADASI TEKNOLOGI (Dark Blue - Cyan) */
+    .stApp {
+        background: linear-gradient(-45deg, #020024, #0f172a, #090979, #00d4ff);
+        background-size: 400% 400%;
+        animation: gradient 15s ease infinite;
+        font-family: 'Poppins', sans-serif;
+        color: white;
+    }
+    @keyframes gradient {
+        0% {background-position: 0% 50%;}
+        50% {background-position: 100% 50%;}
+        100% {background-position: 0% 50%;}
+    }
+
+    /* SIDEBAR */
+    [data-testid="stSidebar"] {
+        background-color: #020617;
+        border-right: 1px solid rgba(255,255,255,0.1);
+    }
+    [data-testid="stSidebar"] * { color: #e2e8f0 !important; }
+
+    /* METRIK CARDS (KOTAK ANGKA) */
+    div[data-testid="stMetric"] {
+        background-color: rgba(15, 23, 42, 0.6);
+        border-radius: 15px;
+        padding: 15px;
+        border-left: 5px solid #00d4ff; /* Neon Cyan */
+        box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        backdrop-filter: blur(10px);
+        color: white !important;
+    }
+    div[data-testid="stMetric"] label { color: #cbd5e1 !important; }
+    div[data-testid="stMetric"] div { color: white !important; }
+
+    /* JUDUL */
+    h1 {
+        color: white; 
+        font-family: 'Poppins', sans-serif; 
+        text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+    }
+    
+    /* TABLE */
+    div[data-testid="stDataFrame"] {
+        background-color: rgba(15, 23, 42, 0.8);
+        border-radius: 10px;
+        padding: 10px;
+    }
 </style>
 """, unsafe_allow_html=True)
 
 # ==========================================
-# KONEKSI DATABASE (DUAL MODE: CLOUD & LOKAL) 🔗
+# KONEKSI DATABASE (DUAL MODE) 🔗
 # ==========================================
 scopes = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
 
 try:
-    # 1. Cek apakah ada di Streamlit Cloud (Pakai Secrets)
     if "google_credentials" in st.secrets:
         creds_dict = json.loads(st.secrets["google_credentials"])
         creds = Credentials.from_service_account_info(creds_dict, scopes=scopes)
-    
-    # 2. Cek apakah ada file lokal credentials.json
     elif os.path.exists("credentials.json"):
         creds = Credentials.from_service_account_file("credentials.json", scopes=scopes)
-    
-    # 3. Cek di folder luar (opsional)
     elif os.path.exists("../credentials.json"):
         creds = Credentials.from_service_account_file("../credentials.json", scopes=scopes)
-        
     else:
         st.error("⚠️ File Kunci (Credentials) tidak ditemukan!")
         st.stop()
 
-    # Buka Koneksi ke Sheet "Laporan"
     client = gspread.authorize(creds)
     sheet = client.open("Database_Advokasi").worksheet("Laporan")
     
@@ -64,6 +104,15 @@ if st.button("🔄 Refresh Data"):
 try:
     data = sheet.get_all_records()
     df = pd.DataFrame(data)
+
+    # === 🛑 FILTER PENTING: BUANG BARIS KOSONG ===
+    # Ini kuncinya supaya diagram tidak berantakan!
+    if not df.empty and 'Waktu Lapor' in df.columns:
+        # Hanya ambil data yang 'Waktu Lapor'-nya TIDAK kosong
+        df = df[df['Waktu Lapor'] != ""]
+        # Pastikan juga kategori tidak kosong
+        df = df[df['Kategori Masalah'] != ""]
+
 except:
     df = pd.DataFrame()
 
@@ -71,75 +120,76 @@ if not df.empty:
     # --- METRIK ATAS ---
     c1, c2, c3 = st.columns(3)
     c1.metric("Total Laporan", len(df))
-    # Cek kolom status biar gak error kalau datanya masih kosong/baru
+    
     if 'Status' in df.columns:
-        c2.metric("Perlu Tindakan", len(df[df['Status'] == 'Pending']))
-        c3.metric("Selesai", len(df[df['Status'] == 'Selesai']))
+        # Hitung status
+        pending = len(df[df['Status'] == 'Pending'])
+        selesai = len(df[df['Status'] == 'Selesai'])
+        proses = len(df[df['Status'] == 'Proses']) # Tambahan jika ada status Proses
+        
+        c2.metric("Perlu Tindakan", pending)
+        c3.metric("Selesai Ditangani", selesai)
     
     st.divider()
     
     col1, col2 = st.columns(2)
     
-    # === GRAFIK 1: PIE CHART (Lingkaran di Tengah) ===
+    # === GRAFIK 1: PIE CHART (DARK MODE) ===
     with col1:
         st.subheader("Peta Masalah")
         if 'Kategori Masalah' in df.columns:
-            fig = px.pie(df, names='Kategori Masalah', hole=0.5,
-                         color_discrete_sequence=px.colors.sequential.Blues_r)
+            # Siapkan data agregat
+            pie_data = df['Kategori Masalah'].value_counts().reset_index()
+            pie_data.columns = ['Kategori', 'Jumlah']
             
-            # Setting biar rapi di tengah
-            fig.update_traces(textposition='inside', textinfo='percent+label')
+            fig = px.pie(pie_data, values='Jumlah', names='Kategori', hole=0.5,
+                         color_discrete_sequence=px.colors.sequential.Cyan) # Warna Cyan biar neon
+            
+            # Update Layout biar transparan (Dark Mode Friendly)
             fig.update_layout(
-                legend=dict(orientation="h", yanchor="bottom", y=-0.2, xanchor="center", x=0.5),
-                margin=dict(t=30, b=0, l=0, r=0)
+                paper_bgcolor="rgba(0,0,0,0)",
+                plot_bgcolor="rgba(0,0,0,0)",
+                font=dict(color="white"),
+                showlegend=True,
+                legend=dict(orientation="h", yanchor="bottom", y=-0.3, xanchor="center", x=0.5)
             )
+            fig.update_traces(textposition='inside', textinfo='percent+label')
             st.plotly_chart(fig, use_container_width=True)
         else:
             st.info("Menunggu data kategori...")
     
-    # === GRAFIK 2: WORD CLOUD (SUDAH DIBERSIHKAN!) ===
+    # === GRAFIK 2: WORD CLOUD (DARK MODE) ===
     with col2:
-        st.subheader("🔥 Isu Terhangat (Word Cloud)")
+        st.subheader("🔥 Isu Terhangat")
         
         if 'Detail Keluhan' in df.columns:
-            # 1. Gabungkan semua keluhan jadi satu teks panjang & kecilkan huruf
             text_gabungan = " ".join(df['Detail Keluhan'].astype(str).tolist()).lower()
-            
-            # 2. Hapus simbol aneh (titik, koma, angka, tanda seru) pake Regex
             text_bersih = re.sub(r'[^a-z\s]', '', text_gabungan)
             
-            # 3. DAFTAR KATA SAMPAH (STOPWORDS) INDONESIA
             kata_sampah = set([
                 'dan','yang','di','ke','dari','pada','untuk','dengan','oleh','sebagai','dalam',
                 'atau','karena','jika','kalau','kalo','agar','supaya','walaupun','meskipun',
-                'hingga','sampai','tentang','antara',
-                'saya','aku','kami','kita','anda','kamu','dia','mereka','beliau',
-                'gue','gua','loe','lu','elo',
-                'ada','adalah','jadi','menjadi','buat','bikin','punya','menggunakan',
-                'pakai','lihat','bilang','kasih','beri','ambil','datang','pergi',
-                'sudah','sudah','telah','sedang','akan','masih','belum','pernah',
-                'sekarang','nanti','tadi','kemarin','besok',
-                'juga','sangat','banget','sekali','cukup','lebih','paling',
-                'aja','saja','doang','cuma','hanya', 'gak','tapi','baik','dapat','tidak','dapat','semua',
-                'tolong','mohon','min','admin','lapor','kak','pak','bu','assalamualaikum'
+                'hingga','sampai','tentang','antara','saya','aku','kami','kita','anda','kamu',
+                'dia','mereka','beliau','gue','gua','loe','lu','elo','ada','adalah','jadi',
+                'menjadi','buat','bikin','punya','menggunakan','pakai','lihat','bilang','kasih',
+                'beri','ambil','datang','pergi','sudah','telah','sedang','akan','masih','belum',
+                'pernah','sekarang','nanti','tadi','kemarin','besok','juga','sangat','banget',
+                'sekali','cukup','lebih','paling','aja','saja','doang','cuma','hanya', 'gak',
+                'tapi','baik','dapat','tidak','semua','tolong','mohon','min','admin','lapor',
+                'kak','pak','bu','assalamualaikum','bapak','ibu'
             ])
             
-            # 4. Cek apakah ada kata tersisa setelah dibersihkan
             if len(text_bersih) > 1:
-                # Bikin Word Cloud dengan Filter Stopwords
-                wc = WordCloud(
-                    width=800, 
-                    height=400, 
-                    background_color='white', 
-                    colormap='Reds', # Warna Merah biar kelihatan 'Urgent'
-                    stopwords=kata_sampah, 
-                    min_font_size=10
-                ).generate(text_bersih)
+                # Wordcloud Background Hitam biar nyatu
+                wc = WordCloud(width=800, height=400, background_color='#0f172a', 
+                               colormap='cool', # Warna dingin/neon
+                               stopwords=kata_sampah, min_font_size=10).generate(text_bersih)
                 
-                # Tampilkan Gambar
                 fig_wc, ax = plt.subplots(figsize=(10, 5))
+                # Set background plot transparan
+                fig_wc.patch.set_alpha(0)
                 ax.imshow(wc, interpolation='bilinear')
-                ax.axis("off") # Hilangkan garis pinggir
+                ax.axis("off")
                 st.pyplot(fig_wc)
             else:
                 st.info("Belum cukup data kata kunci untuk ditampilkan.")
@@ -149,10 +199,9 @@ if not df.empty:
     # === TABEL BAWAH ===
     st.divider()
     st.subheader("📋 Detail Data Masuk")
-    # Pastikan kolom-kolom ini ada sebelum ditampilkan
     kolom_tampil = [col for col in ['Waktu Lapor', 'Kategori Masalah', 'Detail Keluhan', 'Status'] if col in df.columns]
     if kolom_tampil:
         st.dataframe(df[kolom_tampil].tail(10), use_container_width=True)
 
 else:
-    st.info("Data kosong.")
+    st.info("Data masih kosong atau belum ada laporan yang masuk.")
