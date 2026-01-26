@@ -42,10 +42,13 @@ st.markdown("""
         color: #e2e8f0 !important;
     }
 
-    /* HILANGKAN ELEMENT MENGGANGGU */
-    #MainMenu {visibility: hidden;}
+    /* --- PENGATURAN TAMPILAN ELEMENT --- */
+    /* Kita biarkan Header & Menu TETAP MUNCUL */
+    /* #MainMenu {visibility: hidden;} */
+    /* header {visibility: hidden;} */
+    
+    /* Cuma Footer bawaan Streamlit yang kita sembunyikan biar bersih */
     footer {visibility: hidden;}
-    header {visibility: hidden;}
 
     /* CUSTOM CARDS */
     .pro-card {
@@ -133,7 +136,6 @@ with col_main:
     """, unsafe_allow_html=True)
 
     # --- MENU NAVIGASI UTAMA (4 KOLOM) ---
-    # Saya ubah jadi 4 kolom biar Cek Status masuk juga
     c1, c2, c3, c4 = st.columns(4)
     
     with c1:
@@ -143,7 +145,6 @@ with col_main:
             <p style="font-size:0.8rem; color:#64748b;">Laporkan kendala akademik & fasilitas.</p>
         </div>
         """, unsafe_allow_html=True)
-        # PERBAIKAN: Nama file disesuaikan dengan GitHub (Tanpa Emoji)
         if st.button("Buat Laporan", key="btn_lapor"):
              st.switch_page("pages/Lapor_Masalah.py")
         
@@ -154,7 +155,6 @@ with col_main:
             <p style="font-size:0.8rem; color:#64748b;">Pantau progres laporanmu di sini.</p>
         </div>
         """, unsafe_allow_html=True)
-        # PERBAIKAN: Menambahkan tombol Cek Status
         if st.button("Cek Progres", key="btn_status"):
              st.switch_page("pages/Cek_Status.py")
 
@@ -165,7 +165,6 @@ with col_main:
             <p style="font-size:0.8rem; color:#64748b;">Transparansi data advokasi himpunan.</p>
         </div>
         """, unsafe_allow_html=True)
-        # PERBAIKAN: Nama file disesuaikan dengan GitHub (Tanpa Emoji)
         if st.button("Lihat Data", key="btn_dash"):
              st.switch_page("pages/Dashboard_Publik.py")
         
@@ -176,7 +175,6 @@ with col_main:
             <p style="font-size:0.8rem; color:#64748b;">Tanya jawab otomatis 24 jam.</p>
         </div>
         """, unsafe_allow_html=True)
-        # PERBAIKAN: Nama file disesuaikan dengan GitHub (Tanpa Emoji)
         if st.button("Tanya Bot", key="btn_bot"):
              st.switch_page("pages/Sadas_Bot.py")
 
