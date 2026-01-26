@@ -52,7 +52,7 @@ with st.sidebar:
         st.rerun() # Ganti experimental_rerun jadi rerun (versi baru streamlit)
 
 # Cek Password
-if password == "advokasikeren123":
+if password == "GHUFRON":
     
     # ==========================================
     # KONEKSI DATABASE (DUAL MODE: CLOUD & LOKAL) 🔗
@@ -175,3 +175,4 @@ elif password != "":
     st.error("❌ Password Salah! Coba lagi.")
 else:
     st.info("👋 Silakan login di menu sebelah kiri (Sidebar) untuk mengakses data.")
+
