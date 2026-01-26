@@ -7,124 +7,114 @@ import json
 # 1. SETUP HALAMAN
 st.set_page_config(
     page_title="Sains Data Crisis Center",
-    page_icon="💎",
+    page_icon="🏛️",
     layout="wide",
-    initial_sidebar_state="expanded" # Sidebar TETAP MUNCUL
+    initial_sidebar_state="expanded"
 )
 
 # ==========================================
-# 💎 MASTER DESIGN SYSTEM (GLASSMORPHISM)
+# 🎨 MASTER DESIGN SYSTEM (OFFICIAL NAVY)
 # ==========================================
 st.markdown("""
 <style>
-    /* IMPORT FONT (Poppins - Font Modern) */
-    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
+    /* IMPORT FONT (Source Sans 3 - Font Resmi) */
+    @import url('https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@300;400;600;700;800&display=swap');
 
-    /* BACKGROUND GRADASI BERGERAK (ANIMATED GRADIENT) */
-    .stApp {
-        background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
-        background-size: 400% 400%;
-        animation: gradient 15s ease infinite;
-        font-family: 'Poppins', sans-serif;
-    }
-    
-    @keyframes gradient {
-        0% {background-position: 0% 50%;}
-        50% {background-position: 100% 50%;}
-        100% {background-position: 0% 50%;}
+    /* RESET STYLE */
+    html, body, [class*="css"] {
+        font-family: 'Source Sans 3', sans-serif;
+        color: #334155;
+        background-color: #f8fafc; /* Background Body Abu Muda Bersih */
     }
 
-    /* --- PENGATURAN HEADER & FOOTER --- */
-    /* Header (Tombol Kanan/Kiri) TETAP DITAMPILKAN */
-    /* header {visibility: hidden;} <--- INI KITA MATIKAN BIAR MUNCUL */
-    
-    /* Footer bawaan "Made with Streamlit" kita sembunyikan biar bersih */
-    footer {visibility: hidden;}
-    
-    /* Padding Container biar judul gak ketabrak Header */
-    .block-container {
-        padding-top: 3rem; 
-        padding-bottom: 5rem;
-    }
-
-    /* JUDUL HERO UTAMA */
-    .hero-title {
-        font-size: 3.5rem;
-        font-weight: 800;
-        color: white;
+    /* HEADER / HERO SECTION (BIRU GELAP) */
+    .hero-container {
+        background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%); /* Navy ke Royal Blue */
+        padding: 3rem 2rem;
+        border-radius: 0 0 20px 20px; /* Lengkungan halus di bawah */
         text-align: center;
-        text-shadow: 0 4px 10px rgba(0,0,0,0.2);
-        margin-bottom: 0;
-        line-height: 1.2;
+        color: white;
+        margin-bottom: 2rem;
+        box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.3);
+        margin-top: -3rem; /* Tarik ke atas biar nempel langit-langit */
+    }
+    
+    .hero-title {
+        font-size: 3rem;
+        font-weight: 800;
+        margin-bottom: 0.5rem;
+        letter-spacing: -0.5px;
+        color: #ffffff !important; /* Teks Putih */
+        text-transform: uppercase;
     }
     .hero-subtitle {
         font-size: 1.1rem;
-        color: rgba(255,255,255,0.95);
-        text-align: center;
-        margin-bottom: 3rem;
-        font-weight: 400;
-        margin-top: 10px;
+        font-weight: 300;
+        color: #e2e8f0 !important; /* Teks Abu Terang */
+        max-width: 800px;
+        margin: 0 auto;
     }
 
-    /* KARTU KACA (GLASS CARD) */
-    .glass-card {
-        background: rgba(255, 255, 255, 0.25);
-        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
-        backdrop-filter: blur(8px);
-        -webkit-backdrop-filter: blur(8px);
-        border-radius: 20px;
-        border: 1px solid rgba(255, 255, 255, 0.18);
-        padding: 25px;
+    /* KARTU MENU (PUTIH BERSIH) */
+    .nav-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        border: 1px solid #e2e8f0;
+        height: 100%;
         text-align: center;
-        transition: transform 0.3s ease;
-        margin-bottom: 20px;
-        color: white;
-        height: 220px; /* Tinggi rata */
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
+        transition: transform 0.2s;
+    }
+    .nav-card:hover {
+        transform: translateY(-5px);
+        border-color: #3b82f6;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
     }
     
-    .glass-card:hover {
-        transform: translateY(-10px); /* Efek melayang saat disentuh */
-        background: rgba(255, 255, 255, 0.35);
-        border-color: white;
-    }
+    .nav-icon { font-size: 2.5rem; margin-bottom: 10px; display: block; }
+    .nav-title { font-weight: 700; color: #0f172a; margin-bottom: 5px; font-size: 1.2rem; }
+    .nav-desc { font-size: 0.85rem; color: #64748b; }
 
-    .glass-card h1 { font-size: 3rem; margin: 0; }
-    .glass-card h3 { color: white; font-weight: 700; margin: 10px 0 5px 0; font-size: 1.2rem;}
-    .glass-card p { color: rgba(255,255,255,0.9); font-size: 0.85rem; line-height: 1.4;}
-
-    /* TOMBOL BUTTON (MODERN PILL SHAPE) */
+    /* TOMBOL BUTTON */
     .stButton > button {
-        background: white;
-        color: #e73c7e;
-        border-radius: 50px;
-        border: none;
-        padding: 10px 20px;
-        font-weight: 700;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
         width: 100%;
-        transition: 0.3s;
-        margin-top: -10px; /* Naikin dikit biar nempel kartu */
+        border-radius: 8px;
+        font-weight: 600;
+        margin-top: 10px;
+        background-color: #0f172a; /* Tombol warna Navy biar seragam */
+        color: white;
+        border: none;
     }
     .stButton > button:hover {
-        background: #f8fafc;
-        transform: scale(1.05);
-        color: #23a6d5;
+        background-color: #1e3a8a;
     }
 
-    /* PENGUMUMAN LIST */
-    .announce-item {
-        background: rgba(0, 0, 0, 0.4); /* Hitam transparan lebih gelap biar baca enak */
-        border-radius: 15px;
+    /* PENGUMUMAN */
+    .announce-card {
+        background: white;
+        border-left: 5px solid #3b82f6;
         padding: 20px;
         margin-bottom: 15px;
-        border-left: 5px solid #23d5ab;
-        color: white;
-        backdrop-filter: blur(5px);
+        border-radius: 6px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
     }
+    
+    /* FOOTER */
+    .custom-footer {
+        text-align: center;
+        padding: 2rem;
+        color: #94a3b8;
+        font-size: 0.8rem;
+        margin-top: 3rem;
+        border-top: 1px solid #e2e8f0;
+    }
+    
+    /* PENGATURAN HEADER ASLI */
+    /* Kita sembunyikan dekorasi header tapi biarkan tombolnya bisa diakses */
+    .block-container { padding-top: 2rem; }
+    footer {visibility: hidden;}
+    
 </style>
 """, unsafe_allow_html=True)
 
@@ -150,102 +140,111 @@ try:
         data_pengumuman = sheet.get_all_records()
     else:
         data_pengumuman = []
+
 except:
     data_pengumuman = []
 
 # ==========================================
-# 1. HERO SECTION
+# 1. HERO SECTION (BIRU GELAP)
 # ==========================================
-st.markdown('<div class="hero-title">SAINS DATA <br>CRISIS CENTER</div>', unsafe_allow_html=True)
-st.markdown('<div class="hero-subtitle">Platform Advokasi & Pelayanan Mahasiswa Terintegrasi</div>', unsafe_allow_html=True)
-
-# ==========================================
-# 2. MENU NAVIGATION (GLASS CARDS)
-# ==========================================
-c1, c2, c3, c4 = st.columns(4)
-
-with c1:
-    st.markdown("""
-    <div class="glass-card">
-        <h1>📝</h1>
-        <h3>Lapor Aja</h3>
-        <p>Ada masalah akademik? Lapor di sini, kerahasiaan terjamin.</p>
+st.markdown("""
+<div class="hero-container">
+    <div class="hero-title">SAINS DATA CRISIS CENTER</div>
+    <div class="hero-subtitle">
+        Sistem Layanan Advokasi & Pelayanan Mahasiswa Terintegrasi<br>
+        Himpunan Mahasiswa Sains Data UIN Raden Intan Lampung
     </div>
-    """, unsafe_allow_html=True)
-    if st.button("Buat Laporan", key="btn1"):
-        st.switch_page("pages/Lapor_Masalah.py")
-
-with c2:
-    st.markdown("""
-    <div class="glass-card">
-        <h1>🔍</h1>
-        <h3>Pantau Status</h3>
-        <p>Cek sejauh mana laporanmu diproses oleh tim kami.</p>
-    </div>
-    """, unsafe_allow_html=True)
-    if st.button("Cek Progres", key="btn2"):
-        st.switch_page("pages/Cek_Status.py")
-
-with c3:
-    st.markdown("""
-    <div class="glass-card">
-        <h1>📊</h1>
-        <h3>Transparansi</h3>
-        <p>Lihat data statistik keluhan mahasiswa secara real-time.</p>
-    </div>
-    """, unsafe_allow_html=True)
-    if st.button("Lihat Data", key="btn3"):
-        st.switch_page("pages/Dashboard_Publik.py")
-
-with c4:
-    st.markdown("""
-    <div class="glass-card">
-        <h1>🤖</h1>
-        <h3>Tanya Bot</h3>
-        <p>Bingung soal UKT/KRS? Tanya AI kami, aktif 24 jam.</p>
-    </div>
-    """, unsafe_allow_html=True)
-    if st.button("Chat AI", key="btn4"):
-        st.switch_page("pages/Sadas_Bot.py")
+</div>
+""", unsafe_allow_html=True)
 
 # ==========================================
-# 3. PENGUMUMAN (GLASS LIST)
+# 2. MENU NAVIGATION
 # ==========================================
-st.write("")
-st.write("")
-st.markdown("<h3 style='color:white; text-align:center; margin-bottom: 20px; text-shadow: 0 2px 4px rgba(0,0,0,0.3);'>📢 Update Terbaru</h3>", unsafe_allow_html=True)
+with st.container():
+    c1, c2, c3, c4 = st.columns(4)
 
-col_spacer_l, col_news, col_spacer_r = st.columns([1, 6, 1])
+    with c1:
+        st.markdown("""
+        <div class="nav-card">
+            <span class="nav-icon">📝</span>
+            <div class="nav-title">Lapor Aja</div>
+            <div class="nav-desc">Layanan pengaduan akademik & fasilitas kampus.</div>
+        </div>
+        """, unsafe_allow_html=True)
+        if st.button("Buat Laporan", key="btn_lapor"):
+            st.switch_page("pages/Lapor_Masalah.py")
 
-with col_news:
+    with c2:
+        st.markdown("""
+        <div class="nav-card">
+            <span class="nav-icon">🔍</span>
+            <div class="nav-title">Cek Status</div>
+            <div class="nav-desc">Pantau tindak lanjut laporan Anda di sini.</div>
+        </div>
+        """, unsafe_allow_html=True)
+        if st.button("Cek Progres", key="btn_status"):
+            st.switch_page("pages/Cek_Status.py")
+
+    with c3:
+        st.markdown("""
+        <div class="nav-card">
+            <span class="nav-icon">📊</span>
+            <div class="nav-title">Data</div>
+            <div class="nav-desc">Dashboard transparansi data advokasi himpunan.</div>
+        </div>
+        """, unsafe_allow_html=True)
+        if st.button("Lihat Data", key="btn_dash"):
+            st.switch_page("pages/Dashboard_Publik.py")
+
+    with c4:
+        st.markdown("""
+        <div class="nav-card">
+            <span class="nav-icon">🤖</span>
+            <div class="nav-title">Bot AI</div>
+            <div class="nav-desc">Asisten virtual 24 jam untuk tanya jawab cepat.</div>
+        </div>
+        """, unsafe_allow_html=True)
+        if st.button("Chat Bot", key="btn_bot"):
+            st.switch_page("pages/Sadas_Bot.py")
+
+    # ==========================================
+    # 3. PENGUMUMAN SECTION
+    # ==========================================
+    st.write("")
+    st.markdown("<h3 style='border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; margin-top: 30px; color: #0f172a;'>📢 Papan Informasi Terbaru</h3>", unsafe_allow_html=True)
+
     if len(data_pengumuman) > 0:
         for item in reversed(data_pengumuman):
             tipe = item.get('Tipe', 'Info')
             
-            # Warna Border Kiri
-            if tipe == "Urgent": border = "#ff4757"
-            elif tipe == "Penting": border = "#ffa502"
-            else: border = "#2ed573"
+            if tipe == "Urgent":
+                border_color = "#ef4444"; bg_badge = "#fee2e2"; txt_badge = "#991b1b"
+            elif tipe == "Penting":
+                border_color = "#f59e0b"; bg_badge = "#fef3c7"; txt_badge = "#92400e"
+            else:
+                border_color = "#3b82f6"; bg_badge = "#dbeafe"; txt_badge = "#1e40af"
 
-            # HTML Rapat Kiri (NO INDENTATION) - Teks putih biar kontras
+            # HTML Rapat Kiri (PENTING AGAR TIDAK BOCOR)
             st.markdown(f"""
-<div class="announce-item" style="border-left: 5px solid {border};">
-<div style="display:flex; justify-content:space-between; margin-bottom:5px;">
-<strong style="text-transform:uppercase; color:#f1f2f6; font-size:0.8rem; background:rgba(255,255,255,0.2); padding:2px 8px; border-radius:4px;">{tipe}</strong>
-<small style="color:#dfe4ea;">{item.get('Tanggal','-')}</small>
+<div class="announce-card" style="border-left: 5px solid {border_color};">
+<div style="display:flex; justify-content:space-between; margin-bottom: 8px;">
+<span style="background:{bg_badge}; color:{txt_badge}; padding: 4px 10px; border-radius: 4px; font-size: 0.75rem; font-weight: 700; text-transform:uppercase;">{tipe}</span>
+<span style="font-size: 0.85rem; color: #64748b;">📅 {item.get('Tanggal','-')}</span>
 </div>
-<h3 style="margin:5px 0; font-size:1.3rem; color:white; font-weight:700;">{item.get('Judul','-')}</h3>
-<p style="margin-top:5px; color:#f1f2f6; line-height:1.5;">{item.get('Isi','-')}</p>
+<div style="font-size: 1.15rem; font-weight: 700; color: #1e293b; margin-bottom: 5px;">{item.get('Judul','-')}</div>
+<div style="font-size: 0.95rem; color: #475569; line-height: 1.5;">{item.get('Isi','-')}</div>
 </div>
 """, unsafe_allow_html=True)
-    else:
-        st.markdown("""
-        <div class="glass-card" style="text-align:center; height:auto; padding:20px;">
-            <p>Belum ada pengumuman.</p>
-        </div>
-        """, unsafe_allow_html=True)
 
-# Footer Spacing
-st.write("")
-st.write("")
-st.markdown("<div style='text-align:center; color:rgba(255,255,255,0.8); font-size:0.8rem; padding-bottom:20px;'>© 2026 Sains Data Crisis Center</div>", unsafe_allow_html=True)
+    else:
+        st.info("Belum ada pengumuman resmi.")
+
+# ==========================================
+# 4. FOOTER
+# ==========================================
+st.markdown("""
+<div class="custom-footer">
+    &copy; 2026 Sains Data Crisis Center - UIN Raden Intan Lampung<br>
+    Dibuat dengan ❤️ oleh Divisi Advokasi
+</div>
+""", unsafe_allow_html=True)
