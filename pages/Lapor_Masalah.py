@@ -1,47 +1,42 @@
 import streamlit as st
 import gspread
 from google.oauth2.service_account import Credentials
-import requests # <--- Alat buat kirim ke ImgBB
+import requests 
 from datetime import datetime
 import os
 import json
 import time
 
 # ==========================================
-# 👇 SETTING PENTING (ISI LAGI YA)
+# 👇 SETTING PENTING
 # ==========================================
 ID_SPREADSHEET = "1crJl0DsswyMGmq0ej_niIMfhSLdUIUx8u42HEu-sc3g" 
 
-# 👇👇👇 PASTE KODE IMGBB KAMU DI SINI 👇👇👇
-API_KEY_IMGBB  = "b70c3878ae0cf53cf64650f8c012efa2" 
-# 👆👆👆 JANGAN SAMPAI KOSONG 👆👆👆
+# 👇 PASTE API KEY IMGBB KAMU DI SINI
+API_KEY_IMGBB  = "PASTE_KODE_IMGBB_DISINI" 
 
 # 1. SETUP HALAMAN
 st.set_page_config(page_title="Lapor Masalah", page_icon="📝")
 
-# 2. CSS (TAMPILAN DIPERBAIKI BIAR JELAS)
+# 2. CSS (TAMPILAN RAPI)
 st.markdown("""
 <style>
-    /* Background Halaman */
     .stApp {background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%); font-family: 'Source Sans 3', sans-serif;}
-    
-    /* Sidebar */
     [data-testid="stSidebar"] {background-color: #0f172a; border-right: 1px solid #1e293b;}
     [data-testid="stSidebar"] * {color: #f8fafc !important;}
     
-    /* --- INI YANG TADI KETINGGALAN (KOTAK INPUT) --- */
+    /* Kotak Input Putih Bersih */
     .stTextInput > div > div > input, 
     .stTextArea > div > div > textarea, 
     .stSelectbox > div > div > div {
         background-color: white !important;
         color: #334155 !important;
-        border: 1px solid #94a3b8 !important; /* Garis tepi abu-abu */
+        border: 1px solid #94a3b8 !important;
         border-radius: 8px !important;
     }
     
-    /* Tombol */
     .stButton > button {background-color: #2563eb; color: white; border-radius: 8px; height: 50px; width: 100%; font-weight: bold;}
-    .stButton > button:hover {background-color: #1d4ed8; border: 1px solid white;}
+    .stButton > button:hover {background-color: #1d4ed8;}
 </style>
 """, unsafe_allow_html=True)
 
@@ -58,7 +53,6 @@ try:
         st.error("⚠️ File Credentials tidak ditemukan!")
         st.stop()
     
-    # Buka Spreadsheet
     client = gspread.authorize(creds)
     sheet = client.open_by_key(ID_SPREADSHEET).worksheet("Laporan")
     
@@ -94,29 +88,40 @@ with st.form("form_lapor", clear_on_submit=True):
                 waktu = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
                 link_bukti = "-" 
                 
-                # --- UPLOAD KE IMGBB ---
+                # --- UPLOAD KE IMGBB (VERSI FIX) ---
                 if bukti_file:
                     try:
-                        # Cek API Key dulu
-                        if "PASTE_KODE" in API_KEY_IMGBB:
-                            st.error("⚠️ Kode API ImgBB belum diisi di kodingan!")
-                            st.stop()
-
-                        payload = {
-                            "key": API_KEY_IMGBB,
+                        # 1. Siapkan Parameter (Kunci)
+                        params_data = {
+                            "key": API_KEY_IMGBB
+                        }
+                        
+                        # 2. Siapkan File (Bungkus yang benar pakai 'files')
+                        files_data = {
                             "image": bukti_file.getvalue()
                         }
-                        response = requests.post("https://api.imgbb.com/1/upload", data=payload)
+                        
+                        # 3. Kirim Paket
+                        response = requests.post(
+                            "https://api.imgbb.com/1/upload", 
+                            data=params_data, 
+                            files=files_data
+                        )
+                        
+                        # 4. Baca Jawaban
                         hasil = response.json()
                         
-                        if hasil["success"]:
+                        # Cek apakah sukses (Gunakan .get biar gak KeyError lagi)
+                        if response.status_code == 200 and hasil.get("success"):
                             link_bukti = hasil["data"]["url"]
                         else:
-                            st.error(f"Gagal Upload Gambar: {hasil.get('error', {}).get('message')}")
+                            # Tampilkan pesan error asli dari ImgBB
+                            pesan_error = hasil.get("error", {}).get("message", "Unknown Error")
+                            st.error(f"❌ Gagal Upload Gambar: {pesan_error}")
                             st.stop()
                             
                     except Exception as e:
-                        st.error(f"❌ Gagal Koneksi ImgBB: {e}")
+                        st.error(f"❌ Error Sistem Upload: {e}")
                         st.stop()
                 
                 # --- SIMPAN KE SHEETS ---
@@ -127,3 +132,4 @@ with st.form("form_lapor", clear_on_submit=True):
                     
                 except Exception as e:
                     st.error(f"❌ Gagal Simpan Database: {e}")
+
