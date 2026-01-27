@@ -14,7 +14,7 @@ st.set_page_config(page_title="Admin Area", page_icon="🔐", layout="wide")
 if 'is_logged_in' not in st.session_state:
     st.session_state['is_logged_in'] = False
 
-PASSWORD_ADMIN = "GHUFRON"
+PASSWORD_ADMIN = "RAHASIA PIKM😭"
 
 # ==========================================
 # 🎨 CSS PREMIUM
@@ -186,3 +186,4 @@ if st.session_state['is_logged_in']:
 
 else:
     st.warning("Silakan login di sidebar.")
+
