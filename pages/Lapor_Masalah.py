@@ -65,7 +65,7 @@ st.markdown("""
 # ==========================================
 # KONEKSI GOOGLE (DATABASE)
 # ==========================================
-ID_FOLDER_DRIVE = "1n7n4NNuQiGMsSjHynqwD-aMRvO0W-K4n"
+ID_FOLDER_DRIVE = "1GZkCVwmJ16RFmKGPnIMSHpJyI8JHYiVS?usp"
 scopes = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
 
 try:
@@ -156,3 +156,4 @@ with st.form("form_lapor", clear_on_submit=True):
                     
                 except Exception as e:
                     st.error(f"Gagal menyimpan data: {e}")
+
