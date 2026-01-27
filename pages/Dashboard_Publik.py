@@ -12,18 +12,23 @@ import json
 st.set_page_config(page_title="Dashboard Publik", page_icon="📊", layout="wide")
 
 # ==========================================
+# 👇 ID SPREADSHEET (ANTI ERROR [200])
+# ==========================================
+ID_SPREADSHEET = "1crJl0DsswyMGmq0ej_niIMfhSLdUIUx8u42HEu-sc3g"
+
+# ==========================================
 # 🎨 DESAIN ASLI (CLEAN STYLE)
 # ==========================================
 st.markdown("""
 <style>
-    /* Background Gradient Halus (Tampilan Awal) */
+    /* Background Gradient Halus */
     .stApp {background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);}
     
     /* Sidebar Navy */
     [data-testid="stSidebar"] {background-color: #1e293b; border-right: 2px solid #334155;}
     [data-testid="stSidebar"] * {color: #f8fafc !important;}
 
-    /* Metrik Card (Kotak Putih Bersih) */
+    /* Metrik Card */
     div[data-testid="stMetric"] {
         background-color: white; 
         border-radius: 15px; 
@@ -48,14 +53,14 @@ try:
         creds = Credentials.from_service_account_info(creds_dict, scopes=scopes)
     elif os.path.exists("credentials.json"):
         creds = Credentials.from_service_account_file("credentials.json", scopes=scopes)
-    elif os.path.exists("../credentials.json"):
-        creds = Credentials.from_service_account_file("../credentials.json", scopes=scopes)
     else:
         st.error("⚠️ File Kunci tidak ditemukan!")
         st.stop()
 
     client = gspread.authorize(creds)
-    sheet = client.open("Database_Advokasi").worksheet("Laporan")
+    
+    # --- PERBAIKAN DI SINI (PAKAI ID) ---
+    sheet = client.open_by_key(ID_SPREADSHEET).worksheet("Laporan")
     
 except Exception as e:
     st.error(f"Koneksi Error: {e}")
@@ -73,13 +78,11 @@ try:
     data = sheet.get_all_records()
     df = pd.DataFrame(data)
 
-    # === 🛠️ PERBAIKAN LOGIKA (PENTING) ===
-    # Filter: Membuang baris yang 'Waktu Lapor'-nya kosong
-    # Ini supaya diagram tidak error/berantakan karena baris kosong di Excel
+    # === FILTER BARIS KOSONG ===
     if not df.empty and 'Waktu Lapor' in df.columns:
-        df = df[df['Waktu Lapor'] != ""]
-        df = df[df['Kategori Masalah'] != ""] 
-
+        # Hapus yang kosong
+        df = df[df['Waktu Lapor'].astype(str).str.strip() != ""]
+        
 except:
     df = pd.DataFrame()
 
@@ -100,7 +103,6 @@ if not df.empty:
     with col1:
         st.subheader("Peta Masalah")
         if 'Kategori Masalah' in df.columns:
-            # Hitung manual biar rapi
             pie_data = df['Kategori Masalah'].value_counts().reset_index()
             pie_data.columns = ['Kategori', 'Jumlah']
 
