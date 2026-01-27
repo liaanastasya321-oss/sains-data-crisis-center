@@ -8,24 +8,40 @@ import json
 import time
 
 # ==========================================
-# 👇 SETTING PENTING
+# 👇 SETTING PENTING (ISI LAGI YA)
 # ==========================================
 ID_SPREADSHEET = "1crJl0DsswyMGmq0ej_niIMfhSLdUIUx8u42HEu-sc3g" 
 
-# 👇👇👇 PASTE KODE IMGBB KAMU DI BAWAH INI 👇👇👇
+# 👇👇👇 PASTE KODE IMGBB KAMU DI SINI 👇👇👇
 API_KEY_IMGBB  = "b70c3878ae0cf53cf64650f8c012efa2" 
-# 👆👆👆 JANGAN SAMPAI SALAH YA 👆👆👆
+# 👆👆👆 JANGAN SAMPAI KOSONG 👆👆👆
 
 # 1. SETUP HALAMAN
 st.set_page_config(page_title="Lapor Masalah", page_icon="📝")
 
-# 2. CSS
+# 2. CSS (TAMPILAN DIPERBAIKI BIAR JELAS)
 st.markdown("""
 <style>
+    /* Background Halaman */
     .stApp {background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%); font-family: 'Source Sans 3', sans-serif;}
+    
+    /* Sidebar */
     [data-testid="stSidebar"] {background-color: #0f172a; border-right: 1px solid #1e293b;}
     [data-testid="stSidebar"] * {color: #f8fafc !important;}
-    .stButton > button {background-color: #2563eb; color: white; border-radius: 8px; height: 50px; width: 100%;}
+    
+    /* --- INI YANG TADI KETINGGALAN (KOTAK INPUT) --- */
+    .stTextInput > div > div > input, 
+    .stTextArea > div > div > textarea, 
+    .stSelectbox > div > div > div {
+        background-color: white !important;
+        color: #334155 !important;
+        border: 1px solid #94a3b8 !important; /* Garis tepi abu-abu */
+        border-radius: 8px !important;
+    }
+    
+    /* Tombol */
+    .stButton > button {background-color: #2563eb; color: white; border-radius: 8px; height: 50px; width: 100%; font-weight: bold;}
+    .stButton > button:hover {background-color: #1d4ed8; border: 1px solid white;}
 </style>
 """, unsafe_allow_html=True)
 
@@ -65,7 +81,7 @@ with st.form("form_lapor", clear_on_submit=True):
         jurusan = st.selectbox("Prodi", ["Sains Data", "Biologi", "Fisika", "Matematika"])
     with c2:
         kategori = st.selectbox("Kategori", ["Fasilitas", "Akademik", "Keuangan", "Lainnya"])
-        bukti_file = st.file_uploader("Upload Foto Bukti (Wajib JPG/PNG)", type=["png", "jpg", "jpeg"])
+        bukti_file = st.file_uploader("Upload Foto Bukti (JPG/PNG)", type=["png", "jpg", "jpeg"])
         
     keluhan = st.text_area("Deskripsi Masalah", height=150)
     tombol = st.form_submit_button("Kirim Laporan 🚀")
@@ -81,7 +97,11 @@ with st.form("form_lapor", clear_on_submit=True):
                 # --- UPLOAD KE IMGBB ---
                 if bukti_file:
                     try:
-                        # Kirim gambar ke ImgBB
+                        # Cek API Key dulu
+                        if "PASTE_KODE" in API_KEY_IMGBB:
+                            st.error("⚠️ Kode API ImgBB belum diisi di kodingan!")
+                            st.stop()
+
                         payload = {
                             "key": API_KEY_IMGBB,
                             "image": bukti_file.getvalue()
