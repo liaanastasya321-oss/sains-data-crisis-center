@@ -9,11 +9,17 @@ import time
 st.set_page_config(page_title="Admin Area", page_icon="🔐", layout="wide")
 
 # ==========================================
-# 🔐 SESSION STATE
+# 👇 ID SPREADSHEET (WAJIB ADA)
+# ==========================================
+ID_SPREADSHEET = "1crJl0DsswyMGmq0ej_niIMfhSLdUIUx8u42HEu-sc3g"
+
+# ==========================================
+# 🔐 SESSION STATE (Login System)
 # ==========================================
 if 'is_logged_in' not in st.session_state:
     st.session_state['is_logged_in'] = False
 
+# Password Admin (Bisa diganti sesuka hati)
 PASSWORD_ADMIN = "RAHASIA PIKM😭"
 
 # ==========================================
@@ -56,7 +62,7 @@ with st.sidebar:
             else:
                 st.error("Password Salah!")
     else:
-        st.success(f"Halo, {PASSWORD_ADMIN}!")
+        st.success(f"Halo, Admin!")
         if st.button("🚪 Logout"):
             logout()
 
@@ -66,7 +72,7 @@ with st.sidebar:
 if st.session_state['is_logged_in']:
     st.title("⚡ Dashboard Admin")
 
-    # 1. KONEKSI DATABASE
+    # 1. KONEKSI DATABASE (METODE ID)
     scopes = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
     try:
         if "google_credentials" in st.secrets:
@@ -74,25 +80,26 @@ if st.session_state['is_logged_in']:
             creds = Credentials.from_service_account_info(creds_dict, scopes=scopes)
         elif os.path.exists("credentials.json"):
             creds = Credentials.from_service_account_file("credentials.json", scopes=scopes)
-        elif os.path.exists("../credentials.json"):
-            creds = Credentials.from_service_account_file("../credentials.json", scopes=scopes)
         else:
             st.error("⚠️ File Credentials tidak ditemukan!")
             st.stop()
 
         client = gspread.authorize(creds)
-        sheet = client.open("Database_Advokasi").worksheet("Laporan")
+        
+        # --- PERBAIKAN DI SINI (PAKAI ID) ---
+        sheet = client.open_by_key(ID_SPREADSHEET).worksheet("Laporan")
 
     except Exception as e:
         st.error(f"Database Error: {e}")
         st.stop()
 
-    # 2. AMBIL & BERSIHKAN DATA (LOGIKA BARU)
+    # 2. AMBIL DATA
     if st.button("🔄 Refresh Data"):
         st.cache_data.clear()
         st.rerun()
 
     try:
+        # Kita ambil semua data
         data = sheet.get_all_records()
         df = pd.DataFrame(data)
     except:
@@ -100,47 +107,39 @@ if st.session_state['is_logged_in']:
 
     # --- 🧹 PROSES PEMBERSIHAN DATA ---
     if not df.empty:
-        # 1. Simpan Index Asli (No. Baris Google Sheet) SEBELUM filter
-        #    Supaya walaupun baris kosong dibuang, nomor baris data asli tetap benar (2, 3, dst)
+        # 1. Simpan No. Baris Asli (Excel mulai dari baris 2 karena header baris 1)
+        # Ini penting biar pas diedit gak salah kamar
         df['No. Baris'] = range(2, len(df) + 2)
 
-        # 2. FILTER: Buang baris yang 'Waktu Lapor'-nya kosong
+        # 2. FILTER: Buang baris yang kosong (Waktu Lapor kosong)
         if 'Waktu Lapor' in df.columns:
+            # Pastikan jadi string dulu biar aman
             df = df[df['Waktu Lapor'].astype(str).str.strip() != ""]
 
-        # 3. Pindahkan 'No. Baris' ke kolom paling depan biar enak dilihat
+        # 3. Rapikan urutan kolom (No Baris di depan)
         cols = ['No. Baris'] + [c for c in df.columns if c != 'No. Baris']
         df = df[cols]
 
-    # --- TAMPILKAN STATISTIK (Angka pasti 1 sekarang) ---
+    # --- TAMPILKAN STATISTIK ---
     if not df.empty:
         c1, c2, c3 = st.columns(3)
-        c1.metric("Total Laporan", len(df)) # Pasti sesuai jumlah data asli
+        c1.metric("Total Laporan", len(df))
         if 'Status' in df.columns:
             c2.metric("Pending", len(df[df['Status'] == 'Pending']))
             c3.metric("Selesai", len(df[df['Status'] == 'Selesai']))
         
         st.write("---")
         
-        # --- TAMPILAN TABEL ---
+        # --- TABEL DATA ---
         st.dataframe(df, use_container_width=True)
 
         # --- FITUR UPDATE STATUS ---
         st.write("### ✏️ Edit Status Laporan")
         
         if 'Status' in df.columns:
-            # Cari kolom Status index-nya berapa di Google Sheets (Asli)
-            # Karena di df kita sudah geser-geser kolom, kita cari manual aja yang aman
-            # Biasanya di Google Sheet kamu: A=Waktu, B=Nama... G=Status (Kolom ke-7)
-            # Tapi biar aman kita cari nama header di sheet langsung kalau bisa, 
-            # atau pake asumsi data yang ditarik.
-            
-            # Cara paling aman: Cari index 'Status' dari dataframe RAW data (sebelum ditambah kolom No Baris)
-            # Tapi karena df sudah berubah, kita pakai logika df.columns aja tapi dikurangi 1 (karena ada No Baris)
-            # ATAU: Kita cari posisi "Status" di list headers
-            headers = sheet.row_values(1) # Ambil baris pertama (Judul)
+            # Cari posisi kolom 'Status' di Spreadsheet (buat update_cell)
             try:
-                # +1 karena gspread mulai hitung dari 1
+                headers = sheet.row_values(1) 
                 col_status_idx = headers.index("Status") + 1 
             except:
                 st.error("Kolom 'Status' tidak ditemukan di Google Sheets!")
@@ -150,21 +149,22 @@ if st.session_state['is_logged_in']:
                 c_pilih, c_status = st.columns([2, 1])
                 
                 with c_pilih:
-                    # Dropdown Pilih No Baris (Hanya muncul yang datanya ada!)
+                    # Dropdown pilih nomor baris
                     nomor_dipilih = st.selectbox(
                         "Pilih No. Baris (Lihat kolom pertama tabel):", 
                         df['No. Baris'].tolist()
                     )
                     
-                    # Ambil Nama untuk Konfirmasi
-                    # Kita cari di dataframe baris mana yang punya No. Baris tersebut
+                    # Tampilkan Nama biar admin yakin
                     row_data = df[df['No. Baris'] == nomor_dipilih].iloc[0]
                     nama_pelapor = row_data['Nama'] if 'Nama' in row_data else "Tanpa Nama"
-                    st.info(f"Mengedit Data: **{nama_pelapor}**")
+                    st.info(f"Mengedit Data: **{nama_pelapor}** (NPM: {row_data.get('NPM', '-')})")
 
                 with c_status:
                     status_sekarang = row_data['Status'] if 'Status' in row_data else "Pending"
                     opsi = ["Pending", "Proses", "Selesai", "Ditolak"]
+                    
+                    # Set default value dropdown sesuai status sekarang
                     idx_awal = opsi.index(status_sekarang) if status_sekarang in opsi else 0
                     
                     status_baru = st.selectbox("Ubah Status:", opsi, index=idx_awal)
@@ -173,9 +173,10 @@ if st.session_state['is_logged_in']:
 
                 if tombol:
                     try:
-                        # UPDATE LANGSUNG KE ALAMAT YANG TEPAT
+                        # UPDATE KE GOOGLE SHEET
                         sheet.update_cell(nomor_dipilih, col_status_idx, status_baru)
-                        st.success(f"✅ Berhasil! Status {nama_pelapor} (Baris {nomor_dipilih}) jadi '{status_baru}'")
+                        
+                        st.success(f"✅ Berhasil! Laporan {nama_pelapor} diubah jadi '{status_baru}'")
                         time.sleep(1)
                         st.cache_data.clear()
                         st.rerun()
@@ -185,5 +186,4 @@ if st.session_state['is_logged_in']:
         st.info("Belum ada data laporan yang masuk.")
 
 else:
-    st.warning("Silakan login di sidebar.")
-
+    st.warning("Silakan login di sidebar sebelah kiri.")
