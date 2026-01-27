@@ -3,99 +3,97 @@ import pandas as pd
 import gspread
 from google.oauth2.service_account import Credentials
 import os
-import json # <--- Wajib ada buat baca Secrets
+import json
+import time
 
 st.set_page_config(page_title="Admin Area", page_icon="🔐", layout="wide")
 
 # ==========================================
-# BAGIAN DESAIN (CSS PREMIUM) 🎨
+# 🔐 SESSION STATE (BIAR GAK LOGOUT SENDIRI)
+# ==========================================
+if 'is_logged_in' not in st.session_state:
+    st.session_state['is_logged_in'] = False
+
+# Password Hardcode (Sesuai requestmu)
+PASSWORD_ADMIN = "GHUFRON"
+
+# ==========================================
+# 🎨 CSS PREMIUM
 # ==========================================
 st.markdown("""
 <style>
-    /* Background Gradient Halus */
     .stApp {background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);}
-
-    /* Sidebar Keren */
     [data-testid="stSidebar"] {background-color: #1e293b; border-right: 2px solid #334155;}
     [data-testid="stSidebar"] * {color: #f8fafc !important;}
-
-    /* Judul Besar */
     h1 {color: #1e3a8a; font-family: 'Helvetica', sans-serif; text-shadow: 1px 1px 2px rgba(0,0,0,0.1);}
-
-    /* Tabel Data */
-    div[data-testid="stDataFrame"] {border: 1px solid #cbd5e1; border-radius: 10px; overflow: hidden;}
-    
-    /* Tombol Update */
+    div[data-testid="stDataFrame"] {border: 1px solid #cbd5e1; border-radius: 10px; overflow: hidden; background: white;}
     div.stButton > button {
-        background-color: #2563eb; color: white; border-radius: 8px; font-weight: bold;
+        background-color: #2563eb; color: white; border-radius: 8px; font-weight: bold; width: 100%;
     }
 </style>
 """, unsafe_allow_html=True)
 
 # ==========================================
-# HEADER HALAMAN
+# FUNGSI LOGIN & LOGOUT
 # ==========================================
-st.title("🔐 Halaman Khusus Admin")
-st.markdown("Kelola data laporan masuk dan update status penanganan.")
+def login():
+    st.session_state['is_logged_in'] = True
+    st.rerun()
+
+def logout():
+    st.session_state['is_logged_in'] = False
+    st.rerun()
 
 # ==========================================
-# LOGIN ADMIN
+# HALAMAN LOGIN (SIDEBAR)
 # ==========================================
-# Sidebar Login
 with st.sidebar:
-    st.header("🔑 Verifikasi")
-    password = st.text_input("Password Admin", type="password")
-    
-    # Tombol Logout (Reset)
-    if st.button("🚪 Logout"):
-        st.cache_data.clear()
-        st.rerun() # Ganti experimental_rerun jadi rerun (versi baru streamlit)
+    st.header("🔐 Admin Panel")
+    if not st.session_state['is_logged_in']:
+        input_pass = st.text_input("Masukkan Password", type="password")
+        if st.button("Login Masuk"):
+            if input_pass == PASSWORD_ADMIN:
+                login()
+            else:
+                st.error("Password Salah!")
+    else:
+        st.success(f"Halo, {PASSWORD_ADMIN}!")
+        if st.button("🚪 Logout"):
+            logout()
 
-# Cek Password
-if password == "GHUFRON":
-    
-    # ==========================================
-    # KONEKSI DATABASE (DUAL MODE: CLOUD & LOKAL) 🔗
-    # ==========================================
+# ==========================================
+# LOGIKA UTAMA (HANYA MUNCUL JIKA LOGIN)
+# ==========================================
+if st.session_state['is_logged_in']:
+    st.title("⚡ Dashboard Admin")
+    st.markdown("Kelola data laporan masuk dan update status penanganan.")
+
+    # 1. KONEKSI DATABASE
     scopes = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
-    
     try:
-        # 1. Cek apakah ada di Streamlit Cloud (Pakai Secrets)
         if "google_credentials" in st.secrets:
             creds_dict = json.loads(st.secrets["google_credentials"])
             creds = Credentials.from_service_account_info(creds_dict, scopes=scopes)
-        
-        # 2. Cek apakah ada file lokal credentials.json
         elif os.path.exists("credentials.json"):
             creds = Credentials.from_service_account_file("credentials.json", scopes=scopes)
-        
-        # 3. Cek di folder luar (opsional)
         elif os.path.exists("../credentials.json"):
             creds = Credentials.from_service_account_file("../credentials.json", scopes=scopes)
-            
         else:
-            st.error("⚠️ File Kunci (Credentials) tidak ditemukan!")
+            st.error("⚠️ File Credentials tidak ditemukan!")
             st.stop()
 
-        # Buka Koneksi ke Sheet "Laporan"
         client = gspread.authorize(creds)
         sheet = client.open("Database_Advokasi").worksheet("Laporan")
-        
+
     except Exception as e:
-        st.error(f"Gagal koneksi database: {e}")
+        st.error(f"Database Error: {e}")
         st.stop()
 
-    st.success("✅ Akses Diterima: Mode Administrator")
-
-    # ==========================================
-    # TAMPILKAN DATA
-    # ==========================================
-    # Tombol Refresh
-    col_ref, col_space = st.columns([1, 5])
-    if col_ref.button("🔄 Refresh Data Terbaru"):
+    # 2. AMBIL DATA
+    if st.button("🔄 Refresh Data"):
         st.cache_data.clear()
+        st.rerun()
 
-    # Ambil Data
     try:
         data = sheet.get_all_records()
         df = pd.DataFrame(data)
@@ -103,76 +101,83 @@ if password == "GHUFRON":
         df = pd.DataFrame()
 
     if not df.empty:
-        # Tampilkan Statistik Singkat
+        # Tampilkan Statistik
         c1, c2, c3 = st.columns(3)
         c1.metric("Total Laporan", len(df))
-        # Pastikan kolom Status ada
         if 'Status' in df.columns:
-            c2.metric("Perlu Tindakan (Pending)", len(df[df['Status'] == 'Pending']))
-            c3.metric("Masalah Selesai", len(df[df['Status'] == 'Selesai']))
-        
-        st.write("### 📋 Database Lengkap")
-        
-        # Tambahkan kolom 'Nomor Baris' biar gampang update
-        # (Google Sheets mulai dari baris 2 untuk data, karena baris 1 itu Header)
-        df['Nomor Baris'] = range(2, len(df) + 2)
-        
-        # Pindahkan kolom 'Nomor Baris' ke paling depan
-        cols = ['Nomor Baris'] + [col for col in df.columns if col != 'Nomor Baris']
-        df = df[cols]
-        
-        st.dataframe(df, use_container_width=True)
-        
+            c2.metric("Pending", len(df[df['Status'] == 'Pending']))
+            c3.metric("Selesai", len(df[df['Status'] == 'Selesai']))
+
         st.write("---")
         
-        # ==========================================
-        # FITUR UPDATE STATUS (ACTION) ⚡
-        # ==========================================
-        st.subheader("⚡ Update Status Laporan")
-        with st.form("form_update"):
-            c_id, c_status = st.columns(2)
+        # 3. PERSIAPAN DATA UPDATE (PENTING!)
+        # Kita simpan index kolom 'Status' YANG ASLI sebelum tabel dimodifikasi buat tampilan
+        # +1 karena Google Sheets mulai dari kolom 1, bukan 0
+        if 'Status' in df.columns:
+            kolom_status_index_asli = df.columns.get_loc("Status") + 1
+        else:
+            st.error("Kolom 'Status' tidak ditemukan di Database!")
+            st.stop()
+
+        # Modifikasi Tampilan (Tambah Nomor Baris untuk User)
+        df_display = df.copy()
+        # Baris di GSheets mulai dari 2 (karena 1 itu Header)
+        df_display.insert(0, 'No. Baris', range(2, len(df) + 2)) 
+        
+        st.dataframe(df_display, use_container_width=True)
+
+        # 4. FORM UPDATE STATUS
+        st.write("### ✏️ Edit Status Laporan")
+        
+        with st.form("form_edit"):
+            c_pilih, c_status = st.columns([2, 1])
             
-            with c_id:
-                # Pilih Nomor Baris
-                nomor_baris = st.selectbox("Pilih Nomor Baris (Lihat tabel di atas):", df['Nomor Baris'].tolist())
+            with c_pilih:
+                # User memilih berdasarkan Nomor Baris
+                nomor_pilihan = st.selectbox(
+                    "Pilih Nomor Baris (Lihat kolom paling kiri):", 
+                    df_display['No. Baris'].tolist()
+                )
                 
-                # Tampilkan info singkat baris yang dipilih
-                if not df[df['Nomor Baris'] == nomor_baris].empty:
-                    # Ambil nama kolom secara dinamis biar gak error kalau nama kolom beda dikit
-                    col_nama = 'Nama' if 'Nama' in df.columns else 'Nama Mahasiswa'
-                    col_masalah = 'Kategori' if 'Kategori' in df.columns else 'Kategori Masalah'
-                    
-                    # Cek keberadaan kolom sebelum akses
-                    val_nama = df[df['Nomor Baris'] == nomor_baris][col_nama].values[0] if col_nama in df.columns else "Tanpa Nama"
-                    val_masalah = df[df['Nomor Baris'] == nomor_baris][col_masalah].values[0] if col_masalah in df.columns else "-"
-                    
-                    st.info(f"Mengedit Data: **{val_nama}** - {val_masalah}")
+                # Cari data nama untuk preview
+                # Kita kurangi 2 untuk dapat index Python (Baris 2 -> Index 0)
+                idx_python = nomor_pilihan - 2
+                nama_pelapor = df.iloc[idx_python]['Nama'] if 'Nama' in df.columns else "Tanpa Nama"
+                keluhan_pelapor = df.iloc[idx_python]['Detail Keluhan'] if 'Detail Keluhan' in df.columns else "-"
                 
+                st.info(f"Mengedit: **{nama_pelapor}** - {keluhan_pelapor}")
+
             with c_status:
-                status_baru = st.selectbox("Ubah Status Menjadi:", ["Pending", "Proses", "Selesai"])
-            
-            tombol_update = st.form_submit_button("Simpan Perubahan 💾")
-            
-            if tombol_update:
+                status_opsi = ["Pending", "Proses", "Selesai", "Ditolak"]
+                status_sekarang = df.iloc[idx_python]['Status']
+                
+                # Pastikan status sekarang ada di list opsi biar gak error
+                index_default = 0
+                if status_sekarang in status_opsi:
+                    index_default = status_opsi.index(status_sekarang)
+                
+                status_baru = st.selectbox("Status Baru:", status_opsi, index=index_default)
+
+            tombol_simpan = st.form_submit_button("💾 Simpan Perubahan ke Database")
+
+            if tombol_simpan:
                 try:
-                    # Cari lokasi Kolom 'Status' (Index + 1 karena gspread base-1)
-                    kolom_status_index = df.columns.get_loc("Status") + 1 
+                    # UPDATE KE GOOGLE SHEETS
+                    # nomor_pilihan = Baris (Row)
+                    # kolom_status_index_asli = Kolom (Col)
+                    sheet.update_cell(nomor_pilihan, kolom_status_index_asli, status_baru)
                     
-                    # Update Cells di Google Sheets
-                    sheet.update_cell(nomor_baris, kolom_status_index, status_baru)
-                    
-                    st.success(f"Berhasil update status jadi: {status_baru}")
-                    st.cache_data.clear() # Reset cache biar tabel update
-                    st.rerun() # Refresh otomatis
-                    
+                    st.success(f"✅ Berhasil! Data {nama_pelapor} diubah jadi '{status_baru}'")
+                    st.cache_data.clear()
+                    time.sleep(1) # Jeda dikit biar user baca suksesnya
+                    st.rerun()
                 except Exception as e:
-                    st.error(f"Gagal update: {e}")
+                    st.error(f"Gagal menyimpan: {e}")
 
     else:
-        st.info("Belum ada data laporan masuk.")
+        st.info("Data kosong.")
 
-elif password != "":
-    st.error("❌ Password Salah! Coba lagi.")
 else:
-    st.info("👋 Silakan login di menu sebelah kiri (Sidebar) untuk mengakses data.")
-
+    # TAMPILAN JIKA BELUM LOGIN
+    st.title("⛔ Akses Ditolak")
+    st.warning("Silakan login melalui Sidebar di sebelah kiri.")
