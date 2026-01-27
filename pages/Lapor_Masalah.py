@@ -13,7 +13,7 @@ import time
 ID_SPREADSHEET = "1crJl0DsswyMGmq0ej_niIMfhSLdUIUx8u42HEu-sc3g" 
 
 # 👇 PASTE API KEY IMGBB KAMU DI SINI
-API_KEY_IMGBB  = "PASTE_KODE_IMGBB_DISINI" 
+API_KEY_IMGBB  = "b70c3878ae0cf53cf64650f8c012efa2" 
 
 # 1. SETUP HALAMAN
 st.set_page_config(page_title="Lapor Masalah", page_icon="📝")
@@ -132,4 +132,5 @@ with st.form("form_lapor", clear_on_submit=True):
                     
                 except Exception as e:
                     st.error(f"❌ Gagal Simpan Database: {e}")
+
 
