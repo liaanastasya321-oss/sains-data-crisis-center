@@ -9,12 +9,11 @@ import time
 st.set_page_config(page_title="Admin Area", page_icon="🔐", layout="wide")
 
 # ==========================================
-# 🔐 SESSION STATE (BIAR GAK LOGOUT SENDIRI)
+# 🔐 SESSION STATE
 # ==========================================
 if 'is_logged_in' not in st.session_state:
     st.session_state['is_logged_in'] = False
 
-# Password Hardcode (Sesuai requestmu)
 PASSWORD_ADMIN = "GHUFRON"
 
 # ==========================================
@@ -25,8 +24,8 @@ st.markdown("""
     .stApp {background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);}
     [data-testid="stSidebar"] {background-color: #1e293b; border-right: 2px solid #334155;}
     [data-testid="stSidebar"] * {color: #f8fafc !important;}
-    h1 {color: #1e3a8a; font-family: 'Helvetica', sans-serif; text-shadow: 1px 1px 2px rgba(0,0,0,0.1);}
-    div[data-testid="stDataFrame"] {border: 1px solid #cbd5e1; border-radius: 10px; overflow: hidden; background: white;}
+    h1 {color: #1e3a8a; font-family: 'Helvetica', sans-serif;}
+    div[data-testid="stDataFrame"] {background: white; border-radius: 10px; overflow: hidden;}
     div.stButton > button {
         background-color: #2563eb; color: white; border-radius: 8px; font-weight: bold; width: 100%;
     }
@@ -34,7 +33,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ==========================================
-# FUNGSI LOGIN & LOGOUT
+# FUNGSI LOGIN/LOGOUT
 # ==========================================
 def login():
     st.session_state['is_logged_in'] = True
@@ -45,7 +44,7 @@ def logout():
     st.rerun()
 
 # ==========================================
-# HALAMAN LOGIN (SIDEBAR)
+# SIDEBAR
 # ==========================================
 with st.sidebar:
     st.header("🔐 Admin Panel")
@@ -62,11 +61,10 @@ with st.sidebar:
             logout()
 
 # ==========================================
-# LOGIKA UTAMA (HANYA MUNCUL JIKA LOGIN)
+# DASHBOARD ADMIN
 # ==========================================
 if st.session_state['is_logged_in']:
     st.title("⚡ Dashboard Admin")
-    st.markdown("Kelola data laporan masuk dan update status penanganan.")
 
     # 1. KONEKSI DATABASE
     scopes = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
@@ -89,7 +87,7 @@ if st.session_state['is_logged_in']:
         st.error(f"Database Error: {e}")
         st.stop()
 
-    # 2. AMBIL DATA
+    # 2. AMBIL & BERSIHKAN DATA (LOGIKA BARU)
     if st.button("🔄 Refresh Data"):
         st.cache_data.clear()
         st.rerun()
@@ -100,84 +98,91 @@ if st.session_state['is_logged_in']:
     except:
         df = pd.DataFrame()
 
+    # --- 🧹 PROSES PEMBERSIHAN DATA ---
     if not df.empty:
-        # Tampilkan Statistik
+        # 1. Simpan Index Asli (No. Baris Google Sheet) SEBELUM filter
+        #    Supaya walaupun baris kosong dibuang, nomor baris data asli tetap benar (2, 3, dst)
+        df['No. Baris'] = range(2, len(df) + 2)
+
+        # 2. FILTER: Buang baris yang 'Waktu Lapor'-nya kosong
+        if 'Waktu Lapor' in df.columns:
+            df = df[df['Waktu Lapor'].astype(str).str.strip() != ""]
+
+        # 3. Pindahkan 'No. Baris' ke kolom paling depan biar enak dilihat
+        cols = ['No. Baris'] + [c for c in df.columns if c != 'No. Baris']
+        df = df[cols]
+
+    # --- TAMPILKAN STATISTIK (Angka pasti 1 sekarang) ---
+    if not df.empty:
         c1, c2, c3 = st.columns(3)
-        c1.metric("Total Laporan", len(df))
+        c1.metric("Total Laporan", len(df)) # Pasti sesuai jumlah data asli
         if 'Status' in df.columns:
             c2.metric("Pending", len(df[df['Status'] == 'Pending']))
             c3.metric("Selesai", len(df[df['Status'] == 'Selesai']))
-
+        
         st.write("---")
         
-        # 3. PERSIAPAN DATA UPDATE (PENTING!)
-        # Kita simpan index kolom 'Status' YANG ASLI sebelum tabel dimodifikasi buat tampilan
-        # +1 karena Google Sheets mulai dari kolom 1, bukan 0
-        if 'Status' in df.columns:
-            kolom_status_index_asli = df.columns.get_loc("Status") + 1
-        else:
-            st.error("Kolom 'Status' tidak ditemukan di Database!")
-            st.stop()
+        # --- TAMPILAN TABEL ---
+        st.dataframe(df, use_container_width=True)
 
-        # Modifikasi Tampilan (Tambah Nomor Baris untuk User)
-        df_display = df.copy()
-        # Baris di GSheets mulai dari 2 (karena 1 itu Header)
-        df_display.insert(0, 'No. Baris', range(2, len(df) + 2)) 
-        
-        st.dataframe(df_display, use_container_width=True)
-
-        # 4. FORM UPDATE STATUS
+        # --- FITUR UPDATE STATUS ---
         st.write("### ✏️ Edit Status Laporan")
         
-        with st.form("form_edit"):
-            c_pilih, c_status = st.columns([2, 1])
+        if 'Status' in df.columns:
+            # Cari kolom Status index-nya berapa di Google Sheets (Asli)
+            # Karena di df kita sudah geser-geser kolom, kita cari manual aja yang aman
+            # Biasanya di Google Sheet kamu: A=Waktu, B=Nama... G=Status (Kolom ke-7)
+            # Tapi biar aman kita cari nama header di sheet langsung kalau bisa, 
+            # atau pake asumsi data yang ditarik.
             
-            with c_pilih:
-                # User memilih berdasarkan Nomor Baris
-                nomor_pilihan = st.selectbox(
-                    "Pilih Nomor Baris (Lihat kolom paling kiri):", 
-                    df_display['No. Baris'].tolist()
-                )
-                
-                # Cari data nama untuk preview
-                # Kita kurangi 2 untuk dapat index Python (Baris 2 -> Index 0)
-                idx_python = nomor_pilihan - 2
-                nama_pelapor = df.iloc[idx_python]['Nama'] if 'Nama' in df.columns else "Tanpa Nama"
-                keluhan_pelapor = df.iloc[idx_python]['Detail Keluhan'] if 'Detail Keluhan' in df.columns else "-"
-                
-                st.info(f"Mengedit: **{nama_pelapor}** - {keluhan_pelapor}")
+            # Cara paling aman: Cari index 'Status' dari dataframe RAW data (sebelum ditambah kolom No Baris)
+            # Tapi karena df sudah berubah, kita pakai logika df.columns aja tapi dikurangi 1 (karena ada No Baris)
+            # ATAU: Kita cari posisi "Status" di list headers
+            headers = sheet.row_values(1) # Ambil baris pertama (Judul)
+            try:
+                # +1 karena gspread mulai hitung dari 1
+                col_status_idx = headers.index("Status") + 1 
+            except:
+                st.error("Kolom 'Status' tidak ditemukan di Google Sheets!")
+                st.stop()
 
-            with c_status:
-                status_opsi = ["Pending", "Proses", "Selesai", "Ditolak"]
-                status_sekarang = df.iloc[idx_python]['Status']
+            with st.form("form_edit"):
+                c_pilih, c_status = st.columns([2, 1])
                 
-                # Pastikan status sekarang ada di list opsi biar gak error
-                index_default = 0
-                if status_sekarang in status_opsi:
-                    index_default = status_opsi.index(status_sekarang)
-                
-                status_baru = st.selectbox("Status Baru:", status_opsi, index=index_default)
-
-            tombol_simpan = st.form_submit_button("💾 Simpan Perubahan ke Database")
-
-            if tombol_simpan:
-                try:
-                    # UPDATE KE GOOGLE SHEETS
-                    # nomor_pilihan = Baris (Row)
-                    # kolom_status_index_asli = Kolom (Col)
-                    sheet.update_cell(nomor_pilihan, kolom_status_index_asli, status_baru)
+                with c_pilih:
+                    # Dropdown Pilih No Baris (Hanya muncul yang datanya ada!)
+                    nomor_dipilih = st.selectbox(
+                        "Pilih No. Baris (Lihat kolom pertama tabel):", 
+                        df['No. Baris'].tolist()
+                    )
                     
-                    st.success(f"✅ Berhasil! Data {nama_pelapor} diubah jadi '{status_baru}'")
-                    st.cache_data.clear()
-                    time.sleep(1) # Jeda dikit biar user baca suksesnya
-                    st.rerun()
-                except Exception as e:
-                    st.error(f"Gagal menyimpan: {e}")
+                    # Ambil Nama untuk Konfirmasi
+                    # Kita cari di dataframe baris mana yang punya No. Baris tersebut
+                    row_data = df[df['No. Baris'] == nomor_dipilih].iloc[0]
+                    nama_pelapor = row_data['Nama'] if 'Nama' in row_data else "Tanpa Nama"
+                    st.info(f"Mengedit Data: **{nama_pelapor}**")
 
+                with c_status:
+                    status_sekarang = row_data['Status'] if 'Status' in row_data else "Pending"
+                    opsi = ["Pending", "Proses", "Selesai", "Ditolak"]
+                    idx_awal = opsi.index(status_sekarang) if status_sekarang in opsi else 0
+                    
+                    status_baru = st.selectbox("Ubah Status:", opsi, index=idx_awal)
+
+                tombol = st.form_submit_button("💾 Simpan Perubahan")
+
+                if tombol:
+                    try:
+                        # UPDATE LANGSUNG KE ALAMAT YANG TEPAT
+                        sheet.update_cell(nomor_dipilih, col_status_idx, status_baru)
+                        st.success(f"✅ Berhasil! Status {nama_pelapor} (Baris {nomor_dipilih}) jadi '{status_baru}'")
+                        time.sleep(1)
+                        st.cache_data.clear()
+                        st.rerun()
+                    except Exception as e:
+                        st.error(f"Gagal Simpan: {e}")
     else:
-        st.info("Data kosong.")
+        st.info("Belum ada data laporan yang masuk.")
 
 else:
-    # TAMPILAN JIKA BELUM LOGIN
-    st.title("⛔ Akses Ditolak")
-    st.warning("Silakan login melalui Sidebar di sebelah kiri.")
+    st.warning("Silakan login di sidebar.")
