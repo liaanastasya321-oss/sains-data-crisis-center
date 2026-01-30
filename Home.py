@@ -22,63 +22,38 @@ st.set_page_config(
 )
 
 # =========================================================
-# 2. GLOBAL CSS (LIGHT MODE + LOGO + LABEL JELAS)
+# 2. GLOBAL CSS (LIGHT MODE + DESIGN FIX)
 # =========================================================
 st.markdown("""
 <style>
-/* BACKGROUND */
 .stApp { background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%); color: #0f172a; }
-
-/* HIDE UI */
 #MainMenu {visibility: hidden;} footer {visibility: hidden;} header {visibility: hidden;} [data-testid="stSidebar"] {display: none;}
-
-/* FONT & INPUT */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
 html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
-
 .stTextInput input, .stTextArea textarea, .stSelectbox div[data-baseweb="select"] {
-    color: #334155 !important; background-color: #ffffff !important;
-    border: 1px solid #94a3b8 !important; border-radius: 8px !important;
+    color: #334155 !important; background-color: #ffffff !important; border: 1px solid #94a3b8 !important; border-radius: 8px !important;
 }
-
-/* LABEL HITAM JELAS */
 label, .stTextInput label, .stSelectbox label, .stTextArea label, .stFileUploader label, div[data-testid="stWidgetLabel"] p {
     color: #0f172a !important; font-size: 15px !important; font-weight: 700 !important;
 }
-
-/* GLASS CARD */
 .glass-card {
-    background: #ffffff; border-radius: 16px; padding: 24px;
-    border: 1px solid #cbd5e1; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); margin-bottom: 20px;
+    background: #ffffff; border-radius: 16px; padding: 24px; border: 1px solid #cbd5e1; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); margin-bottom: 20px;
 }
 .glass-card:hover { transform: translateY(-3px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); border-color: #3b82f6; }
-
-/* ANNOUNCE CARD */
 .announce-card {
-    background: #ffffff; border-radius: 12px; padding: 20px; margin-bottom: 15px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; transition: transform 0.2s;
+    background: #ffffff; border-radius: 12px; padding: 20px; margin-bottom: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; transition: transform 0.2s;
 }
 .announce-card:hover { transform: scale(1.01); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
-
-/* TYPOGRAPHY */
 h1, h2, h3, h4, h5, h6 { color: #0f172a !important; font-weight: 800 !important; }
 p { color: #334155 !important; }
 .hero h1 {
-    font-size: 42px; background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
-    -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 5px;
+    font-size: 42px; background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 5px;
 }
-
-/* BUTTON */
 div.stButton > button {
-    background: linear-gradient(90deg, #2563eb, #1d4ed8); color: white; border: none;
-    padding: 10px 24px; border-radius: 8px; font-weight: bold; width: 100%;
+    background: linear-gradient(90deg, #2563eb, #1d4ed8); color: white; border: none; padding: 10px 24px; border-radius: 8px; font-weight: bold; width: 100%;
 }
 div.stButton > button:hover { transform: scale(1.02); box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3); }
-
-/* LOGO CENTER */
 div[data-testid="stImage"] { display: flex; justify-content: center; align-items: center; }
-
-/* CHAT STYLE */
 .chat-message { padding: 1.5rem; border-radius: 0.5rem; margin-bottom: 1rem; display: flex; }
 .chat-message.user { background-color: #e0f2fe; border-left: 5px solid #0284c7; }
 .chat-message.bot { background-color: #f1f5f9; border-left: 5px solid #475569; }
@@ -100,8 +75,7 @@ def get_spreadsheet():
             creds = Credentials.from_service_account_info(creds_dict, scopes=scopes)
         elif os.path.exists("credentials.json"):
             creds = Credentials.from_service_account_file("credentials.json", scopes=scopes)
-        else:
-            return None
+        else: return None
         client = gspread.authorize(creds)
         sh = client.open_by_key(ID_SPREADSHEET)
         return sh
@@ -113,14 +87,19 @@ except: sheet = None
 try: sheet_pengumuman = sh.worksheet("Pengumuman") if sh else None
 except: sheet_pengumuman = None
 
-# KONFIGURASI AI GEMINI (FIXED MODEL: gemini-pro) ✅
+# --- KONFIGURASI AI GEMINI (AUTO-SWITCH) ---
 model = None
 if "GEMINI_API_KEY" in st.secrets:
     genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
     try:
-        model = genai.GenerativeModel('gemini-pro') # <-- Pake ini biar AMAN
+        # Coba pake otak Cepat (Flash)
+        model = genai.GenerativeModel('gemini-1.5-flash')
     except:
-        model = None
+        try:
+            # Kalau gagal, pake otak Standar (Pro)
+            model = genai.GenerativeModel('gemini-pro')
+        except:
+            model = None
 
 # =========================================================
 # 4. MENU NAVIGASI
@@ -165,9 +144,7 @@ if selected == "Home":
             if len(data_info) > 0:
                 for item in reversed(data_info):
                     tipe = item.get('Tipe', 'Info')
-                    if tipe == "Urgent": border_color = "#ef4444" 
-                    elif tipe == "Penting": border_color = "#f59e0b"
-                    else: border_color = "#3b82f6"
+                    border_color = "#ef4444" if tipe == "Urgent" else ("#f59e0b" if tipe == "Penting" else "#3b82f6")
                     st.markdown(f"""
                     <div class="announce-card" style="border-left: 5px solid {border_color};">
                         <div style="display:flex; justify-content:space-between;"><span style="font-weight:bold; color:{border_color}; text-transform:uppercase; font-size:12px; background:{border_color}15; padding:2px 8px; border-radius:4px;">{tipe}</span><span style="color:#94a3b8; font-size:12px;">{item.get('Tanggal', '-')}</span></div>
@@ -251,8 +228,7 @@ elif selected == "Dashboard":
         try:
             data = sheet.get_all_records()
             df = pd.DataFrame(data)
-            if not df.empty and 'Waktu Lapor' in df.columns:
-                 df = df[df['Waktu Lapor'].astype(str).str.strip() != ""]
+            if not df.empty and 'Waktu Lapor' in df.columns: df = df[df['Waktu Lapor'].astype(str).str.strip() != ""]
             
             if not df.empty:
                 col1, col2, col3 = st.columns(3)
@@ -275,7 +251,7 @@ elif selected == "Dashboard":
         except: st.error("Error memuat dashboard.")
 
 # =========================================================
-# 9. HALAMAN: SADAS BOT (VERSI GEMINI PRO) 🧠
+# 9. HALAMAN: SADAS BOT (DIAGNOSIS MODE) 🧠
 # =========================================================
 elif selected == "Sadas Bot":
     st.markdown("<div style='max-width: 700px; margin: auto;'>", unsafe_allow_html=True)
@@ -296,16 +272,18 @@ elif selected == "Sadas Bot":
         response = ""
         if model:
             try:
-                system_prompt = "Kamu adalah Sadas Bot, asisten virtual yang ramah dan membantu untuk mahasiswa Sains Data UIN Raden Intan Lampung. Jawab dengan bahasa Indonesia yang santai tapi sopan."
-                full_prompt = f"{system_prompt}\nUser bertanya: {prompt}"
+                system_prompt = "Kamu adalah Sadas Bot, asisten virtual dari Sains Data UIN Raden Intan Lampung. Jawab sopan dan santai."
+                full_prompt = f"{system_prompt}\nUser: {prompt}"
                 
-                with st.spinner("Sadas Bot sedang mengetik..."):
+                with st.spinner("Sadas Bot sedang mikir..."):
+                    # Coba generate
                     ai_response = model.generate_content(full_prompt)
                     response = ai_response.text
             except Exception as e:
-                response = f"Maaf, otaku lagi error nih. Coba tanya lagi nanti. (Error: {e})"
+                # Tampilkan pesan error kalau masih gagal
+                response = f"⚠️ Maaf kak, ada masalah teknis: {str(e)}. (Tips: Cek API Key atau update requirements.txt)"
         else:
-            response = "⚠️ API Key Gemini belum dipasang dengan benar."
+            response = "⚠️ API Key Gemini belum dipasang di Secrets. Bot belum bisa mikir."
 
         st.session_state.messages.append({"role": "assistant", "content": response})
         with st.chat_message("assistant"): st.markdown(response)
