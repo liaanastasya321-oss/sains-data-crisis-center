@@ -14,7 +14,7 @@ st.set_page_config(
 )
 
 # ======================================================
-# GLOBAL CSS + JS (HIDE STREAMLIT TOTAL)
+# CSS + JS (ANTI BUG, ANTI MUTER)
 # ======================================================
 st.markdown("""
 <style>
@@ -60,7 +60,8 @@ html, body, [class*="css"] {
     color:#06b6d4;
 }
 
-.card-btn button {
+/* BUTTON */
+.stButton > button {
     width:100%;
     border-radius:14px;
     border:none;
@@ -70,7 +71,7 @@ html, body, [class*="css"] {
     font-weight:600;
     transition:.3s;
 }
-.card-btn button:hover {
+.stButton > button:hover {
     transform:scale(1.06);
     box-shadow:0 0 25px rgba(6,182,212,.7);
 }
@@ -98,23 +99,53 @@ html, body, [class*="css"] {
 <div id="loader"><div class="spinner"></div></div>
 
 <script>
-setTimeout(()=>document.getElementById("loader").style.display="none",1200);
+(function () {
+  const removeLoader = () => {
+    const loader = document.getElementById("loader");
+    if (loader) {
+      loader.style.opacity = "0";
+      setTimeout(() => loader.remove(), 400);
+      sessionStorage.setItem("loaderDone", "1");
+    }
+  };
 
-const text="Platform Advokasi & Krisis Data Berbasis Teknologi";
-let i=0;
-function typeWriter(){
- if(i<text.length){
-  document.getElementById("typewriter").innerHTML+=text.charAt(i);
-  i++; setTimeout(typeWriter,55);
- }}
-document.addEventListener("DOMContentLoaded",typeWriter);
+  if (sessionStorage.getItem("loaderDone")) {
+    removeLoader();
+  } else {
+    window.onload = () => {
+      setTimeout(removeLoader, 900);
+    };
+  }
+
+  // fallback anti-streamlit-rerun
+  setInterval(removeLoader, 2000);
+
+  // TYPEWRITER (AMAN)
+  const text = "Platform Advokasi & Krisis Data Berbasis Teknologi";
+  let i = 0;
+  const target = document.getElementById("typewriter");
+  if (target && !target.dataset.done) {
+    target.dataset.done = "1";
+    const type = () => {
+      if (i < text.length) {
+        target.innerHTML += text.charAt(i++);
+        setTimeout(type, 50);
+      }
+    };
+    setTimeout(type, 300);
+  }
+})();
 </script>
 """, unsafe_allow_html=True)
 
 # ======================================================
-# DATABASE (TETAP SAMA)
+# DATABASE (AMAN, TIDAK BLOK UI)
 # ======================================================
-scopes = ["https://www.googleapis.com/auth/spreadsheets","https://www.googleapis.com/auth/drive"]
+scopes = [
+    "https://www.googleapis.com/auth/spreadsheets",
+    "https://www.googleapis.com/auth/drive"
+]
+
 try:
     if "google_credentials" in st.secrets:
         creds = Credentials.from_service_account_info(
@@ -123,30 +154,34 @@ try:
         )
     else:
         creds = Credentials.from_service_account_file("credentials.json", scopes=scopes)
-    sheet = gspread.authorize(creds).open("Database_Advokasi").worksheet("Pengumuman")
+
+    sheet = gspread.authorize(creds)\
+        .open("Database_Advokasi")\
+        .worksheet("Pengumuman")
+
     pengumuman = sheet.get_all_records()
 except:
     pengumuman = []
 
 # ======================================================
-# NAVIGATION (SaaS Style)
+# NAVIGATION
 # ======================================================
 selected = option_menu(
     None,
-    ["Home","Lapor","Status","Dashboard","Admin"],
-    icons=["house","exclamation","search","bar-chart","lock"],
+    ["Home", "Lapor", "Status", "Dashboard", "Admin"],
+    icons=["house", "exclamation-circle", "search", "bar-chart", "lock"],
     orientation="horizontal",
     styles={
-        "container":{"background":"rgba(2,6,23,.6)"},
-        "nav-link":{"color":"#94a3b8","font-size":"15px"},
-        "nav-link-selected":{"color":"#06b6d4","font-weight":"600"}
+        "container": {"background": "rgba(2,6,23,.6)"},
+        "nav-link": {"color": "#94a3b8", "font-size": "15px"},
+        "nav-link-selected": {"color": "#06b6d4", "font-weight": "600"}
     }
 )
 
 # ======================================================
 # HOME
 # ======================================================
-if selected=="Home":
+if selected == "Home":
     st.markdown("""
     <div class="hero">
         <h1>Sains Data Crisis Center</h1>
@@ -154,17 +189,19 @@ if selected=="Home":
     </div>
     """, unsafe_allow_html=True)
 
-    c1,c2,c3,c4 = st.columns(4)
+    c1, c2, c3, c4 = st.columns(4)
     menu = [
-        ("📝","Lapor Masalah","pages/Lapor_Masalah.py"),
-        ("🔍","Cek Status","pages/Cek_Status.py"),
-        ("📊","Data Publik","pages/Dashboard_Publik.py"),
-        ("🤖","Tanya Bot","pages/Sadas_Bot.py")
+        ("📝", "Lapor Masalah", "pages/Lapor_Masalah.py"),
+        ("🔍", "Cek Status", "pages/Cek_Status.py"),
+        ("📊", "Dashboard Publik", "pages/Dashboard_Publik.py"),
+        ("🤖", "SADAS Bot", "pages/Sadas_Bot.py"),
     ]
-    for col,(ico,title,page) in zip([c1,c2,c3,c4],menu):
+
+    for col, (ico, title, page) in zip([c1, c2, c3, c4], menu):
         with col:
-            st.markdown(f"<div class='glass'><h2>{ico}</h2><h4>{title}</h4></div>",unsafe_allow_html=True)
-            st.markdown("<div class='card-btn'>",unsafe_allow_html=True)
+            st.markdown(
+                f"<div class='glass'><h2>{ico}</h2><h4>{title}</h4></div>",
+                unsafe_allow_html=True
+            )
             if st.button("Buka"):
                 st.switch_page(page)
-            st.markdown("</div>",unsafe_allow_html=True)
