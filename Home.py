@@ -22,7 +22,7 @@ st.set_page_config(
 )
 
 # =========================================================
-# 2. GLOBAL CSS (FIX ANTI KEPOTONG - VERSI EKSTRIM) 🛡️
+# 2. GLOBAL CSS (LAYOUT PRESISI - TIDAK KEJAUHAN) ✨
 # =========================================================
 st.markdown("""
 <style>
@@ -52,18 +52,18 @@ iframe[title="streamlit_option_menu.option_menu"] {
     top: 0;
     left: 0;
     right: 0;
-    z-index: 99999; /* Z-Index paling tinggi biar selalu di depan */
+    z-index: 99999;
     width: 100%;
-    background: #f8fafc; 
+    background: #f8fafc; /* Latar belakang menu */
     padding-top: 10px;
-    padding-bottom: 5px;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    padding-bottom: 10px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05); /* Bayangan halus */
 }
 
-/* --- SOLUSI ANTI KEPOTONG (FORCE DOWN) --- */
-/* Kita paksa container utama turun JAUH ke bawah */
+/* --- SOLUSI PRESISI (SWEET SPOT) --- */
+/* Jarak ini (6rem) udah diukur pas buat navbar option-menu */
 .block-container {
-    padding-top: 12rem !important; /* INI JARAKNYA LEBAR BANGET (sekitar 190px) */
+    padding-top: 6rem !important; 
     padding-bottom: 5rem !important;
 }
 
@@ -146,15 +146,10 @@ if "GEMINI_API_KEY" in st.secrets:
     except: pass
 
 # =========================================================
-# 4. MENU NAVIGASI
+# 4. MENU NAVIGASI (FIXED)
 # =========================================================
-# Kita inisialisasi session state untuk menu biar gak loncat
 if 'selected_menu' not in st.session_state:
     st.session_state.selected_menu = "Home"
-
-def on_change_menu(key):
-    # Callback untuk update state manual jika diperlukan
-    st.session_state.selected_menu = st.session_state[key]
 
 selected = option_menu(
     menu_title=None,
@@ -162,7 +157,7 @@ selected = option_menu(
     icons=["house", "exclamation-triangle-fill", "search", "bar-chart-fill", "robot", "lock-fill"],
     default_index=0,
     orientation="horizontal",
-    key="nav_menu", # Kunci ini penting biar dia inget posisi
+    key="nav_menu",
     styles={
         "container": {"padding": "5px", "background-color": "#ffffff", "border-radius": "12px", "border": "1px solid #e2e8f0"},
         "nav-link": {"font-size": "14px", "color": "#64748b", "margin": "0px"},
@@ -174,8 +169,9 @@ selected = option_menu(
 # 5. HALAMAN: HOME
 # =========================================================
 if selected == "Home":
-    # SPACER TAMBAHAN (Hantu Penurun Konten)
-    st.markdown("<div style='height: 20px;'></div>", unsafe_allow_html=True)
+    # SPACER MANUAL (Ganjelan biar logo turun dikit)
+    # Ini cuma nambah jarak 20px dari padding utama, jadi pas!
+    st.markdown("<div style='margin-top: 20px;'></div>", unsafe_allow_html=True)
     
     col_logo1, col_text, col_logo2 = st.columns([1.5, 6, 1.5])
     with col_logo1:
@@ -213,8 +209,7 @@ if selected == "Home":
 # 6. HALAMAN: LAPOR MASALAH
 # =========================================================
 elif selected == "Lapor Masalah":
-    # SPACER TAMBAHAN
-    st.markdown("<div style='height: 20px;'></div>", unsafe_allow_html=True)
+    st.markdown("<div style='margin-top: 20px;'></div>", unsafe_allow_html=True)
     
     st.markdown("<div style='max-width: 700px; margin: auto;'>", unsafe_allow_html=True)
     st.markdown("<h2 style='text-align:center;'>📝 Form Pengaduan</h2>", unsafe_allow_html=True)
@@ -256,8 +251,7 @@ elif selected == "Lapor Masalah":
 # 7. HALAMAN: CEK STATUS
 # =========================================================
 elif selected == "Cek Status":
-    # SPACER TAMBAHAN
-    st.markdown("<div style='height: 20px;'></div>", unsafe_allow_html=True)
+    st.markdown("<div style='margin-top: 20px;'></div>", unsafe_allow_html=True)
     
     st.markdown("<h2 style='text-align:center;'>🔍 Cek Status</h2>", unsafe_allow_html=True)
     col_x, col_y, col_z = st.columns([1,2,1])
@@ -284,8 +278,7 @@ elif selected == "Cek Status":
 # 8. HALAMAN: DASHBOARD
 # =========================================================
 elif selected == "Dashboard":
-    # SPACER TAMBAHAN
-    st.markdown("<div style='height: 20px;'></div>", unsafe_allow_html=True)
+    st.markdown("<div style='margin-top: 20px;'></div>", unsafe_allow_html=True)
     
     st.markdown("<h2 style='text-align:center;'>📊 Dashboard Analisis</h2>", unsafe_allow_html=True)
     if sheet:
@@ -315,11 +308,10 @@ elif selected == "Dashboard":
         except: st.error("Error memuat dashboard.")
 
 # =========================================================
-# 9. HALAMAN: SADAS BOT (FIXED LAYOUT + HAPUS CHAT)
+# 9. HALAMAN: SADAS BOT
 # =========================================================
 elif selected == "Sadas Bot":
-    # SPACER TAMBAHAN (Ini penting biar judul bot gak kejedot menu)
-    st.markdown("<div style='height: 20px;'></div>", unsafe_allow_html=True)
+    st.markdown("<div style='margin-top: 20px;'></div>", unsafe_allow_html=True)
 
     st.markdown("<div style='max-width: 700px; margin: auto;'>", unsafe_allow_html=True)
     
@@ -388,8 +380,7 @@ elif selected == "Sadas Bot":
 # 10. HALAMAN: ADMIN
 # =========================================================
 elif selected == "Admin":
-    # SPACER TAMBAHAN
-    st.markdown("<div style='height: 20px;'></div>", unsafe_allow_html=True)
+    st.markdown("<div style='margin-top: 20px;'></div>", unsafe_allow_html=True)
     
     st.markdown("<h2 style='text-align:center;'>🔐 Admin Area</h2>", unsafe_allow_html=True)
     if 'is_logged_in' not in st.session_state: st.session_state['is_logged_in'] = False
