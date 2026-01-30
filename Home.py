@@ -22,7 +22,7 @@ st.set_page_config(
 )
 
 # =========================================================
-# 2. GLOBAL CSS (STICKY NAVBAR + LIGHT MODE) 🌟
+# 2. GLOBAL CSS (STICKY FIX + ANTI KEPOTONG) 🛡️
 # =========================================================
 st.markdown("""
 <style>
@@ -47,7 +47,6 @@ label, .stTextInput label, .stSelectbox label, .stTextArea label, .stFileUploade
 }
 
 /* --- FITUR: STICKY MENU (MENU NEMPEL DI ATAS) --- */
-/* Ini trik CSS biar menunya diem di atas pas di-scroll */
 iframe[title="streamlit_option_menu.option_menu"] {
     position: fixed;
     top: 0;
@@ -55,15 +54,17 @@ iframe[title="streamlit_option_menu.option_menu"] {
     right: 0;
     z-index: 9999;
     width: 100%;
-    background: #f8fafc; /* Warna background menu biar teks chat gak tembus */
+    background: #f8fafc; /* Biar chat gak tembus ke menu */
     padding-top: 10px;
     padding-bottom: 5px;
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 
-/* Geser konten ke bawah biar gak ketutupan menu yang nempel */
+/* --- SOLUSI BIAR GAK KEPOTONG/TENGGELAM --- */
+/* Kita dorong konten utama ke bawah sejauh 140px biar aman dari menu */
 .block-container {
-    padding-top: 80px !important;
+    padding-top: 140px !important; 
+    padding-bottom: 50px !important;
 }
 
 /* CARDS */
@@ -101,6 +102,7 @@ div.stButton > button:hover { transform: scale(1.02); box-shadow: 0 4px 12px rgb
     font-size: 12px !important;
     padding: 5px 10px !important;
     width: auto !important;
+    float: right;
 }
 
 div[data-testid="stImage"] { display: flex; justify-content: center; align-items: center; }
@@ -144,15 +146,16 @@ if "GEMINI_API_KEY" in st.secrets:
     except: pass
 
 # =========================================================
-# 4. MENU NAVIGASI (STICKY)
+# 4. MENU NAVIGASI (FIXED STATE)
 # =========================================================
-# Menu ini akan otomatis nempel di atas karena CSS "position: fixed" tadi
+# key="nav_menu" penting biar menu gak reset ke Home pas klik tombol lain
 selected = option_menu(
     menu_title=None,
     options=["Home", "Lapor Masalah", "Cek Status", "Dashboard", "Sadas Bot", "Admin"],
     icons=["house", "exclamation-triangle-fill", "search", "bar-chart-fill", "robot", "lock-fill"],
     default_index=0,
     orientation="horizontal",
+    key="nav_menu",  # <--- INI SOLUSI BIAR MENU GAK PINDAH SENDIRI
     styles={
         "container": {"padding": "5px", "background-color": "#ffffff", "border-radius": "12px", "border": "1px solid #e2e8f0"},
         "nav-link": {"font-size": "14px", "color": "#64748b", "margin": "0px"},
@@ -164,7 +167,6 @@ selected = option_menu(
 # 5. HALAMAN: HOME
 # =========================================================
 if selected == "Home":
-    st.write("") 
     col_logo1, col_text, col_logo2 = st.columns([1.5, 6, 1.5])
     with col_logo1:
         if os.path.exists("logo_uin.png"): st.image("logo_uin.png", width=120)
@@ -294,16 +296,16 @@ elif selected == "Dashboard":
         except: st.error("Error memuat dashboard.")
 
 # =========================================================
-# 9. HALAMAN: SADAS BOT (FITUR HAPUS CHAT + STICKY)
+# 9. HALAMAN: SADAS BOT (FIXED LAYOUT)
 # =========================================================
 elif selected == "Sadas Bot":
     st.markdown("<div style='max-width: 700px; margin: auto;'>", unsafe_allow_html=True)
     
-    # --- HEADER & TOMBOL HAPUS ---
-    col_header, col_btn = st.columns([8, 2])
+    # --- HEADER & TOMBOL HAPUS (Layout Rapi) ---
+    col_header, col_btn = st.columns([3, 1])
     with col_header:
-        st.markdown(f"<h2 style='text-align:left; margin-top:0;'>🤖 Sadas Bot</h2>", unsafe_allow_html=True)
-        st.markdown("<p style='text-align:left; color:#64748b; margin-top:-10px;'>Asisten Akademik Virtual</p>", unsafe_allow_html=True)
+        st.markdown(f"<h2 style='text-align:left; margin:0;'>🤖 Sadas Bot</h2>", unsafe_allow_html=True)
+        st.markdown("<p style='text-align:left; color:#64748b; margin-top:0px;'>Asisten Akademik Virtual</p>", unsafe_allow_html=True)
     
     with col_btn:
         st.markdown('<div class="hapus-chat-btn">', unsafe_allow_html=True)
@@ -335,8 +337,8 @@ elif selected == "Sadas Bot":
                     if 'generateContent' in m.supported_generation_methods:
                         available_models.append(m.name)
                 
-                # 2. Prioritas Model
-                target_model = 'gemini-1.5-flash' # Default
+                # 2. Prioritas Model (Cari yang gratisan/umum dulu)
+                target_model = 'gemini-1.5-flash' # Default target
                 
                 found_flash = False
                 for m in available_models:
