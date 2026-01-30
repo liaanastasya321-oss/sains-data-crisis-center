@@ -8,7 +8,7 @@ import requests
 import google.generativeai as genai
 
 # =========================================================
-# 1. PAGE CONFIG (WAJIB PALING ATAS)
+# 1. PAGE CONFIG
 # =========================================================
 st.set_page_config(
     page_title="Sains Data Crisis Center",
@@ -18,11 +18,10 @@ st.set_page_config(
 )
 
 # =========================================================
-# 2. CLEAN MODERN CSS (STYLE DARI GPT - DIPERTAHANKAN) 🎨
+# 2. CSS MODERN (PLUS JAKARTA SANS) 🎨
 # =========================================================
 st.markdown("""
 <style>
-/* Font Keren */
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap');
 
 html, body, [class*="css"] {
@@ -34,19 +33,19 @@ html, body, [class*="css"] {
 div[data-testid="stDecoration"] { display:none; }
 .stApp > header { display: none !important; }
 
-/* Background Bersih */
+/* Background */
 .stApp {
     background-color: #f8fafc;
 }
 
-/* Container Rapih (Tengah) */
+/* Container */
 .block-container {
     max-width: 1000px;
     padding-top: 20px;
     padding-bottom: 40px;
 }
 
-/* HEADER STYLE (Mobile Friendly) */
+/* HEADER STYLE */
 .app-header {
     display: flex;
     align-items: center;
@@ -72,14 +71,14 @@ div[data-testid="stDecoration"] { display:none; }
     margin-top: 4px;
 }
 
-/* STYLE TOMBOL KEREN */
+/* BUTTON */
 .stButton > button {
     width: 100%;
     border-radius: 12px;
     padding: 14px;
     font-weight: 600;
     border: none;
-    background: #0f172a; /* Warna Gelap Elegan */
+    background: #0f172a;
     color: white;
     transition: all 0.2s;
 }
@@ -88,32 +87,21 @@ div[data-testid="stDecoration"] { display:none; }
     transform: translateY(-2px);
 }
 
-/* STYLE CHAT */
+/* CHAT */
 .chat-user {
-    background: #eff6ff;
-    color: #1e3a8a;
-    padding: 12px 16px;
-    border-radius: 12px 12px 0 12px;
-    margin-bottom: 10px;
-    max-width: 85%;
-    margin-left: auto;
-    font-size: 14px;
+    background: #eff6ff; color: #1e3a8a;
+    padding: 12px 16px; border-radius: 12px 12px 0 12px;
+    margin-bottom: 10px; max-width: 85%; margin-left: auto; font-size: 14px;
     border: 1px solid #dbeafe;
 }
-
 .chat-bot {
-    background: #ffffff;
-    color: #334155;
-    padding: 12px 16px;
-    border-radius: 12px 12px 12px 0;
-    margin-bottom: 10px;
-    max-width: 85%;
-    font-size: 14px;
-    border: 1px solid #e2e8f0;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    background: #ffffff; color: #334155;
+    padding: 12px 16px; border-radius: 12px 12px 12px 0;
+    margin-bottom: 10px; max-width: 85%; font-size: 14px;
+    border: 1px solid #e2e8f0; box-shadow: 0 2px 4px rgba(0,0,0,0.02);
 }
 
-/* INPUT FIELD */
+/* INPUT */
 .stTextInput input, .stTextArea textarea, .stSelectbox div[data-baseweb="select"] {
     background-color: white !important;
     border: 1px solid #cbd5e1 !important;
@@ -121,7 +109,7 @@ div[data-testid="stDecoration"] { display:none; }
     color: #0f172a !important;
 }
 
-/* MENU NAVIGASI */
+/* MENU FIX */
 iframe[title="streamlit_option_menu.option_menu"] {
     background-color: transparent !important;
 }
@@ -129,7 +117,7 @@ iframe[title="streamlit_option_menu.option_menu"] {
 """, unsafe_allow_html=True)
 
 # =========================================================
-# 3. KONEKSI DATABASE & AI
+# 3. KONEKSI & HELPER
 # =========================================================
 ID_SPREADSHEET = "1crJl0DsswyMGmq0ej_niIMfhSLdUIUx8u42HEu-sc3g"
 API_KEY_IMGBB  = "827ccb0eea8a706c4c34a16891f84e7b"
@@ -154,18 +142,15 @@ sh = get_sheet()
 sheet_laporan = sh.worksheet("Laporan") if sh else None
 sheet_pengumuman = sh.worksheet("Pengumuman") if sh else None
 
-# Setup Gemini
 if "GEMINI_API_KEY" in st.secrets:
     try: genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
     except: pass
 
-# Helper Gambar
 def get_img_base64(path):
     try:
         with open(path, "rb") as f: return base64.b64encode(f.read()).decode()
     except: return ""
 
-# Helper Header (Biar Rapi di HP)
 def render_header():
     logo = get_img_base64("logo_uin.png")
     st.markdown(f"""
@@ -179,9 +164,12 @@ def render_header():
     """, unsafe_allow_html=True)
 
 # =========================================================
-# 4. NAVIGASI (DIPERBAIKI BIAR TOMBOL HOME BERFUNGSI)
+# 4. NAVIGASI (FIX CALLBACK)
 # =========================================================
-# Gunakan session state untuk sinkronisasi tombol Home dengan Navbar
+# Fungsi ajaib ini yang bikin tombol Home gak error lagi
+def pindah_halaman(halaman):
+    st.session_state.nav_menu = halaman
+
 if 'nav_menu' not in st.session_state:
     st.session_state.nav_menu = "Home"
 
@@ -190,7 +178,7 @@ menu = option_menu(
     ["Home", "Lapor", "Status", "Data", "SadasBot", "Admin"],
     icons=["house", "send", "search", "bar-chart", "robot", "shield-lock"],
     orientation="horizontal",
-    key="nav_menu", # Kunci ini penting biar tombol di Home bisa ngubah menu
+    key="nav_menu", # Kunci ini dijaga biar sinkron
     styles={
         "container": {"padding": "0!important", "background-color": "white", "border-radius": "12px", "border": "1px solid #e2e8f0"},
         "icon": {"color": "#64748b", "font-size": "14px"}, 
@@ -208,21 +196,15 @@ if menu == "Home":
 
     col1, col2, col3 = st.columns(3)
 
-    # Tombol ini sekarang BENAR-BENAR berfungsi memindah halaman
+    # DISINI KUNCINYA: Pakai on_click, bukan st.rerun() langsung
     with col1:
-        if st.button("📢 Pelaporan"):
-            st.session_state.nav_menu = "Lapor"
-            st.rerun()
+        st.button("📢 Pelaporan", on_click=pindah_halaman, args=("Lapor",))
 
     with col2:
-        if st.button("🔍 Cek Status"):
-            st.session_state.nav_menu = "Status"
-            st.rerun()
+        st.button("🔍 Cek Status", on_click=pindah_halaman, args=("Status",))
 
     with col3:
-        if st.button("🤖 Sadas Bot"):
-            st.session_state.nav_menu = "SadasBot"
-            st.rerun()
+        st.button("🤖 Sadas Bot", on_click=pindah_halaman, args=("SadasBot",))
 
     st.write("")
     st.markdown("##### 📌 Info Terbaru")
@@ -232,7 +214,6 @@ if menu == "Home":
             data = sheet_pengumuman.get_all_records()
             if data:
                 for item in reversed(data[-3:]):
-                    # Style Card Pengumuman Simple
                     st.markdown(f"""
                     <div style="background:white; padding:16px; border-radius:12px; border:1px solid #e2e8f0; margin-bottom:10px;">
                         <div style="font-weight:700; color:#0f172a; margin-bottom:4px;">{item['Judul']}</div>
@@ -267,7 +248,6 @@ elif menu == "Lapor":
                     with st.spinner("Mengirim..."):
                         waktu = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
                         link = "-"
-                        # Upload Image (Simple ImgBB)
                         if file:
                             try:
                                 files = {"image": file.getvalue()}
@@ -281,7 +261,7 @@ elif menu == "Lapor":
                     st.error("Database error.")
 
 # =========================================================
-# 7. HALAMAN: STATUS (YANG TADI HILANG)
+# 7. HALAMAN: STATUS
 # =========================================================
 elif menu == "Status":
     render_header()
@@ -303,7 +283,6 @@ elif menu == "Status":
                 
                 if not hasil.empty:
                     for idx, row in hasil.iterrows():
-                        # Style Status Card Clean
                         st.markdown(f"""
                         <div style="background:white; padding:16px; border-radius:12px; border:1px solid #e2e8f0; margin-bottom:10px; border-left: 4px solid #2563eb;">
                             <div style="font-size:12px; color:#94a3b8; margin-bottom:4px;">{row['Waktu Lapor']} • {row['Kategori Masalah']}</div>
@@ -323,24 +302,20 @@ elif menu == "SadasBot":
 
     if "chat" not in st.session_state: st.session_state.chat = []
 
-    # Render Chat
     for c in st.session_state.chat:
         tipe = "chat-user" if c['role'] == 'user' else "chat-bot"
         st.markdown(f"<div class='{tipe}'>{c['msg']}</div>", unsafe_allow_html=True)
 
-    # Input
     if q := st.chat_input("Ketik pertanyaan..."):
         st.session_state.chat.append({"role": "user", "msg": q})
         st.rerun()
 
-    # Generate Reply (Setelah rerun biar smooth)
     if st.session_state.chat and st.session_state.chat[-1]['role'] == 'user':
         q = st.session_state.chat[-1]['msg']
         reply = "Maaf, API Key error."
         
         if "GEMINI_API_KEY" in st.secrets:
             try:
-                # Auto Detect Model
                 available = [m.name for m in genai.list_models() if 'generateContent' in m.supported_generation_methods]
                 target = 'models/gemini-1.5-flash' if 'models/gemini-1.5-flash' in available else 'models/gemini-pro'
                 
@@ -378,4 +353,3 @@ elif menu == "Admin":
     pwd = st.text_input("Password", type="password")
     if pwd == "RAHASIA PIKM😭":
         st.success("Login Berhasil!")
-        # Isi fitur admin disini
