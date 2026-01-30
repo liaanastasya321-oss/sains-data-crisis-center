@@ -9,7 +9,7 @@ import os
 import requests
 import datetime
 import time
-import google.generativeai as genai # <--- OTAK BARU
+import google.generativeai as genai 
 
 # =========================================================
 # 1. PAGE CONFIG
@@ -22,7 +22,7 @@ st.set_page_config(
 )
 
 # =========================================================
-# 2. GLOBAL CSS (DESIGN TETAP SAMA)
+# 2. GLOBAL CSS (LIGHT MODE + LOGO + LABEL JELAS)
 # =========================================================
 st.markdown("""
 <style>
@@ -41,7 +41,7 @@ html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
     border: 1px solid #94a3b8 !important; border-radius: 8px !important;
 }
 
-/* LABEL */
+/* LABEL HITAM JELAS */
 label, .stTextInput label, .stSelectbox label, .stTextArea label, .stFileUploader label, div[data-testid="stWidgetLabel"] p {
     color: #0f172a !important; font-size: 15px !important; font-weight: 700 !important;
 }
@@ -113,11 +113,14 @@ except: sheet = None
 try: sheet_pengumuman = sh.worksheet("Pengumuman") if sh else None
 except: sheet_pengumuman = None
 
-# KONFIGURASI AI GEMINI
+# KONFIGURASI AI GEMINI (FIXED MODEL: gemini-pro) ✅
 model = None
 if "GEMINI_API_KEY" in st.secrets:
     genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
-    model = genai.GenerativeModel('gemini-1.5-flash')
+    try:
+        model = genai.GenerativeModel('gemini-pro') # <-- Pake ini biar AMAN
+    except:
+        model = None
 
 # =========================================================
 # 4. MENU NAVIGASI
@@ -272,7 +275,7 @@ elif selected == "Dashboard":
         except: st.error("Error memuat dashboard.")
 
 # =========================================================
-# 9. HALAMAN: SADAS BOT (VERSI AI CERDAS!) 🧠
+# 9. HALAMAN: SADAS BOT (VERSI GEMINI PRO) 🧠
 # =========================================================
 elif selected == "Sadas Bot":
     st.markdown("<div style='max-width: 700px; margin: auto;'>", unsafe_allow_html=True)
@@ -289,11 +292,10 @@ elif selected == "Sadas Bot":
         st.session_state.messages.append({"role": "user", "content": prompt})
         with st.chat_message("user"): st.markdown(prompt)
 
-        # --- LOGIKA AI GEMINI ---
+        # --- LOGIKA AI GEMINI (ANTI ERROR) ---
         response = ""
         if model:
             try:
-                # Instruksi biar bot-nya berasa kayak anak Himpunan
                 system_prompt = "Kamu adalah Sadas Bot, asisten virtual yang ramah dan membantu untuk mahasiswa Sains Data UIN Raden Intan Lampung. Jawab dengan bahasa Indonesia yang santai tapi sopan."
                 full_prompt = f"{system_prompt}\nUser bertanya: {prompt}"
                 
@@ -301,9 +303,9 @@ elif selected == "Sadas Bot":
                     ai_response = model.generate_content(full_prompt)
                     response = ai_response.text
             except Exception as e:
-                response = f"Maaf, otaku lagi error nih. (Error: {e})"
+                response = f"Maaf, otaku lagi error nih. Coba tanya lagi nanti. (Error: {e})"
         else:
-            response = "⚠️ API Key Gemini belum dipasang di Secrets. Bot belum bisa mikir."
+            response = "⚠️ API Key Gemini belum dipasang dengan benar."
 
         st.session_state.messages.append({"role": "assistant", "content": response})
         with st.chat_message("assistant"): st.markdown(response)
