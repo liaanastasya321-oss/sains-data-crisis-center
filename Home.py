@@ -22,7 +22,7 @@ st.set_page_config(
 )
 
 # =========================================================
-# 2. GLOBAL CSS (LIGHT MODE + LOGO + LABEL JELAS)
+# 2. GLOBAL CSS (LIGHT MODE + DESIGN FIX)
 # =========================================================
 st.markdown("""
 <style>
@@ -87,12 +87,11 @@ except: sheet = None
 try: sheet_pengumuman = sh.worksheet("Pengumuman") if sh else None
 except: sheet_pengumuman = None
 
-# --- KONFIGURASI AI (HANYA INIT, JANGAN ERROR DULU) ---
+# --- KONFIGURASI AI (SETUP AWAL) ---
 if "GEMINI_API_KEY" in st.secrets:
     try:
         genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
-    except:
-        pass
+    except: pass
 
 # =========================================================
 # 4. MENU NAVIGASI
@@ -244,7 +243,7 @@ elif selected == "Dashboard":
         except: st.error("Error memuat dashboard.")
 
 # =========================================================
-# 9. HALAMAN: SADAS BOT (VERSI TAHAN BANTING) 🥊
+# 9. HALAMAN: SADAS BOT (DETEKTIF MODE) 🕵️‍♂️
 # =========================================================
 elif selected == "Sadas Bot":
     st.markdown("<div style='max-width: 700px; margin: auto;'>", unsafe_allow_html=True)
@@ -261,45 +260,49 @@ elif selected == "Sadas Bot":
         st.session_state.messages.append({"role": "user", "content": prompt})
         with st.chat_message("user"): st.markdown(prompt)
 
-        response = "Maaf, sistem AI sedang gangguan." # Default
-        
-        # --- LOGIKA "MODEL HOPPING" (Loncat-loncat cari model yg hidup) ---
+        response = ""
+        # --- LOGIKA DETEKTIF MODEL ---
         if "GEMINI_API_KEY" in st.secrets:
-            # Daftar model yang mau dicoba (Urutan Prioritas)
-            # Flash = Cepat & Gratis | Pro = Stabil | 1.0 = Versi Lama tapi Aman
-            models_to_try = [
-                'gemini-1.5-flash', 
-                'gemini-1.5-pro',
-                'gemini-1.0-pro',
-                'gemini-pro'
-            ]
-            
-            success = False
-            error_log = []
+            try:
+                # 1. Kita cari dulu model apa yang tersedia (LIST MODEL)
+                available_models = []
+                for m in genai.list_models():
+                    if 'generateContent' in m.supported_generation_methods:
+                        available_models.append(m.name)
+                
+                # 2. Coba pakai 'gemini-1.5-flash' dulu (Prioritas)
+                target_model = 'gemini-1.5-flash' # Default
+                
+                # Cek apakah flash ada di list?
+                found_flash = False
+                for m in available_models:
+                    if 'flash' in m:
+                        target_model = m
+                        found_flash = True
+                        break
+                
+                # Kalau flash gak ada, cari 'pro'
+                if not found_flash:
+                    for m in available_models:
+                        if 'pro' in m:
+                            target_model = m
+                            break
+                
+                # 3. Jalankan Model Terpilih
+                model = genai.GenerativeModel(target_model)
+                
+                system_prompt = "Kamu adalah Sadas Bot, asisten virtual dari Sains Data UIN Raden Intan Lampung. Jawab sopan dan santai."
+                full_prompt = f"{system_prompt}\nUser: {prompt}"
+                
+                with st.spinner(f"Sadas Bot berpikir... (Pakai otak: {target_model})"):
+                    ai_response = model.generate_content(full_prompt)
+                    response = ai_response.text
 
-            with st.spinner("Sadas Bot sedang mencari jawaban..."):
-                for model_name in models_to_try:
-                    try:
-                        # Coba inisialisasi model
-                        model = genai.GenerativeModel(model_name)
-                        
-                        # Coba kirim pesan
-                        system_prompt = "Kamu adalah Sadas Bot, asisten virtual dari Sains Data UIN Raden Intan Lampung. Jawab sopan dan santai."
-                        full_prompt = f"{system_prompt}\nUser: {prompt}"
-                        
-                        ai_response = model.generate_content(full_prompt)
-                        response = ai_response.text
-                        success = True
-                        break # Kalau berhasil, berhenti looping (loncat)
-                    except Exception as e:
-                        # Kalau gagal, catat errornya dan lanjut ke model berikutnya
-                        error_log.append(f"{model_name}: {str(e)}")
-                        continue 
-            
-            if not success:
-                response = f"⚠️ Maaf kak, semua otak robot lagi pusing (Error Models). Cek koneksi atau kuota API. Detail: {error_log[0]}"
+            except Exception as e:
+                # KALAU MASIH ERROR, TAMPILKAN DAFTAR MODEL YANG ADA
+                response = f"⚠️ Masih error kak. \n\n**Daftar Model yang tersedia di akunmu:** {available_models} \n\nDetail Error: {str(e)}"
         else:
-            response = "⚠️ API Key belum dipasang di Secrets."
+            response = "⚠️ API Key Gemini belum dipasang di Secrets."
 
         st.session_state.messages.append({"role": "assistant", "content": response})
         with st.chat_message("assistant"): st.markdown(response)
