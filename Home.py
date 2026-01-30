@@ -22,37 +22,87 @@ st.set_page_config(
 )
 
 # =========================================================
-# 2. GLOBAL CSS (LIGHT MODE + DESIGN FIX)
+# 2. GLOBAL CSS (STICKY NAVBAR + LIGHT MODE) 🌟
 # =========================================================
 st.markdown("""
 <style>
+/* BACKGROUND */
 .stApp { background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%); color: #0f172a; }
+
+/* HIDE UI BAWAAN */
 #MainMenu {visibility: hidden;} footer {visibility: hidden;} header {visibility: hidden;} [data-testid="stSidebar"] {display: none;}
+
+/* FONT & INPUT */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
 html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
+
 .stTextInput input, .stTextArea textarea, .stSelectbox div[data-baseweb="select"] {
-    color: #334155 !important; background-color: #ffffff !important; border: 1px solid #94a3b8 !important; border-radius: 8px !important;
+    color: #334155 !important; background-color: #ffffff !important;
+    border: 1px solid #94a3b8 !important; border-radius: 8px !important;
 }
+
+/* LABEL */
 label, .stTextInput label, .stSelectbox label, .stTextArea label, .stFileUploader label, div[data-testid="stWidgetLabel"] p {
     color: #0f172a !important; font-size: 15px !important; font-weight: 700 !important;
 }
+
+/* --- FITUR: STICKY MENU (MENU NEMPEL DI ATAS) --- */
+/* Ini trik CSS biar menunya diem di atas pas di-scroll */
+iframe[title="streamlit_option_menu.option_menu"] {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 9999;
+    width: 100%;
+    background: #f8fafc; /* Warna background menu biar teks chat gak tembus */
+    padding-top: 10px;
+    padding-bottom: 5px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+/* Geser konten ke bawah biar gak ketutupan menu yang nempel */
+.block-container {
+    padding-top: 80px !important;
+}
+
+/* CARDS */
 .glass-card {
-    background: #ffffff; border-radius: 16px; padding: 24px; border: 1px solid #cbd5e1; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); margin-bottom: 20px;
+    background: #ffffff; border-radius: 16px; padding: 24px;
+    border: 1px solid #cbd5e1; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); margin-bottom: 20px;
 }
 .glass-card:hover { transform: translateY(-3px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); border-color: #3b82f6; }
+
+/* ANNOUNCE CARD */
 .announce-card {
-    background: #ffffff; border-radius: 12px; padding: 20px; margin-bottom: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; transition: transform 0.2s;
+    background: #ffffff; border-radius: 12px; padding: 20px; margin-bottom: 15px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; transition: transform 0.2s;
 }
 .announce-card:hover { transform: scale(1.01); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+
+/* TYPOGRAPHY */
 h1, h2, h3, h4, h5, h6 { color: #0f172a !important; font-weight: 800 !important; }
 p { color: #334155 !important; }
 .hero h1 {
-    font-size: 42px; background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 5px;
+    font-size: 42px; background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 5px;
 }
+
+/* BUTTON */
 div.stButton > button {
-    background: linear-gradient(90deg, #2563eb, #1d4ed8); color: white; border: none; padding: 10px 24px; border-radius: 8px; font-weight: bold; width: 100%;
+    background: linear-gradient(90deg, #2563eb, #1d4ed8); color: white; border: none;
+    padding: 10px 24px; border-radius: 8px; font-weight: bold; width: 100%;
 }
 div.stButton > button:hover { transform: scale(1.02); box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3); }
+
+/* TOMBOL HAPUS CHAT (MERAH) */
+.hapus-chat-btn button {
+    background: #ef4444 !important;
+    font-size: 12px !important;
+    padding: 5px 10px !important;
+    width: auto !important;
+}
+
 div[data-testid="stImage"] { display: flex; justify-content: center; align-items: center; }
 .chat-message { padding: 1.5rem; border-radius: 0.5rem; margin-bottom: 1rem; display: flex; }
 .chat-message.user { background-color: #e0f2fe; border-left: 5px solid #0284c7; }
@@ -87,15 +137,16 @@ except: sheet = None
 try: sheet_pengumuman = sh.worksheet("Pengumuman") if sh else None
 except: sheet_pengumuman = None
 
-# --- KONFIGURASI AI (SETUP AWAL) ---
+# --- KONFIGURASI AI ---
 if "GEMINI_API_KEY" in st.secrets:
     try:
         genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
     except: pass
 
 # =========================================================
-# 4. MENU NAVIGASI
+# 4. MENU NAVIGASI (STICKY)
 # =========================================================
+# Menu ini akan otomatis nempel di atas karena CSS "position: fixed" tadi
 selected = option_menu(
     menu_title=None,
     options=["Home", "Lapor Masalah", "Cek Status", "Dashboard", "Sadas Bot", "Admin"],
@@ -243,13 +294,27 @@ elif selected == "Dashboard":
         except: st.error("Error memuat dashboard.")
 
 # =========================================================
-# 9. HALAMAN: SADAS BOT (DETEKTIF MODE) 🕵️‍♂️
+# 9. HALAMAN: SADAS BOT (FITUR HAPUS CHAT + STICKY)
 # =========================================================
 elif selected == "Sadas Bot":
     st.markdown("<div style='max-width: 700px; margin: auto;'>", unsafe_allow_html=True)
-    st.markdown(f"<h2 style='text-align:center;'>🤖 Sadas Bot</h2>", unsafe_allow_html=True)
-    st.markdown("<p style='text-align:center;'>Tanya apa saja seputar akademik, tugas, atau curhat!</p>", unsafe_allow_html=True)
     
+    # --- HEADER & TOMBOL HAPUS ---
+    col_header, col_btn = st.columns([8, 2])
+    with col_header:
+        st.markdown(f"<h2 style='text-align:left; margin-top:0;'>🤖 Sadas Bot</h2>", unsafe_allow_html=True)
+        st.markdown("<p style='text-align:left; color:#64748b; margin-top:-10px;'>Asisten Akademik Virtual</p>", unsafe_allow_html=True)
+    
+    with col_btn:
+        st.markdown('<div class="hapus-chat-btn">', unsafe_allow_html=True)
+        if st.button("🗑️ Hapus Chat"):
+            st.session_state.messages = []
+            st.rerun()
+        st.markdown('</div>', unsafe_allow_html=True)
+
+    st.write("---")
+    
+    # --- AREA CHAT ---
     if "messages" not in st.session_state: st.session_state.messages = []
 
     for message in st.session_state.messages:
@@ -261,46 +326,38 @@ elif selected == "Sadas Bot":
         with st.chat_message("user"): st.markdown(prompt)
 
         response = ""
-        # --- LOGIKA DETEKTIF MODEL ---
+        # --- LOGIKA DETEKTIF MODEL (POLOS TANPA TULISAN LOADING TEKNIS) ---
         if "GEMINI_API_KEY" in st.secrets:
             try:
-                # 1. Kita cari dulu model apa yang tersedia (LIST MODEL)
+                # 1. Cari model yang tersedia
                 available_models = []
                 for m in genai.list_models():
                     if 'generateContent' in m.supported_generation_methods:
                         available_models.append(m.name)
                 
-                # 2. Coba pakai 'gemini-1.5-flash' dulu (Prioritas)
+                # 2. Prioritas Model
                 target_model = 'gemini-1.5-flash' # Default
                 
-                # Cek apakah flash ada di list?
                 found_flash = False
                 for m in available_models:
-                    if 'flash' in m:
-                        target_model = m
-                        found_flash = True
-                        break
+                    if 'flash' in m: target_model = m; found_flash = True; break
                 
-                # Kalau flash gak ada, cari 'pro'
                 if not found_flash:
                     for m in available_models:
-                        if 'pro' in m:
-                            target_model = m
-                            break
+                        if 'pro' in m: target_model = m; break
                 
-                # 3. Jalankan Model Terpilih
+                # 3. Jalankan Model
                 model = genai.GenerativeModel(target_model)
-                
                 system_prompt = "Kamu adalah Sadas Bot, asisten virtual dari Sains Data UIN Raden Intan Lampung. Jawab sopan dan santai."
                 full_prompt = f"{system_prompt}\nUser: {prompt}"
                 
-                with st.spinner(f"Sadas Bot berpikir... (Pakai otak: {target_model})"):
+                # LOADING YANG SIMPEL AJA
+                with st.spinner("Sadas Bot sedang mengetik..."):
                     ai_response = model.generate_content(full_prompt)
                     response = ai_response.text
 
             except Exception as e:
-                # KALAU MASIH ERROR, TAMPILKAN DAFTAR MODEL YANG ADA
-                response = f"⚠️ Masih error kak. \n\n**Daftar Model yang tersedia di akunmu:** {available_models} \n\nDetail Error: {str(e)}"
+                response = f"⚠️ Masih error kak. Detail Error: {str(e)}"
         else:
             response = "⚠️ API Key Gemini belum dipasang di Secrets."
 
