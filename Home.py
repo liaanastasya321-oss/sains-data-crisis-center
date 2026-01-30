@@ -20,75 +20,78 @@ st.set_page_config(
 )
 
 # =========================================================
-# 2. GLOBAL CSS (VERSI FONT SUDAH DIPERBAIKI) 🛠️
+# 2. GLOBAL CSS (FIX TAMPILAN GELAP & LABEL JELAS) 🛠️
 # =========================================================
 st.markdown("""
 <style>
-/* Sembunyikan UI Bawaan Streamlit */
+/* 1. PAKSA BACKGROUND JADI GELAP (NAVY) */
+.stApp {
+    background-color: #0f172a;
+    background-image: radial-gradient(circle at top, #1e293b, #020617);
+    color: #ffffff;
+}
+
+/* 2. SEMBUNYIKAN UI BAWAAN */
 #MainMenu {visibility: hidden;}
 footer {visibility: hidden;}
 header {visibility: hidden;}
 [data-testid="stSidebar"] {display: none;}
 
-/* Font Utama */
+/* 3. FONT IMPORT */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
-
 html, body, [class*="css"] {
     font-family: 'Inter', sans-serif;
-    background: radial-gradient(circle at top, #0f172a, #020617); /* Navy Gelap */
-    color: #e5e7eb;
 }
 
-/* --- PERBAIKAN KOLOM KETIK (INPUT FIX) --- */
-/* Ini supaya background kotak input jadi gelap transparan */
+/* 4. PERBAIKAN WARNA INPUT FORM (KOTAK ISIAN) */
+/* Background kotak input jadi abu gelap transparan */
 .stTextInput input, .stTextArea textarea, .stSelectbox div[data-baseweb="select"] {
-    color: #ffffff !important; /* Tulisan jadi PUTIH */
-    background-color: rgba(30, 41, 59, 0.7) !important; /* Background Abu Gelap */
-    border: 1px solid rgba(255, 255, 255, 0.2) !important; /* Garis Tepi Putih Tipis */
-    caret-color: #06b6d4 !important; /* Kursor kedip-kedip warna CYAN */
+    color: #ffffff !important;           /* Tulisan yang diketik PUTIH */
+    background-color: rgba(30, 41, 59, 0.8) !important; /* Background Gelap */
+    border: 1px solid rgba(255, 255, 255, 0.3) !important; /* Garis Tepi Terang */
 }
 
-/* Supaya Placeholder (tulisan samar) kelihatan */
+/* LABEL JUDUL DI ATAS KOTAK INPUT (Nama, NPM, dll) */
+div[data-testid="stWidgetLabel"] p {
+    color: #00d4ff !important; /* Warna CYAN NEON biar jelas banget */
+    font-size: 14px !important;
+    font-weight: 600 !important;
+}
+
+/* Placeholder (Tulisan samar di dalam kotak) */
 ::placeholder {
     color: #94a3b8 !important;
     opacity: 1;
 }
 
-/* Kalau kotak input lagi diklik/aktif */
+/* Efek Fokus (Pas diklik) */
 .stTextInput input:focus, .stTextArea textarea:focus {
-    border-color: #06b6d4 !important; /* Garis jadi Cyan */
-    box-shadow: 0 0 10px rgba(6, 182, 212, 0.3);
+    border-color: #06b6d4 !important;
+    box-shadow: 0 0 8px rgba(6, 182, 212, 0.5);
 }
 
-/* Label di atas kotak input */
-label, .stMarkdown p {
-    color: #e2e8f0 !important; 
-}
-
-/* Kartu Kaca (Glassmorphism) */
+/* 5. KARTU KACA (GLASSMORPHISM) */
 .glass-card {
     background: rgba(30, 41, 59, 0.4);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
     border-radius: 16px;
     padding: 24px;
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-    transition: all 0.3s ease;
     margin-bottom: 20px;
 }
-
 .glass-card:hover {
-    transform: translateY(-5px);
+    transform: translateY(-3px);
     border-color: rgba(6, 182, 212, 0.5);
     box-shadow: 0 0 20px rgba(6, 182, 212, 0.2);
 }
 
-/* Judul Hero */
-.hero {
-    padding: 60px 20px;
-    text-align: center;
-}
+/* 6. TYPOGRAPHY */
+h1, h2, h3 { color: white !important; }
+p { color: #cbd5e1 !important; }
+
+.hero { padding: 60px 20px; text-align: center; }
 .hero h1 {
     font-size: 48px;
     font-weight: 800;
@@ -97,24 +100,21 @@ label, .stMarkdown p {
     -webkit-text-fill-color: transparent;
     margin-bottom: 10px;
 }
-.hero p {
-    font-size: 18px; color: #94a3b8; margin-top: 10px;
+
+/* 7. TOMBOL */
+div.stButton > button {
+    background: linear-gradient(90deg, #2563eb, #06b6d4);
+    color: white; border: none; padding: 10px 24px;
+    border-radius: 8px; font-weight: bold; width: 100%;
+}
+div.stButton > button:hover {
+    transform: scale(1.02);
+    box-shadow: 0 0 15px rgba(6, 182, 212, 0.6);
 }
 
 /* Angka Dashboard */
 .metric-value { font-size: 42px; font-weight: 700; color: #06b6d4; }
-.metric-label { font-size: 14px; color: #cbd5e1; text-transform: uppercase; letter-spacing: 1px; }
-
-/* Tombol */
-div.stButton > button {
-    background: linear-gradient(90deg, #2563eb, #06b6d4);
-    color: white; border: none; padding: 10px 24px;
-    border-radius: 8px; font-weight: 600; width: 100%;
-    transition: transform 0.2s;
-}
-div.stButton > button:hover {
-    transform: scale(1.02); box-shadow: 0 0 15px rgba(6, 182, 212, 0.5);
-}
+.metric-label { font-size: 14px; color: #cbd5e1; text-transform: uppercase; }
 </style>
 """, unsafe_allow_html=True)
 
