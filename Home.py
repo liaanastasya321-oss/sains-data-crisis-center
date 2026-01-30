@@ -20,7 +20,7 @@ st.set_page_config(
 )
 
 # =========================================================
-# 2. GLOBAL CSS (FIX TAMPILAN GELAP & LABEL JELAS) 🛠️
+# 2. GLOBAL CSS (FIX TAMPILAN GELAP & LABEL JELAS)
 # =========================================================
 st.markdown("""
 <style>
@@ -44,27 +44,26 @@ html, body, [class*="css"] {
 }
 
 /* 4. PERBAIKAN WARNA INPUT FORM (KOTAK ISIAN) */
-/* Background kotak input jadi abu gelap transparan */
 .stTextInput input, .stTextArea textarea, .stSelectbox div[data-baseweb="select"] {
-    color: #ffffff !important;           /* Tulisan yang diketik PUTIH */
-    background-color: rgba(30, 41, 59, 0.8) !important; /* Background Gelap */
-    border: 1px solid rgba(255, 255, 255, 0.3) !important; /* Garis Tepi Terang */
+    color: #ffffff !important;           
+    background-color: rgba(30, 41, 59, 0.8) !important; 
+    border: 1px solid rgba(255, 255, 255, 0.3) !important; 
 }
 
-/* LABEL JUDUL DI ATAS KOTAK INPUT (Nama, NPM, dll) */
+/* LABEL JUDUL DI ATAS KOTAK INPUT */
 div[data-testid="stWidgetLabel"] p {
-    color: #00d4ff !important; /* Warna CYAN NEON biar jelas banget */
+    color: #00d4ff !important; /* Warna CYAN NEON */
     font-size: 14px !important;
     font-weight: 600 !important;
 }
 
-/* Placeholder (Tulisan samar di dalam kotak) */
+/* Placeholder */
 ::placeholder {
     color: #94a3b8 !important;
     opacity: 1;
 }
 
-/* Efek Fokus (Pas diklik) */
+/* Efek Fokus */
 .stTextInput input:focus, .stTextArea textarea:focus {
     border-color: #06b6d4 !important;
     box-shadow: 0 0 8px rgba(6, 182, 212, 0.5);
@@ -180,7 +179,7 @@ if selected == "Home":
         st.markdown("""<div class="glass-card"><h2 style="color:#8b5cf6;">🚀 Responsif</h2><p>Tim advokasi siap menindaklanjuti laporan dengan cepat.</p></div>""", unsafe_allow_html=True)
 
 # =========================================================
-# 6. HALAMAN: DASHBOARD
+# 6. HALAMAN: DASHBOARD (PEMBERSIHAN DATA)
 # =========================================================
 elif selected == "Dashboard":
     st.markdown("<h2 style='text-align:center;'>📊 Dashboard Analisis</h2>", unsafe_allow_html=True)
@@ -191,8 +190,12 @@ elif selected == "Dashboard":
         df = pd.DataFrame()
 
     if not df.empty:
+        # --- LOGIKA PEMBERSIH DATA ---
         if 'Waktu Lapor' in df.columns:
+             # Buang baris yang Waktu Lapor-nya kosong
              df = df[df['Waktu Lapor'].astype(str).str.strip() != ""]
+        # -----------------------------
+
         col1, col2, col3 = st.columns(3)
         with col1: st.markdown(f"""<div class="glass-card"><div class="metric-value">{len(df)}</div><div class="metric-label">Total Laporan</div></div>""", unsafe_allow_html=True)
         with col2: st.markdown(f"""<div class="glass-card"><div class="metric-value" style="color:#f59e0b;">{len(df[df['Status'] == 'Pending'])}</div><div class="metric-label">Menunggu</div></div>""", unsafe_allow_html=True)
@@ -272,8 +275,14 @@ elif selected == "Cek Status":
             try:
                 data = sheet.get_all_records()
                 df = pd.DataFrame(data)
+                
+                # Filter Data Kosong
+                if 'Waktu Lapor' in df.columns:
+                    df = df[df['Waktu Lapor'].astype(str).str.strip() != ""]
+
                 df['NPM'] = df['NPM'].astype(str)
                 hasil = df[df['NPM'] == npm_input]
+                
                 if not hasil.empty:
                     for idx, row in hasil.iterrows():
                         status = row['Status']
@@ -292,7 +301,7 @@ elif selected == "Cek Status":
             except: st.error("Gagal mengambil data.")
 
 # =========================================================
-# 9. HALAMAN: ADMIN
+# 9. HALAMAN: ADMIN (DENGAN FIX TABLE RAPI) 🔧
 # =========================================================
 elif selected == "Admin":
     st.markdown("<h2 style='text-align:center;'>🔐 Admin Area</h2>", unsafe_allow_html=True)
@@ -315,5 +324,15 @@ elif selected == "Admin":
         try:
             data = sheet.get_all_records()
             df = pd.DataFrame(data)
-            st.dataframe(df)
+
+            # --- LOGIKA PEMBERSIH DATA ADMIN (FIX RAPI) ---
+            if not df.empty:
+                if 'Waktu Lapor' in df.columns:
+                     # 1. Hapus Baris Kosong (Menaikkan data ke atas)
+                     df = df[df['Waktu Lapor'].astype(str).str.strip() != ""]
+                     # 2. Reset Nomor Urut (Biar mulai dari 0 lagi)
+                     df.reset_index(drop=True, inplace=True)
+            # ----------------------------------------------
+
+            st.dataframe(df, use_container_width=True)
         except: st.error("Data kosong")
