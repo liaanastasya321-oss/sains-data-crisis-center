@@ -1,7 +1,7 @@
 import streamlit as st
 import gspread
 from google.oauth2.service_account import Credentials
-import os, json
+import os, json, time
 from streamlit_option_menu import option_menu
 
 # ======================================================
@@ -14,7 +14,61 @@ st.set_page_config(
 )
 
 # ======================================================
-# CSS + JS (ANTI BUG, ANTI MUTER)
+# SESSION STATE (KUNCI ANTI LOOP)
+# ======================================================
+if "app_loaded" not in st.session_state:
+    st.session_state.app_loaded = False
+
+# ======================================================
+# LOADER / TIRAI (DIKONTROL PYTHON, BUKAN JS)
+# ======================================================
+if not st.session_state.app_loaded:
+    st.markdown("""
+    <style>
+    #curtain {
+        position: fixed;
+        inset: 0;
+        background: #020617;
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        animation: fadeOut 1s ease forwards;
+        animation-delay: 1.1s;
+    }
+
+    .spinner {
+        width: 70px;
+        height: 70px;
+        border: 6px solid #1e293b;
+        border-top: 6px solid #06b6d4;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        100% { transform: rotate(360deg); }
+    }
+
+    @keyframes fadeOut {
+        to {
+            opacity: 0;
+            visibility: hidden;
+        }
+    }
+    </style>
+
+    <div id="curtain">
+        <div class="spinner"></div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    time.sleep(1.3)          # ⏳ waktu animasi
+    st.session_state.app_loaded = True
+    st.rerun()
+
+# ======================================================
+# GLOBAL CSS (SETELAH TIRAI)
 # ======================================================
 st.markdown("""
 <style>
@@ -33,7 +87,7 @@ html, body, [class*="css"] {
     background: rgba(15,23,42,.65);
     backdrop-filter: blur(16px);
     border-radius: 18px;
-    padding: 28px;
+    padding: 26px;
     border: 1px solid rgba(59,130,246,.25);
     box-shadow: 0 0 30px rgba(6,182,212,.15);
     transition: .3s;
@@ -45,101 +99,41 @@ html, body, [class*="css"] {
 
 .hero {
     padding: 90px 60px;
-    text-align:center;
+    text-align: center;
 }
 .hero h1 {
-    font-size:56px;
-    font-weight:800;
+    font-size: 56px;
+    font-weight: 800;
     background: linear-gradient(90deg,#3b82f6,#06b6d4);
-    -webkit-background-clip:text;
-    -webkit-text-fill-color:transparent;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
 }
-#typewriter {
-    font-size:22px;
-    margin-top:14px;
-    color:#06b6d4;
+.hero p {
+    color: #94a3b8;
+    font-size: 20px;
+    margin-top: 12px;
 }
 
 /* BUTTON */
 .stButton > button {
-    width:100%;
-    border-radius:14px;
-    border:none;
+    width: 100%;
+    border-radius: 14px;
+    border: none;
     background: linear-gradient(135deg,#3b82f6,#06b6d4);
-    padding:14px;
-    color:white;
-    font-weight:600;
-    transition:.3s;
+    padding: 14px;
+    color: white;
+    font-weight: 600;
+    transition: .3s;
 }
 .stButton > button:hover {
-    transform:scale(1.06);
-    box-shadow:0 0 25px rgba(6,182,212,.7);
+    transform: scale(1.06);
+    box-shadow: 0 0 25px rgba(6,182,212,.7);
 }
-
-/* LOADER */
-#loader {
-    position:fixed;
-    inset:0;
-    background:#020617;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    z-index:9999;
-}
-.spinner {
-    width:70px;height:70px;
-    border:6px solid #1e293b;
-    border-top:6px solid #06b6d4;
-    border-radius:50%;
-    animation:spin 1s linear infinite;
-}
-@keyframes spin {100%{transform:rotate(360deg)}}
 </style>
-
-<div id="loader"><div class="spinner"></div></div>
-
-<script>
-(function () {
-  const removeLoader = () => {
-    const loader = document.getElementById("loader");
-    if (loader) {
-      loader.style.opacity = "0";
-      setTimeout(() => loader.remove(), 400);
-      sessionStorage.setItem("loaderDone", "1");
-    }
-  };
-
-  if (sessionStorage.getItem("loaderDone")) {
-    removeLoader();
-  } else {
-    window.onload = () => {
-      setTimeout(removeLoader, 900);
-    };
-  }
-
-  // fallback anti-streamlit-rerun
-  setInterval(removeLoader, 2000);
-
-  // TYPEWRITER (AMAN)
-  const text = "Platform Advokasi & Krisis Data Berbasis Teknologi";
-  let i = 0;
-  const target = document.getElementById("typewriter");
-  if (target && !target.dataset.done) {
-    target.dataset.done = "1";
-    const type = () => {
-      if (i < text.length) {
-        target.innerHTML += text.charAt(i++);
-        setTimeout(type, 50);
-      }
-    };
-    setTimeout(type, 300);
-  }
-})();
-</script>
 """, unsafe_allow_html=True)
 
 # ======================================================
-# DATABASE (AMAN, TIDAK BLOK UI)
+# DATABASE (TETAP AMAN)
 # ======================================================
 scopes = [
     "https://www.googleapis.com/auth/spreadsheets",
@@ -164,7 +158,7 @@ except:
     pengumuman = []
 
 # ======================================================
-# NAVIGATION
+# NAVIGATION (SaaS STYLE)
 # ======================================================
 selected = option_menu(
     None,
@@ -172,20 +166,20 @@ selected = option_menu(
     icons=["house", "exclamation-circle", "search", "bar-chart", "lock"],
     orientation="horizontal",
     styles={
-        "container": {"background": "rgba(2,6,23,.6)"},
+        "container": {"background": "rgba(2,6,23,.7)"},
         "nav-link": {"color": "#94a3b8", "font-size": "15px"},
         "nav-link-selected": {"color": "#06b6d4", "font-weight": "600"}
     }
 )
 
 # ======================================================
-# HOME
+# HOME PAGE
 # ======================================================
 if selected == "Home":
     st.markdown("""
     <div class="hero">
         <h1>Sains Data Crisis Center</h1>
-        <div id="typewriter"></div>
+        <p>Platform Advokasi & Krisis Data Berbasis Teknologi</p>
     </div>
     """, unsafe_allow_html=True)
 
