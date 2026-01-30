@@ -9,6 +9,7 @@ import os
 import requests
 import datetime
 import time
+import base64
 import google.generativeai as genai 
 
 # =========================================================
@@ -22,19 +23,19 @@ st.set_page_config(
 )
 
 # =========================================================
-# 2. GLOBAL CSS (SUPER PRESISI - PIXEL PERFECT) 📐
+# 2. GLOBAL CSS (FIX JARAK TENGAH - 150PX) 📏
 # =========================================================
 st.markdown("""
 <style>
 /* BACKGROUND */
 .stApp { background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%); color: #0f172a; }
 
-/* HAPUS SEMUA HEADER & DEKORASI BAWAAN STREAMLIT YANG MAKAN TEMPAT */
+/* HAPUS HEADER BAWAAN BIAR GAK GANGGU */
 #MainMenu {visibility: hidden;} 
 footer {visibility: hidden;} 
 header {visibility: hidden;} 
 [data-testid="stSidebar"] {display: none;}
-.stApp > header {display: none;} /* Ini penting biar header beneran ilang spacenya */
+.stApp > header {display: none;} 
 
 /* FONT & INPUT */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
@@ -56,62 +57,70 @@ iframe[title="streamlit_option_menu.option_menu"] {
     top: 0;
     left: 0;
     right: 0;
-    z-index: 99999;
+    z-index: 999999; /* Z-Index Super Tinggi biar gak ketimpa apapun */
     width: 100%;
     background: #f8fafc;
-    /* Kita kecilin padding menu biar gak terlalu tebal */
-    padding-top: 5px; 
-    padding-bottom: 5px;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    padding-top: 10px;
+    padding-bottom: 10px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
 }
 
-/* --- SOLUSI PRESISI PIXEL (THE SWEET SPOT) --- */
-/* Kita pakai 120px. Ini jarak Emas. 
-   Menu tingginya sekitar 80px + buffer 40px = 120px. */
+/* --- SOLUSI JARAK (150px) --- */
+/* Ini titik tengah antara "Kepotong" dan "Kejauhan" */
 .block-container {
-    padding-top: 120px !important; 
+    padding-top: 150px !important; 
     padding-bottom: 50px !important;
-    margin-top: 0 !important; /* Hapus margin hantu */
+    margin-top: 0 !important;
 }
 
-/* CARDS */
+/* HEADER RESPONSIF (HP/LAPTOP AMAN) */
+.header-wrapper {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    margin-bottom: 30px;
+    width: 100%;
+}
+.header-logo {
+    width: 110px; height: auto; object-fit: contain; transition: transform 0.3s;
+}
+.header-logo:hover { transform: scale(1.05); }
+.header-text { text-align: center; flex: 1; }
+.header-text h1 {
+    margin: 0; font-size: 38px;
+    background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    line-height: 1.2; font-weight: 800;
+}
+.header-text p { margin: 5px 0 0 0; font-size: 16px; color: #64748b; }
+
+/* MOBILE MODE */
+@media (max-width: 600px) {
+    .header-wrapper { gap: 10px; margin-top: -10px; }
+    .header-logo { width: 50px !important; }
+    .header-text h1 { font-size: 20px !important; }
+    .header-text p { font-size: 10px !important; }
+}
+
+/* CARDS & BUTTONS */
 .glass-card {
     background: #ffffff; border-radius: 16px; padding: 24px;
     border: 1px solid #cbd5e1; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); margin-bottom: 20px;
 }
-.glass-card:hover { transform: translateY(-3px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); border-color: #3b82f6; }
-
-/* ANNOUNCE CARD */
 .announce-card {
     background: #ffffff; border-radius: 12px; padding: 20px; margin-bottom: 15px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; transition: transform 0.2s;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05); border: 1px solid #e2e8f0;
 }
-.announce-card:hover { transform: scale(1.01); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
-
-/* TYPOGRAPHY */
-h1, h2, h3, h4, h5, h6 { color: #0f172a !important; font-weight: 800 !important; }
-p { color: #334155 !important; }
-.hero h1 {
-    font-size: 42px; background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
-    -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 5px;
-}
-
-/* BUTTON */
 div.stButton > button {
     background: linear-gradient(90deg, #2563eb, #1d4ed8); color: white; border: none;
     padding: 10px 24px; border-radius: 8px; font-weight: bold; width: 100%;
 }
-div.stButton > button:hover { transform: scale(1.02); box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3); }
-
-/* TOMBOL HAPUS CHAT (MERAH) */
 .hapus-chat-btn button {
-    background: #ef4444 !important;
-    font-size: 12px !important;
-    padding: 5px 10px !important;
-    width: auto !important;
-    float: right;
+    background: #ef4444 !important; font-size: 12px !important; padding: 5px 10px !important;
+    width: auto !important; float: right;
 }
-
 div[data-testid="stImage"] { display: flex; justify-content: center; align-items: center; }
 .chat-message { padding: 1.5rem; border-radius: 0.5rem; margin-bottom: 1rem; display: flex; }
 .chat-message.user { background-color: #e0f2fe; border-left: 5px solid #0284c7; }
@@ -152,8 +161,16 @@ if "GEMINI_API_KEY" in st.secrets:
         genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
     except: pass
 
+# --- FUNGSI BACA GAMBAR ---
+def get_img_as_base64(file_path):
+    try:
+        with open(file_path, "rb") as f:
+            data = f.read()
+        return base64.b64encode(data).decode()
+    except: return ""
+
 # =========================================================
-# 4. MENU NAVIGASI (FIXED)
+# 4. MENU NAVIGASI
 # =========================================================
 if 'selected_menu' not in st.session_state:
     st.session_state.selected_menu = "Home"
@@ -176,14 +193,21 @@ selected = option_menu(
 # 5. HALAMAN: HOME
 # =========================================================
 if selected == "Home":
-    col_logo1, col_text, col_logo2 = st.columns([1.5, 6, 1.5])
-    with col_logo1:
-        if os.path.exists("logo_uin.png"): st.image("logo_uin.png", width=120)
-    with col_text:
-        st.markdown("""<div class="hero" style="text-align:center; padding: 10px 0;"><h1>SAINS DATA CRISIS CENTER</h1><p style="font-size:16px; margin-top:-10px;">Pusat Analisis, Respon Cepat, dan Mitigasi Krisis Mahasiswa</p></div>""", unsafe_allow_html=True)
-    with col_logo2:
-        if os.path.exists("logo_him.png"): st.image("logo_him.png", width=120)
-    st.write("---") 
+    img_uin = get_img_as_base64("logo_uin.png")
+    img_him = get_img_as_base64("logo_him.png")
+    
+    header_html = f"""
+    <div class="header-wrapper">
+        {'<img src="data:image/png;base64,' + img_uin + '" class="header-logo">' if img_uin else ''}
+        <div class="header-text">
+            <h1>SAINS DATA CRISIS CENTER</h1>
+            <p>Pusat Analisis, Respon Cepat, dan Mitigasi Krisis Mahasiswa</p>
+        </div>
+        {'<img src="data:image/png;base64,' + img_him + '" class="header-logo">' if img_him else ''}
+    </div>
+    <hr style="margin-top: -10px; margin-bottom: 30px; opacity: 0.2;">
+    """
+    st.markdown(header_html, unsafe_allow_html=True)
 
     c1, c2, c3 = st.columns(3)
     with c1: st.markdown("""<div class="glass-card"><h2 style="color:#2563eb !important;">📢 Pelaporan</h2><p>Saluran resmi pengaduan masalah akademik & fasilitas.</p></div>""", unsafe_allow_html=True)
@@ -305,12 +329,11 @@ elif selected == "Dashboard":
         except: st.error("Error memuat dashboard.")
 
 # =========================================================
-# 9. HALAMAN: SADAS BOT (FIXED LAYOUT)
+# 9. HALAMAN: SADAS BOT
 # =========================================================
 elif selected == "Sadas Bot":
     st.markdown("<div style='max-width: 700px; margin: auto;'>", unsafe_allow_html=True)
     
-    # --- HEADER & TOMBOL HAPUS ---
     col_header, col_btn = st.columns([3, 1])
     with col_header:
         st.markdown(f"<h2 style='text-align:left; margin:0;'>🤖 Sadas Bot</h2>", unsafe_allow_html=True)
@@ -325,7 +348,6 @@ elif selected == "Sadas Bot":
 
     st.write("---")
     
-    # --- AREA CHAT ---
     if "messages" not in st.session_state: st.session_state.messages = []
 
     for message in st.session_state.messages:
