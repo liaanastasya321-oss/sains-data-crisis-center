@@ -22,7 +22,7 @@ st.set_page_config(
 )
 
 # =========================================================
-# 2. GLOBAL CSS (LAYOUT PRESISI - TIDAK KEJAUHAN) ✨
+# 2. GLOBAL CSS (FIX TENGAH-TENGAH: 9.5rem) 🎯
 # =========================================================
 st.markdown("""
 <style>
@@ -54,16 +54,16 @@ iframe[title="streamlit_option_menu.option_menu"] {
     right: 0;
     z-index: 99999;
     width: 100%;
-    background: #f8fafc; /* Latar belakang menu */
+    background: #f8fafc;
     padding-top: 10px;
     padding-bottom: 10px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.05); /* Bayangan halus */
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
 }
 
-/* --- SOLUSI PRESISI (SWEET SPOT) --- */
-/* Jarak ini (6rem) udah diukur pas buat navbar option-menu */
+/* --- SOLUSI PAS (GOLDILOCKS ZONE) --- */
+/* 9.5rem adalah titik tengah antara kependekan & kejauhan */
 .block-container {
-    padding-top: 6rem !important; 
+    padding-top: 9.5rem !important; 
     padding-bottom: 5rem !important;
 }
 
@@ -169,10 +169,6 @@ selected = option_menu(
 # 5. HALAMAN: HOME
 # =========================================================
 if selected == "Home":
-    # SPACER MANUAL (Ganjelan biar logo turun dikit)
-    # Ini cuma nambah jarak 20px dari padding utama, jadi pas!
-    st.markdown("<div style='margin-top: 20px;'></div>", unsafe_allow_html=True)
-    
     col_logo1, col_text, col_logo2 = st.columns([1.5, 6, 1.5])
     with col_logo1:
         if os.path.exists("logo_uin.png"): st.image("logo_uin.png", width=120)
@@ -209,8 +205,6 @@ if selected == "Home":
 # 6. HALAMAN: LAPOR MASALAH
 # =========================================================
 elif selected == "Lapor Masalah":
-    st.markdown("<div style='margin-top: 20px;'></div>", unsafe_allow_html=True)
-    
     st.markdown("<div style='max-width: 700px; margin: auto;'>", unsafe_allow_html=True)
     st.markdown("<h2 style='text-align:center;'>📝 Form Pengaduan</h2>", unsafe_allow_html=True)
     with st.container():
@@ -251,8 +245,6 @@ elif selected == "Lapor Masalah":
 # 7. HALAMAN: CEK STATUS
 # =========================================================
 elif selected == "Cek Status":
-    st.markdown("<div style='margin-top: 20px;'></div>", unsafe_allow_html=True)
-    
     st.markdown("<h2 style='text-align:center;'>🔍 Cek Status</h2>", unsafe_allow_html=True)
     col_x, col_y, col_z = st.columns([1,2,1])
     with col_y:
@@ -278,8 +270,6 @@ elif selected == "Cek Status":
 # 8. HALAMAN: DASHBOARD
 # =========================================================
 elif selected == "Dashboard":
-    st.markdown("<div style='margin-top: 20px;'></div>", unsafe_allow_html=True)
-    
     st.markdown("<h2 style='text-align:center;'>📊 Dashboard Analisis</h2>", unsafe_allow_html=True)
     if sheet:
         try:
@@ -308,11 +298,9 @@ elif selected == "Dashboard":
         except: st.error("Error memuat dashboard.")
 
 # =========================================================
-# 9. HALAMAN: SADAS BOT
+# 9. HALAMAN: SADAS BOT (FIXED LAYOUT)
 # =========================================================
 elif selected == "Sadas Bot":
-    st.markdown("<div style='margin-top: 20px;'></div>", unsafe_allow_html=True)
-
     st.markdown("<div style='max-width: 700px; margin: auto;'>", unsafe_allow_html=True)
     
     # --- HEADER & TOMBOL HAPUS ---
@@ -342,7 +330,6 @@ elif selected == "Sadas Bot":
         with st.chat_message("user"): st.markdown(prompt)
 
         response = ""
-        # --- LOGIKA DETEKTIF MODEL ---
         if "GEMINI_API_KEY" in st.secrets:
             try:
                 available_models = []
@@ -380,8 +367,6 @@ elif selected == "Sadas Bot":
 # 10. HALAMAN: ADMIN
 # =========================================================
 elif selected == "Admin":
-    st.markdown("<div style='margin-top: 20px;'></div>", unsafe_allow_html=True)
-    
     st.markdown("<h2 style='text-align:center;'>🔐 Admin Area</h2>", unsafe_allow_html=True)
     if 'is_logged_in' not in st.session_state: st.session_state['is_logged_in'] = False
 
