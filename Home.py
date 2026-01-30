@@ -23,162 +23,80 @@ st.set_page_config(
 )
 
 # =========================================================
-# 2. GLOBAL CSS (MOBILE RESPONSIVE + STICKY FIX) 📱
+# 2. GLOBAL CSS (FINAL FIX LAYOUT HP vs LAPTOP) 🛠️
 # =========================================================
 st.markdown("""
 <style>
-/* --- 1. BACKGROUND & DASAR --- */
+/* --- 1. SETUP DASAR --- */
 .stApp { 
     background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%); 
     color: #0f172a; 
 }
-
-/* Hapus elemen bawaan yang ganggu */
 #MainMenu, footer, header, [data-testid="stSidebar"] { display: none !important; }
 .stApp > header { display: none !important; }
 
-/* Font */
+/* Font & Input */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
 html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
-
-/* Input Form Jelas */
 .stTextInput input, .stTextArea textarea, .stSelectbox div[data-baseweb="select"] {
-    color: #334155 !important; background-color: #ffffff !important;
-    border: 1px solid #94a3b8 !important; border-radius: 8px !important;
+    background-color: #ffffff !important; border: 1px solid #94a3b8 !important; color: #334155 !important; border-radius: 8px;
 }
-label, div[data-testid="stWidgetLabel"] p {
-    color: #0f172a !important; font-size: 14px !important; font-weight: 700 !important;
-}
+label, div[data-testid="stWidgetLabel"] p { color: #0f172a !important; font-weight: 700 !important; }
 
 /* --- 2. MENU STICKY (NEMPEL DI ATAS) --- */
 iframe[title="streamlit_option_menu.option_menu"] {
-    position: fixed;
-    top: 0; left: 0; right: 0;
-    z-index: 999999;
-    width: 100%;
-    background: #f8fafc;
-    padding: 5px 0;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    position: fixed; top: 0; left: 0; right: 0; z-index: 999999;
+    width: 100%; background: #f8fafc;
+    padding: 5px 0; box-shadow: 0 2px 5px rgba(0,0,0,0.05);
 }
 
-/* --- 3. PADDING KONTEN (PENTING! BEDA LAPTOP VS HP) --- */
+/* --- 3. PADDING KONTEN (INI KUNCINYA BIAR GAK KEPOTONG) --- */
 
-/* Tampilan Laptop/PC */
+/* TAMPILAN LAPTOP (Jarak Normal) */
 .block-container {
-    padding-top: 130px !important; 
-    padding-bottom: 50px !important;
+    padding-top: 6rem !important; /* Sekitar 96px */
+    padding-bottom: 5rem !important;
     margin-top: 0 !important;
 }
 
-/* Tampilan HP (Layar kecil) */
+/* TAMPILAN HP (Jarak Jauh) */
+/* Kita paksa turun jauh biar gak ketutupan menu tebal */
 @media (max-width: 600px) {
     .block-container {
-        padding-top: 80px !important; /* Jarak atas dikurangi drastis di HP */
+        padding-top: 11rem !important; /* Sekitar 176px - AMAN BANGET */
         padding-left: 1rem !important;
         padding-right: 1rem !important;
     }
-    
-    /* Menu Sticky di HP agak tinggi, jadi kita sesuaikan iframe-nya */
-    iframe[title="streamlit_option_menu.option_menu"] {
-        height: auto !important;
-        min-height: 60px;
-    }
 }
 
-/* --- 4. HEADER KHUSUS (LOGO - JUDUL - LOGO) SEBARIS --- */
+/* --- 4. HEADER CUSTOM (LOGO KIRI KANAN) --- */
 .header-container {
-    display: flex;
-    flex-direction: row; 
-    align-items: center;
-    justify-content: space-between; 
-    width: 100%;
-    margin-bottom: 20px;
-    background: transparent;
-    gap: 15px;
+    display: flex; flex-direction: row; align-items: center; justify-content: center;
+    gap: 15px; margin-bottom: 20px; width: 100%;
 }
-
-.logo-img {
-    width: 90px; /* Ukuran Laptop */
-    height: auto;
-    object-fit: contain;
-}
-
-.title-text {
-    flex: 1;
-    text-align: center;
-}
-
+.logo-img { width: 90px; height: auto; object-fit: contain; }
+.title-text { flex: 1; text-align: center; }
 .title-text h1 {
-    font-size: 32px; /* Ukuran Laptop */
-    margin: 0;
+    font-size: 32px; margin: 0; font-weight: 800; line-height: 1.2;
     background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    font-weight: 800;
-    line-height: 1.2;
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
 }
+.title-text p { font-size: 14px; margin: 5px 0 0 0; color: #64748b; }
 
-.title-text p {
-    font-size: 14px;
-    margin: 5px 0 0 0;
-    color: #64748b;
-}
-
-/* Header di HP (Mobile) */
+/* HEADER DI HP */
 @media (max-width: 600px) {
-    .header-container {
-        gap: 8px; /* Rapatkan jarak elemen */
-        margin-bottom: 10px;
-    }
-    .logo-img { 
-        width: 45px !important; /* Logo lebih kecil tapi proporsional */
-    } 
-    .title-text h1 { 
-        font-size: 18px !important; /* Judul pas, gak kekecilan */
-    } 
-    .title-text p { 
-        font-size: 10px !important; /* Deskripsi kecil */
-        line-height: 1.1;
-        margin-top: 2px;
-    } 
+    .header-container { gap: 10px; margin-bottom: 15px; }
+    .logo-img { width: 50px !important; } /* Ukuran Logo HP */
+    .title-text h1 { font-size: 20px !important; } /* Ukuran Judul HP */
+    .title-text p { font-size: 11px !important; margin-top: 2px; }
 }
 
-/* --- 5. KARTU MENU UTAMA (PELAPORAN, DATA, BOT) --- */
+/* --- 5. KARTU & LAINNYA --- */
 .glass-card {
     background: #ffffff; border-radius: 16px; padding: 20px;
-    border: 1px solid #cbd5e1; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); margin-bottom: 20px;
-    text-align: center; /* Tengahkan teks di kartu */
-    height: 100%; /* Biar tinggi kartu sama */
+    border: 1px solid #cbd5e1; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); margin-bottom: 15px;
+    text-align: center; height: 100%;
 }
-
-.glass-card h3 {
-    margin-top: 0;
-    margin-bottom: 10px;
-    font-size: 20px !important; /* Ukuran Laptop */
-}
-
-.glass-card p {
-    font-size: 14px !important;
-    color: #475569;
-    line-height: 1.4;
-}
-
-/* Kartu di HP */
-@media (max-width: 600px) {
-    .glass-card {
-        padding: 15px; /* Padding lebih kecil */
-        margin-bottom: 10px;
-        border-radius: 12px;
-    }
-    .glass-card h3 {
-        font-size: 16px !important; /* Judul kartu dikecilin biar imbang */
-    }
-    .glass-card p {
-        font-size: 12px !important; /* Isi teks kartu dikecilin */
-    }
-}
-
-/* --- 6. STYLE LAINNYA --- */
 .announce-card {
     background: #ffffff; border-radius: 12px; padding: 15px; margin-bottom: 10px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.05); border: 1px solid #e2e8f0;
@@ -187,6 +105,11 @@ div.stButton > button {
     background: linear-gradient(90deg, #2563eb, #1d4ed8); color: white; border: none;
     padding: 10px 20px; border-radius: 8px; font-weight: bold; width: 100%;
 }
+/* Tombol Hapus Chat Merah */
+.hapus-chat-btn button {
+    background: #ef4444 !important; font-size: 12px !important; width: auto !important; float: right;
+}
+/* Chat Bubble */
 .chat-message { padding: 1rem; border-radius: 8px; margin-bottom: 10px; display: flex; font-size: 14px;}
 .chat-message.user { background-color: #e0f2fe; border-left: 4px solid #0284c7; }
 .chat-message.bot { background-color: #f1f5f9; border-left: 4px solid #475569; }
@@ -222,23 +145,20 @@ except: sheet_pengumuman = None
 
 # --- KONFIGURASI AI ---
 if "GEMINI_API_KEY" in st.secrets:
-    try:
-        genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
+    try: genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
     except: pass
 
-# --- FUNGSI BACA GAMBAR KE HTML ---
+# --- FUNGSI BACA GAMBAR ---
 def get_img_as_base64(file_path):
     try:
-        with open(file_path, "rb") as f:
-            data = f.read()
+        with open(file_path, "rb") as f: data = f.read()
         return base64.b64encode(data).decode()
     except: return ""
 
 # =========================================================
-# 4. MENU NAVIGASI (FIXED)
+# 4. MENU NAVIGASI
 # =========================================================
-if 'selected_menu' not in st.session_state:
-    st.session_state.selected_menu = "Home"
+if 'selected_menu' not in st.session_state: st.session_state.selected_menu = "Home"
 
 selected = option_menu(
     menu_title=None,
@@ -255,15 +175,14 @@ selected = option_menu(
 )
 
 # =========================================================
-# 5. HALAMAN: HOME (HEADER HTML KHUSUS)
+# 5. HALAMAN: HOME
 # =========================================================
 if selected == "Home":
-    # 1. BACA GAMBAR DULU
     img_uin = get_img_as_base64("logo_uin.png")
     img_him = get_img_as_base64("logo_him.png")
     
-    # 2. RENDER HEADER PAKE HTML
-    header_html = f"""
+    # Header HTML
+    st.markdown(f"""
     <div class="header-container">
         <img src="data:image/png;base64,{img_uin}" class="logo-img">
         <div class="title-text">
@@ -272,38 +191,17 @@ if selected == "Home":
         </div>
         <img src="data:image/png;base64,{img_him}" class="logo-img">
     </div>
-    """
-    st.markdown(header_html, unsafe_allow_html=True)
-    st.write("---") 
+    <hr style="margin-top: -10px; margin-bottom: 20px; opacity: 0.3;">
+    """, unsafe_allow_html=True)
 
-    # --- MENU KARTU (PAKAI HTML BIAR KONSISTEN DI HP) ---
-    # Streamlit columns di HP numpuk, jadi ini akan jadi susunan vertikal
+    # Menu Kartu (HTML agar rapi di HP)
     c1, c2, c3 = st.columns(3)
-    
-    # Isinya pakai HTML string biar bisa dikontrol CSS-nya
     with c1: 
-        st.markdown("""
-        <div class="glass-card">
-            <h3 style="color:#2563eb;">📢 Pelaporan</h3>
-            <p>Saluran resmi pengaduan masalah.</p>
-        </div>
-        """, unsafe_allow_html=True)
-        
+        st.markdown("""<div class="glass-card"><h3 style="color:#2563eb;">📢 Pelaporan</h3><p>Saluran resmi pengaduan masalah.</p></div>""", unsafe_allow_html=True)
     with c2: 
-        st.markdown("""
-        <div class="glass-card">
-            <h3 style="color:#0891b2;">📊 Transparansi</h3>
-            <p>Pantau statistik keluhan real-time.</p>
-        </div>
-        """, unsafe_allow_html=True)
-        
+        st.markdown("""<div class="glass-card"><h3 style="color:#0891b2;">📊 Transparansi</h3><p>Pantau data statistik real-time.</p></div>""", unsafe_allow_html=True)
     with c3: 
-        st.markdown("""
-        <div class="glass-card">
-            <h3 style="color:#7c3aed;">🤖 Sadas Bot</h3>
-            <p>Asisten AI cerdas 24/7.</p>
-        </div>
-        """, unsafe_allow_html=True)
+        st.markdown("""<div class="glass-card"><h3 style="color:#7c3aed;">🤖 Sadas Bot</h3><p>Asisten AI cerdas 24/7.</p></div>""", unsafe_allow_html=True)
 
     st.write("")
     st.subheader("📰 Informasi Terbaru")
@@ -317,8 +215,7 @@ if selected == "Home":
                     st.markdown(f"""
                     <div class="announce-card" style="border-left: 5px solid {border_color};">
                         <div style="display:flex; justify-content:space-between;"><span style="font-weight:bold; color:{border_color}; font-size:12px;">{tipe}</span><span style="color:#94a3b8; font-size:12px;">{item.get('Tanggal', '-')}</span></div>
-                        <h4 style="margin: 5px 0; color:#1e293b;">{item.get('Judul', '-')}</h4>
-                        <p style="margin:0; font-size:13px; color:#475569;">{item.get('Isi', '-')}</p>
+                        <h4 style="margin: 5px 0; color:#1e293b;">{item.get('Judul', '-')}</h4><p style="margin:0; font-size:13px; color:#475569;">{item.get('Isi', '-')}</p>
                     </div>""", unsafe_allow_html=True)
             else: st.info("Belum ada pengumuman.")
         except: st.warning("Gagal memuat pengumuman.")
@@ -432,9 +329,11 @@ elif selected == "Sadas Bot":
         st.markdown("<p style='text-align:left; color:#64748b; margin-top:0px;'>Asisten Akademik Virtual</p>", unsafe_allow_html=True)
     
     with col_btn:
+        st.markdown('<div class="hapus-chat-btn">', unsafe_allow_html=True)
         if st.button("🗑️ Hapus"):
             st.session_state.messages = []
             st.rerun()
+        st.markdown('</div>', unsafe_allow_html=True)
 
     st.write("---")
     
@@ -453,14 +352,12 @@ elif selected == "Sadas Bot":
             try:
                 available_models = []
                 for m in genai.list_models():
-                    if 'generateContent' in m.supported_generation_methods:
-                        available_models.append(m.name)
+                    if 'generateContent' in m.supported_generation_methods: available_models.append(m.name)
                 
                 target_model = 'gemini-1.5-flash' 
                 found_flash = False
                 for m in available_models:
                     if 'flash' in m: target_model = m; found_flash = True; break
-                
                 if not found_flash:
                     for m in available_models:
                         if 'pro' in m: target_model = m; break
@@ -473,10 +370,8 @@ elif selected == "Sadas Bot":
                     ai_response = model.generate_content(full_prompt)
                     response = ai_response.text
 
-            except Exception as e:
-                response = f"⚠️ Masih error kak. Detail Error: {str(e)}"
-        else:
-            response = "⚠️ API Key Gemini belum dipasang di Secrets."
+            except Exception as e: response = f"⚠️ Masih error kak. Detail Error: {str(e)}"
+        else: response = "⚠️ API Key Gemini belum dipasang di Secrets."
 
         st.session_state.messages.append({"role": "assistant", "content": response})
         with st.chat_message("assistant"): st.markdown(response)
