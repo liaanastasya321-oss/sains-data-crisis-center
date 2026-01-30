@@ -20,14 +20,14 @@ st.set_page_config(
 )
 
 # =========================================================
-# 2. GLOBAL CSS (VERSI LIGHT MODE / TERANG) ☀️
+# 2. GLOBAL CSS (LIGHT MODE + LABEL JELAS) ☀️
 # =========================================================
 st.markdown("""
 <style>
-/* 1. BACKGROUND HALAMAN (PUTIH KEBIRUAN BERSIH) */
+/* 1. BACKGROUND HALAMAN */
 .stApp {
     background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-    color: #1e293b; /* Tulisan Utama jadi HITAM/GELAP */
+    color: #0f172a;
 }
 
 /* 2. SEMBUNYIKAN UI BAWAAN */
@@ -36,74 +36,55 @@ footer {visibility: hidden;}
 header {visibility: hidden;}
 [data-testid="stSidebar"] {display: none;}
 
-/* 3. FONT IMPORT */
+/* 3. FONT & INPUT */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
-html, body, [class*="css"] {
-    font-family: 'Inter', sans-serif;
-}
+html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
 
-/* 4. PERBAIKAN WARNA INPUT FORM (KOTAK ISIAN JELAS) */
 .stTextInput input, .stTextArea textarea, .stSelectbox div[data-baseweb="select"] {
-    color: #334155 !important;           /* Tulisan yang diketik: HITAM KELABU */
-    background-color: #ffffff !important; /* Background Kotak: PUTIH BERSIH */
-    border: 1px solid #cbd5e1 !important; /* Garis Tepi: ABU-ABU */
+    color: #334155 !important;
+    background-color: #ffffff !important;
+    border: 1px solid #94a3b8 !important;
     border-radius: 8px !important;
 }
 
-/* LABEL JUDUL DI ATAS KOTAK INPUT */
-div[data-testid="stWidgetLabel"] p {
-    color: #0f172a !important; /* Warna Label: NAVY GELAP (JELAS) */
-    font-size: 14px !important;
-    font-weight: 600 !important;
+/* LABEL JUDUL FORM (HITAM TEBAL) */
+label, .stTextInput label, .stSelectbox label, .stTextArea label, .stFileUploader label, div[data-testid="stWidgetLabel"] p {
+    color: #0f172a !important;
+    font-size: 15px !important;
+    font-weight: 700 !important;
 }
 
-/* Placeholder (Tulisan samar) */
-::placeholder {
-    color: #94a3b8 !important;
-    opacity: 1;
-}
-
-/* Efek Fokus (Pas diklik) */
-.stTextInput input:focus, .stTextArea textarea:focus {
-    border-color: #2563eb !important; /* Garis jadi BIRU pas diklik */
-    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
-}
-
-/* 5. KARTU (CARD STYLE - LIGHT) */
+/* 4. KARTU (GLASS CARD) */
 .glass-card {
-    background: #ffffff; /* Kartu Putih */
+    background: #ffffff;
     border-radius: 16px;
     padding: 24px;
-    border: 1px solid #e2e8f0;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    border: 1px solid #cbd5e1;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
     margin-bottom: 20px;
-    transition: all 0.3s ease;
 }
 .glass-card:hover {
     transform: translateY(-3px);
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-    border-color: #3b82f6; /* Garis Biru pas hover */
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    border-color: #3b82f6;
 }
 
-/* 6. TYPOGRAPHY (JUDUL GELAP) */
-h1, h2, h3 { color: #0f172a !important; }
-p { color: #475569 !important; }
+/* 5. TYPOGRAPHY */
+h1, h2, h3, h4, h5, h6 { color: #0f172a !important; font-weight: 800 !important; }
+p { color: #334155 !important; }
 
-.hero { padding: 60px 20px; text-align: center; }
+/* Judul Hero */
 .hero h1 {
-    font-size: 48px;
-    font-weight: 800;
-    color: #1e3a8a !important; /* Biru Tua */
-    margin-bottom: 10px;
-}
-.hero p {
-    font-size: 18px;
-    color: #64748b !important;
+    font-size: 42px; /* Ukuran judul disesuaikan biar muat sama logo */
+    background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 5px;
 }
 
-/* 7. TOMBOL */
+/* 6. TOMBOL */
 div.stButton > button {
-    background: linear-gradient(90deg, #2563eb, #1d4ed8); /* Biru Profesional */
+    background: linear-gradient(90deg, #2563eb, #1d4ed8);
     color: white; border: none; padding: 10px 24px;
     border-radius: 8px; font-weight: bold; width: 100%;
 }
@@ -112,9 +93,12 @@ div.stButton > button:hover {
     box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
 }
 
-/* Angka Dashboard */
-.metric-value { font-size: 42px; font-weight: 700; color: #2563eb; }
-.metric-label { font-size: 14px; color: #64748b; text-transform: uppercase; font-weight: 600; }
+/* 7. LOGO STYLE (Biar Rapi Tengah) */
+div[data-testid="stImage"] {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -145,7 +129,7 @@ def get_google_sheet():
 sheet = get_google_sheet()
 
 # =========================================================
-# 4. MENU NAVIGASI (LIGHT THEME)
+# 4. MENU NAVIGASI
 # =========================================================
 selected = option_menu(
     menu_title=None,
@@ -161,26 +145,51 @@ selected = option_menu(
 )
 
 # =========================================================
-# 5. HALAMAN: HOME
+# 5. HALAMAN: HOME (DENGAN LOGO) 🏛️
 # =========================================================
 if selected == "Home":
-    st.markdown("""
-    <div class="hero">
-        <h1>SAINS DATA CRISIS CENTER</h1>
-        <p>Pusat Analisis, Respon Cepat, dan Mitigasi Krisis Mahasiswa</p>
-    </div>
-    """, unsafe_allow_html=True)
+    st.write("") # Spasi dikit
+    st.write("") 
+
+    # --- BAGIAN LOGO & JUDUL ---
+    # Kita bagi layar jadi 3 bagian: Kiri (Logo), Tengah (Judul), Kanan (Logo)
+    col_logo1, col_text, col_logo2 = st.columns([1.5, 6, 1.5])
+
+    with col_logo1:
+        # Cek apakah file ada, biar gak error kalau belum upload
+        if os.path.exists("logo_uin.png"):
+            st.image("logo_uin.png", width=120)
+        else:
+            st.warning("Upload logo_uin.png")
+
+    with col_text:
+        st.markdown("""
+        <div class="hero" style="text-align:center; padding: 10px 0;">
+            <h1>SAINS DATA CRISIS CENTER</h1>
+            <p style="font-size:16px; margin-top:-10px;">Pusat Analisis, Respon Cepat, dan Mitigasi Krisis Mahasiswa</p>
+        </div>
+        """, unsafe_allow_html=True)
+
+    with col_logo2:
+        if os.path.exists("logo_him.png"):
+            st.image("logo_him.png", width=120)
+        else:
+            st.warning("Upload logo_him.png")
+    
+    # --- BATAS LOGO ---
+
+    st.write("---") # Garis Pembatas Tipis
 
     c1, c2, c3 = st.columns(3)
     with c1:
-        st.markdown("""<div class="glass-card"><h2 style="color:#2563eb;">📢 Pelaporan</h2><p>Saluran resmi pengaduan masalah akademik & fasilitas.</p></div>""", unsafe_allow_html=True)
+        st.markdown("""<div class="glass-card"><h2 style="color:#2563eb !important;">📢 Pelaporan</h2><p>Saluran resmi pengaduan masalah akademik & fasilitas.</p></div>""", unsafe_allow_html=True)
     with c2:
-        st.markdown("""<div class="glass-card"><h2 style="color:#0891b2;">📊 Transparansi</h2><p>Pantau data statistik keluhan mahasiswa secara real-time.</p></div>""", unsafe_allow_html=True)
+        st.markdown("""<div class="glass-card"><h2 style="color:#0891b2 !important;">📊 Transparansi</h2><p>Pantau data statistik keluhan mahasiswa secara real-time.</p></div>""", unsafe_allow_html=True)
     with c3:
-        st.markdown("""<div class="glass-card"><h2 style="color:#7c3aed;">🚀 Responsif</h2><p>Tim advokasi siap menindaklanjuti laporan dengan cepat.</p></div>""", unsafe_allow_html=True)
+        st.markdown("""<div class="glass-card"><h2 style="color:#7c3aed !important;">🚀 Responsif</h2><p>Tim advokasi siap menindaklanjuti laporan dengan cepat.</p></div>""", unsafe_allow_html=True)
 
 # =========================================================
-# 6. HALAMAN: DASHBOARD (RAPAT KE ATAS)
+# 6. HALAMAN: DASHBOARD
 # =========================================================
 elif selected == "Dashboard":
     st.markdown("<h2 style='text-align:center;'>📊 Dashboard Analisis</h2>", unsafe_allow_html=True)
@@ -191,7 +200,6 @@ elif selected == "Dashboard":
         df = pd.DataFrame()
 
     if not df.empty:
-        # FILTER PEMBERSIH
         if 'Waktu Lapor' in df.columns:
              df = df[df['Waktu Lapor'].astype(str).str.strip() != ""]
         
@@ -206,7 +214,6 @@ elif selected == "Dashboard":
             if 'Kategori Masalah' in df.columns:
                 pie_data = df['Kategori Masalah'].value_counts()
                 fig = go.Figure(data=[go.Pie(labels=pie_data.index, values=pie_data.values, hole=.5)])
-                # Warna Chart disesuaikan Light Mode
                 fig.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)", font_color="#1e293b")
                 st.plotly_chart(fig, use_container_width=True)
         with c_chart2:
@@ -285,9 +292,7 @@ elif selected == "Cek Status":
                 if not hasil.empty:
                     for idx, row in hasil.iterrows():
                         status = row['Status']
-                        # Warna Status Light Mode
                         color = "#d97706" if status == "Pending" else ("#059669" if status == "Selesai" else "#2563eb")
-                        
                         st.markdown(f"""
                         <div class="glass-card" style="border-left: 5px solid {color}; text-align:left;">
                             <h4 style="margin:0; color:#1e293b;">{row['Kategori Masalah']}</h4>
@@ -302,7 +307,7 @@ elif selected == "Cek Status":
             except: st.error("Gagal mengambil data.")
 
 # =========================================================
-# 9. HALAMAN: ADMIN (FIX TABEL RAPI KE ATAS)
+# 9. HALAMAN: ADMIN
 # =========================================================
 elif selected == "Admin":
     st.markdown("<h2 style='text-align:center;'>🔐 Admin Area</h2>", unsafe_allow_html=True)
@@ -325,15 +330,9 @@ elif selected == "Admin":
         try:
             data = sheet.get_all_records()
             df = pd.DataFrame(data)
-
-            # --- LOGIKA PEMBERSIH DATA ADMIN (FIX RAPI) ---
             if not df.empty:
                 if 'Waktu Lapor' in df.columns:
-                     # 1. Hapus Baris Kosong
                      df = df[df['Waktu Lapor'].astype(str).str.strip() != ""]
-                     # 2. Reset Nomor Urut (Biar tabel naik ke atas)
                      df.reset_index(drop=True, inplace=True)
-            # ----------------------------------------------
-
             st.dataframe(df, use_container_width=True)
         except: st.error("Data kosong")
