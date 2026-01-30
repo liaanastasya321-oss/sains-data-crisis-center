@@ -23,108 +23,120 @@ st.set_page_config(
 )
 
 # =========================================================
-# 2. GLOBAL CSS (FIX JARAK TENGAH - 150PX) 📏
+# 2. GLOBAL CSS (MOBILE RESPONSIVE + STICKY FIX) 📱
 # =========================================================
 st.markdown("""
 <style>
-/* BACKGROUND */
-.stApp { background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%); color: #0f172a; }
+/* --- 1. BACKGROUND & DASAR --- */
+.stApp { 
+    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%); 
+    color: #0f172a; 
+}
 
-/* HAPUS HEADER BAWAAN BIAR GAK GANGGU */
-#MainMenu {visibility: hidden;} 
-footer {visibility: hidden;} 
-header {visibility: hidden;} 
-[data-testid="stSidebar"] {display: none;}
-.stApp > header {display: none;} 
+/* Hapus elemen bawaan yang ganggu */
+#MainMenu, footer, header, [data-testid="stSidebar"] { display: none !important; }
+.stApp > header { display: none !important; }
 
-/* FONT & INPUT */
+/* Font */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
 html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
 
+/* Input Form Jelas */
 .stTextInput input, .stTextArea textarea, .stSelectbox div[data-baseweb="select"] {
     color: #334155 !important; background-color: #ffffff !important;
     border: 1px solid #94a3b8 !important; border-radius: 8px !important;
 }
-
-/* LABEL */
-label, .stTextInput label, .stSelectbox label, .stTextArea label, .stFileUploader label, div[data-testid="stWidgetLabel"] p {
-    color: #0f172a !important; font-size: 15px !important; font-weight: 700 !important;
+label, div[data-testid="stWidgetLabel"] p {
+    color: #0f172a !important; font-size: 14px !important; font-weight: 700 !important;
 }
 
-/* --- FITUR: STICKY MENU (MENU NEMPEL DI ATAS) --- */
+/* --- 2. MENU STICKY (NEMPEL DI ATAS) --- */
 iframe[title="streamlit_option_menu.option_menu"] {
     position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    z-index: 999999; /* Z-Index Super Tinggi biar gak ketimpa apapun */
+    top: 0; left: 0; right: 0;
+    z-index: 999999;
     width: 100%;
     background: #f8fafc;
-    padding-top: 10px;
-    padding-bottom: 10px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    padding: 10px 0;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
 }
 
-/* --- SOLUSI JARAK (150px) --- */
-/* Ini titik tengah antara "Kepotong" dan "Kejauhan" */
+/* --- 3. PADDING KONTEN (JARAK BIAR GAK KEPOTONG) --- */
+/* Di Laptop/PC: Jaraknya segini */
 .block-container {
-    padding-top: 150px !important; 
+    padding-top: 130px !important; 
     padding-bottom: 50px !important;
     margin-top: 0 !important;
 }
 
-/* HEADER RESPONSIF (HP/LAPTOP AMAN) */
-.header-wrapper {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: center;
-    gap: 20px;
-    margin-bottom: 30px;
-    width: 100%;
-}
-.header-logo {
-    width: 110px; height: auto; object-fit: contain; transition: transform 0.3s;
-}
-.header-logo:hover { transform: scale(1.05); }
-.header-text { text-align: center; flex: 1; }
-.header-text h1 {
-    margin: 0; font-size: 38px;
-    background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
-    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-    line-height: 1.2; font-weight: 800;
-}
-.header-text p { margin: 5px 0 0 0; font-size: 16px; color: #64748b; }
-
-/* MOBILE MODE */
+/* Di HP: Jaraknya DITAMBAH karena menu di HP kadang jadi 2 baris/lebih tebal */
 @media (max-width: 600px) {
-    .header-wrapper { gap: 10px; margin-top: -10px; }
-    .header-logo { width: 50px !important; }
-    .header-text h1 { font-size: 20px !important; }
-    .header-text p { font-size: 10px !important; }
+    .block-container {
+        padding-top: 160px !important; /* Jarak lebih lebar buat HP */
+    }
 }
 
-/* CARDS & BUTTONS */
+/* --- 4. HEADER KHUSUS (LOGO - JUDUL - LOGO) SEBARIS --- */
+.header-container {
+    display: flex;
+    flex-direction: row; /* Paksa sebaris */
+    align-items: center;
+    justify-content: space-between; /* Jarak antar elemen */
+    width: 100%;
+    margin-bottom: 30px;
+    background: transparent;
+}
+
+.logo-img {
+    width: 100px; /* Ukuran Laptop */
+    height: auto;
+    object-fit: contain;
+}
+
+.title-text {
+    flex: 1;
+    text-align: center;
+    padding: 0 10px;
+}
+
+.title-text h1 {
+    font-size: 36px; /* Ukuran Laptop */
+    margin: 0;
+    background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-weight: 800;
+}
+
+.title-text p {
+    font-size: 16px;
+    margin: 5px 0 0 0;
+    color: #64748b;
+}
+
+/* Header di HP (Mengecil tapi Tetap Sebaris) */
+@media (max-width: 600px) {
+    .logo-img { width: 50px; } /* Logo mengecil */
+    .title-text h1 { font-size: 18px; } /* Judul mengecil */
+    .title-text p { font-size: 10px; display: none; } /* Deskripsi diilangin di HP biar rapi */
+}
+
+/* --- 5. STYLE LAINNYA --- */
 .glass-card {
-    background: #ffffff; border-radius: 16px; padding: 24px;
+    background: #ffffff; border-radius: 16px; padding: 20px;
     border: 1px solid #cbd5e1; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); margin-bottom: 20px;
 }
 .announce-card {
-    background: #ffffff; border-radius: 12px; padding: 20px; margin-bottom: 15px;
+    background: #ffffff; border-radius: 12px; padding: 15px; margin-bottom: 10px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.05); border: 1px solid #e2e8f0;
 }
 div.stButton > button {
     background: linear-gradient(90deg, #2563eb, #1d4ed8); color: white; border: none;
-    padding: 10px 24px; border-radius: 8px; font-weight: bold; width: 100%;
+    padding: 10px 20px; border-radius: 8px; font-weight: bold; width: 100%;
 }
-.hapus-chat-btn button {
-    background: #ef4444 !important; font-size: 12px !important; padding: 5px 10px !important;
-    width: auto !important; float: right;
-}
-div[data-testid="stImage"] { display: flex; justify-content: center; align-items: center; }
-.chat-message { padding: 1.5rem; border-radius: 0.5rem; margin-bottom: 1rem; display: flex; }
-.chat-message.user { background-color: #e0f2fe; border-left: 5px solid #0284c7; }
-.chat-message.bot { background-color: #f1f5f9; border-left: 5px solid #475569; }
+.chat-message { padding: 1rem; border-radius: 8px; margin-bottom: 10px; display: flex; font-size: 14px;}
+.chat-message.user { background-color: #e0f2fe; border-left: 4px solid #0284c7; }
+.chat-message.bot { background-color: #f1f5f9; border-left: 4px solid #475569; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -161,7 +173,7 @@ if "GEMINI_API_KEY" in st.secrets:
         genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
     except: pass
 
-# --- FUNGSI BACA GAMBAR ---
+# --- FUNGSI BACA GAMBAR KE HTML ---
 def get_img_as_base64(file_path):
     try:
         with open(file_path, "rb") as f:
@@ -170,7 +182,7 @@ def get_img_as_base64(file_path):
     except: return ""
 
 # =========================================================
-# 4. MENU NAVIGASI
+# 4. MENU NAVIGASI (FIXED)
 # =========================================================
 if 'selected_menu' not in st.session_state:
     st.session_state.selected_menu = "Home"
@@ -184,35 +196,37 @@ selected = option_menu(
     key="nav_menu",
     styles={
         "container": {"padding": "5px", "background-color": "#ffffff", "border-radius": "12px", "border": "1px solid #e2e8f0"},
-        "nav-link": {"font-size": "14px", "color": "#64748b", "margin": "0px"},
+        "nav-link": {"font-size": "12px", "color": "#64748b", "margin": "0px"}, # Font dikecilin dikit biar muat di HP
         "nav-link-selected": {"background-color": "#2563eb", "color": "white"},
     }
 )
 
 # =========================================================
-# 5. HALAMAN: HOME
+# 5. HALAMAN: HOME (HEADER HTML KHUSUS)
 # =========================================================
 if selected == "Home":
+    # 1. BACA GAMBAR DULU
     img_uin = get_img_as_base64("logo_uin.png")
     img_him = get_img_as_base64("logo_him.png")
     
+    # 2. RENDER HEADER PAKE HTML BIAR GAK TUMPUK DI HP
     header_html = f"""
-    <div class="header-wrapper">
-        {'<img src="data:image/png;base64,' + img_uin + '" class="header-logo">' if img_uin else ''}
-        <div class="header-text">
+    <div class="header-container">
+        <img src="data:image/png;base64,{img_uin}" class="logo-img">
+        <div class="title-text">
             <h1>SAINS DATA CRISIS CENTER</h1>
             <p>Pusat Analisis, Respon Cepat, dan Mitigasi Krisis Mahasiswa</p>
         </div>
-        {'<img src="data:image/png;base64,' + img_him + '" class="header-logo">' if img_him else ''}
+        <img src="data:image/png;base64,{img_him}" class="logo-img">
     </div>
-    <hr style="margin-top: -10px; margin-bottom: 30px; opacity: 0.2;">
     """
     st.markdown(header_html, unsafe_allow_html=True)
+    st.write("---") 
 
     c1, c2, c3 = st.columns(3)
-    with c1: st.markdown("""<div class="glass-card"><h2 style="color:#2563eb !important;">📢 Pelaporan</h2><p>Saluran resmi pengaduan masalah akademik & fasilitas.</p></div>""", unsafe_allow_html=True)
-    with c2: st.markdown("""<div class="glass-card"><h2 style="color:#0891b2 !important;">📊 Transparansi</h2><p>Pantau data statistik keluhan mahasiswa secara real-time.</p></div>""", unsafe_allow_html=True)
-    with c3: st.markdown("""<div class="glass-card"><h2 style="color:#7c3aed !important;">🤖 Sadas Bot</h2><p>Asisten AI cerdas siap menjawab pertanyaanmu 24/7.</p></div>""", unsafe_allow_html=True)
+    with c1: st.markdown("""<div class="glass-card"><h3 style="color:#2563eb;">📢 Pelaporan</h3><p style="font-size:14px;">Saluran resmi pengaduan masalah.</p></div>""", unsafe_allow_html=True)
+    with c2: st.markdown("""<div class="glass-card"><h3 style="color:#0891b2;">📊 Data</h3><p style="font-size:14px;">Pantau statistik keluhan real-time.</p></div>""", unsafe_allow_html=True)
+    with c3: st.markdown("""<div class="glass-card"><h3 style="color:#7c3aed;">🤖 Sadas Bot</h3><p style="font-size:14px;">Asisten AI cerdas 24/7.</p></div>""", unsafe_allow_html=True)
 
     st.write("")
     st.subheader("📰 Informasi Terbaru")
@@ -225,8 +239,9 @@ if selected == "Home":
                     border_color = "#ef4444" if tipe == "Urgent" else ("#f59e0b" if tipe == "Penting" else "#3b82f6")
                     st.markdown(f"""
                     <div class="announce-card" style="border-left: 5px solid {border_color};">
-                        <div style="display:flex; justify-content:space-between;"><span style="font-weight:bold; color:{border_color}; text-transform:uppercase; font-size:12px; background:{border_color}15; padding:2px 8px; border-radius:4px;">{tipe}</span><span style="color:#94a3b8; font-size:12px;">{item.get('Tanggal', '-')}</span></div>
-                        <h4 style="margin: 5px 0; color:#1e293b !important;">{item.get('Judul', '-')}</h4><p style="margin:0; font-size:14px; color:#475569 !important;">{item.get('Isi', '-')}</p>
+                        <div style="display:flex; justify-content:space-between;"><span style="font-weight:bold; color:{border_color}; font-size:12px;">{tipe}</span><span style="color:#94a3b8; font-size:12px;">{item.get('Tanggal', '-')}</span></div>
+                        <h4 style="margin: 5px 0; color:#1e293b;">{item.get('Judul', '-')}</h4>
+                        <p style="margin:0; font-size:13px; color:#475569;">{item.get('Isi', '-')}</p>
                     </div>""", unsafe_allow_html=True)
             else: st.info("Belum ada pengumuman.")
         except: st.warning("Gagal memuat pengumuman.")
@@ -236,7 +251,6 @@ if selected == "Home":
 # 6. HALAMAN: LAPOR MASALAH
 # =========================================================
 elif selected == "Lapor Masalah":
-    st.markdown("<div style='max-width: 700px; margin: auto;'>", unsafe_allow_html=True)
     st.markdown("<h2 style='text-align:center;'>📝 Form Pengaduan</h2>", unsafe_allow_html=True)
     with st.container():
         st.markdown('<div class="glass-card">', unsafe_allow_html=True)
@@ -270,7 +284,6 @@ elif selected == "Lapor Masalah":
                             st.success("✅ Terkirim!")
                         except: st.error("Database Error")
         st.markdown('</div>', unsafe_allow_html=True)
-    st.markdown("</div>", unsafe_allow_html=True)
 
 # =========================================================
 # 7. HALAMAN: CEK STATUS
@@ -293,7 +306,11 @@ elif selected == "Cek Status":
                         for idx, row in hasil.iterrows():
                             status = row['Status']
                             color = "#d97706" if status == "Pending" else ("#059669" if status == "Selesai" else "#2563eb")
-                            st.markdown(f"""<div class="glass-card" style="border-left:5px solid {color}; text-align:left;"><h4 style="margin:0;">{row['Kategori Masalah']}</h4><small style="color:#64748b;">{row['Waktu Lapor']}</small><p style="margin-top:10px;">"{row['Detail Keluhan']}"</p><div style="background:{color}22; color:{color}; padding: 5px 10px; border-radius:8px; display:inline-block; font-weight:bold; margin-top:5px;">{status}</div></div>""", unsafe_allow_html=True)
+                            st.markdown(f"""<div class="glass-card" style="border-left:5px solid {color}; text-align:left;">
+                            <h4 style="margin:0;">{row['Kategori Masalah']}</h4>
+                            <small style="color:#64748b;">{row['Waktu Lapor']}</small>
+                            <p style="margin-top:10px;">"{row['Detail Keluhan']}"</p>
+                            <div style="background:{color}22; color:{color}; padding: 5px 10px; border-radius:8px; display:inline-block; font-weight:bold; margin-top:5px;">{status}</div></div>""", unsafe_allow_html=True)
                     else: st.warning("Belum ada laporan.")
                 except: st.error("Gagal mengambil data.")
 
@@ -310,20 +327,20 @@ elif selected == "Dashboard":
             
             if not df.empty:
                 col1, col2, col3 = st.columns(3)
-                with col1: st.markdown(f"""<div class="glass-card"><div class="metric-value">{len(df)}</div><div class="metric-label">Total</div></div>""", unsafe_allow_html=True)
-                with col2: st.markdown(f"""<div class="glass-card"><div class="metric-value" style="color:#d97706;">{len(df[df['Status'] == 'Pending'])}</div><div class="metric-label">Menunggu</div></div>""", unsafe_allow_html=True)
-                with col3: st.markdown(f"""<div class="glass-card"><div class="metric-value" style="color:#059669;">{len(df[df['Status'] == 'Selesai'])}</div><div class="metric-label">Selesai</div></div>""", unsafe_allow_html=True)
+                with col1: st.markdown(f"""<div class="glass-card"><div class="metric-value" style="font-size:24px; font-weight:bold; color:#2563eb;">{len(df)}</div><div class="metric-label">Total</div></div>""", unsafe_allow_html=True)
+                with col2: st.markdown(f"""<div class="glass-card"><div class="metric-value" style="font-size:24px; font-weight:bold; color:#d97706;">{len(df[df['Status'] == 'Pending'])}</div><div class="metric-label">Menunggu</div></div>""", unsafe_allow_html=True)
+                with col3: st.markdown(f"""<div class="glass-card"><div class="metric-value" style="font-size:24px; font-weight:bold; color:#059669;">{len(df[df['Status'] == 'Selesai'])}</div><div class="metric-label">Selesai</div></div>""", unsafe_allow_html=True)
                 
                 c_a, c_b = st.columns(2)
                 with c_a:
                     if 'Kategori Masalah' in df.columns:
                         pie = df['Kategori Masalah'].value_counts()
                         fig = go.Figure(data=[go.Pie(labels=pie.index, values=pie.values, hole=.5)])
-                        fig.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)", font_color="#1e293b")
+                        fig.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)", font_color="#1e293b", height=300, margin=dict(l=20, r=20, t=20, b=20))
                         st.plotly_chart(fig, use_container_width=True)
-                with c_b: # Dummy trend
+                with c_b:
                     fig2 = go.Figure(go.Scatter(x=["Senin","Selasa","Rabu"], y=[3,7,2], line=dict(color="#2563eb", width=4)))
-                    fig2.update_layout(paper_bgcolor="rgba(0,0,0,0)", font_color="#1e293b", height=300)
+                    fig2.update_layout(paper_bgcolor="rgba(0,0,0,0)", font_color="#1e293b", height=300, margin=dict(l=20, r=20, t=20, b=20))
                     st.plotly_chart(fig2, use_container_width=True)
             else: st.info("Belum ada data.")
         except: st.error("Error memuat dashboard.")
@@ -332,19 +349,15 @@ elif selected == "Dashboard":
 # 9. HALAMAN: SADAS BOT
 # =========================================================
 elif selected == "Sadas Bot":
-    st.markdown("<div style='max-width: 700px; margin: auto;'>", unsafe_allow_html=True)
-    
     col_header, col_btn = st.columns([3, 1])
     with col_header:
         st.markdown(f"<h2 style='text-align:left; margin:0;'>🤖 Sadas Bot</h2>", unsafe_allow_html=True)
         st.markdown("<p style='text-align:left; color:#64748b; margin-top:0px;'>Asisten Akademik Virtual</p>", unsafe_allow_html=True)
     
     with col_btn:
-        st.markdown('<div class="hapus-chat-btn">', unsafe_allow_html=True)
-        if st.button("🗑️ Hapus Chat"):
+        if st.button("🗑️ Hapus"):
             st.session_state.messages = []
             st.rerun()
-        st.markdown('</div>', unsafe_allow_html=True)
 
     st.write("---")
     
@@ -391,7 +404,6 @@ elif selected == "Sadas Bot":
 
         st.session_state.messages.append({"role": "assistant", "content": response})
         with st.chat_message("assistant"): st.markdown(response)
-    st.markdown("</div>", unsafe_allow_html=True)
 
 # =========================================================
 # 10. HALAMAN: ADMIN
