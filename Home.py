@@ -22,7 +22,7 @@ st.set_page_config(
 )
 
 # =========================================================
-# 2. GLOBAL CSS
+# 2. GLOBAL CSS (LIGHT MODE + LOGO + LABEL JELAS)
 # =========================================================
 st.markdown("""
 <style>
@@ -87,15 +87,12 @@ except: sheet = None
 try: sheet_pengumuman = sh.worksheet("Pengumuman") if sh else None
 except: sheet_pengumuman = None
 
-# --- KONFIGURASI AI GEMINI (PAKSA MODEL GRATIS) ---
-model = None
+# --- KONFIGURASI AI (HANYA INIT, JANGAN ERROR DULU) ---
 if "GEMINI_API_KEY" in st.secrets:
     try:
         genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
-        # KITA PAKSA PAKE 'gemini-1.5-flash' (Paling Aman & Gratis)
-        model = genai.GenerativeModel('gemini-1.5-flash')
-    except Exception as e:
-        model = None
+    except:
+        pass
 
 # =========================================================
 # 4. MENU NAVIGASI
@@ -247,7 +244,7 @@ elif selected == "Dashboard":
         except: st.error("Error memuat dashboard.")
 
 # =========================================================
-# 9. HALAMAN: SADAS BOT (VERSI AMAN & GRATIS) 🧠
+# 9. HALAMAN: SADAS BOT (VERSI TAHAN BANTING) 🥊
 # =========================================================
 elif selected == "Sadas Bot":
     st.markdown("<div style='max-width: 700px; margin: auto;'>", unsafe_allow_html=True)
@@ -264,20 +261,45 @@ elif selected == "Sadas Bot":
         st.session_state.messages.append({"role": "user", "content": prompt})
         with st.chat_message("user"): st.markdown(prompt)
 
-        response = ""
-        # --- LOGIKA AI GEMINI ---
-        if model:
-            try:
-                system_prompt = "Kamu adalah Sadas Bot, asisten virtual dari Sains Data UIN Raden Intan Lampung. Jawab sopan dan santai."
-                full_prompt = f"{system_prompt}\nUser: {prompt}"
-                
-                with st.spinner("Sadas Bot sedang mikir..."):
-                    ai_response = model.generate_content(full_prompt)
-                    response = ai_response.text
-            except Exception as e:
-                response = f"⚠️ Masih error nih kak: {str(e)}. Coba tunggu sebentar ya, mungkin lagi sibuk."
+        response = "Maaf, sistem AI sedang gangguan." # Default
+        
+        # --- LOGIKA "MODEL HOPPING" (Loncat-loncat cari model yg hidup) ---
+        if "GEMINI_API_KEY" in st.secrets:
+            # Daftar model yang mau dicoba (Urutan Prioritas)
+            # Flash = Cepat & Gratis | Pro = Stabil | 1.0 = Versi Lama tapi Aman
+            models_to_try = [
+                'gemini-1.5-flash', 
+                'gemini-1.5-pro',
+                'gemini-1.0-pro',
+                'gemini-pro'
+            ]
+            
+            success = False
+            error_log = []
+
+            with st.spinner("Sadas Bot sedang mencari jawaban..."):
+                for model_name in models_to_try:
+                    try:
+                        # Coba inisialisasi model
+                        model = genai.GenerativeModel(model_name)
+                        
+                        # Coba kirim pesan
+                        system_prompt = "Kamu adalah Sadas Bot, asisten virtual dari Sains Data UIN Raden Intan Lampung. Jawab sopan dan santai."
+                        full_prompt = f"{system_prompt}\nUser: {prompt}"
+                        
+                        ai_response = model.generate_content(full_prompt)
+                        response = ai_response.text
+                        success = True
+                        break # Kalau berhasil, berhenti looping (loncat)
+                    except Exception as e:
+                        # Kalau gagal, catat errornya dan lanjut ke model berikutnya
+                        error_log.append(f"{model_name}: {str(e)}")
+                        continue 
+            
+            if not success:
+                response = f"⚠️ Maaf kak, semua otak robot lagi pusing (Error Models). Cek koneksi atau kuota API. Detail: {error_log[0]}"
         else:
-            response = "⚠️ API Key Gemini belum dipasang atau error konfigurasi."
+            response = "⚠️ API Key belum dipasang di Secrets."
 
         st.session_state.messages.append({"role": "assistant", "content": response})
         with st.chat_message("assistant"): st.markdown(response)
