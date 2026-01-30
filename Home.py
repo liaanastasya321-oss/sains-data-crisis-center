@@ -20,26 +20,26 @@ st.set_page_config(
 )
 
 # =========================================================
-# 2. GLOBAL CSS + JS INJECTION (THE COOL STUFF)
+# 2. GLOBAL CSS (TAMPILAN KEREN - TANPA LOADING SCREEN)
 # =========================================================
 st.markdown("""
 <style>
-/* ================= HIDE STREAMLIT DEFAULT UI ================= */
+/* Sembunyikan UI Bawaan Streamlit */
 #MainMenu {visibility: hidden;}
 footer {visibility: hidden;}
 header {visibility: hidden;}
 [data-testid="stSidebar"] {display: none;}
 
-/* ================= GOOGLE FONT ================= */
+/* Font Keren */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
 
 html, body, [class*="css"] {
     font-family: 'Inter', sans-serif;
-    background: radial-gradient(circle at top, #0f172a, #020617); /* Deep Navy */
+    background: radial-gradient(circle at top, #0f172a, #020617); /* Warna Navy Gelap */
     color: #e5e7eb;
 }
 
-/* ================= GLASS CARD ================= */
+/* Kartu Kaca (Glassmorphism) */
 .glass-card {
     background: rgba(30, 41, 59, 0.4);
     backdrop-filter: blur(12px);
@@ -54,13 +54,13 @@ html, body, [class*="css"] {
 
 .glass-card:hover {
     transform: translateY(-5px);
-    border-color: rgba(6, 182, 212, 0.5); /* Cyan border on hover */
+    border-color: rgba(6, 182, 212, 0.5); /* Biru Neon pas di-hover */
     box-shadow: 0 0 20px rgba(6, 182, 212, 0.2);
 }
 
-/* ================= HERO SECTION ================= */
+/* Judul Besar */
 .hero {
-    padding: 80px 20px;
+    padding: 60px 20px;
     text-align: center;
 }
 
@@ -73,19 +73,17 @@ html, body, [class*="css"] {
     margin-bottom: 10px;
 }
 
-/* ================= TYPEWRITER ================= */
-#typewriter {
-    font-size: 20px;
-    margin-top: 10px;
+.hero p {
+    font-size: 18px;
     color: #94a3b8;
-    font-family: 'Courier New', monospace;
+    margin-top: 10px;
 }
 
-/* ================= METRIC ================= */
+/* Angka Dashboard */
 .metric-value {
     font-size: 42px;
     font-weight: 700;
-    color: #06b6d4; /* Cyan */
+    color: #06b6d4;
 }
 .metric-label {
     font-size: 14px;
@@ -94,24 +92,7 @@ html, body, [class*="css"] {
     letter-spacing: 1px;
 }
 
-/* ================= CUSTOM INPUTS ================= */
-/* Streamlit input boxes styling */
-div[data-baseweb="input"] > div {
-    background-color: rgba(15, 23, 42, 0.6) !important;
-    border: 1px solid rgba(255, 255, 255, 0.1) !important;
-    color: white !important;
-    border-radius: 8px !important;
-}
-div[data-baseweb="select"] > div {
-    background-color: rgba(15, 23, 42, 0.6) !important;
-    border: 1px solid rgba(255, 255, 255, 0.1) !important;
-    color: white !important;
-}
-p, label {
-    color: #e2e8f0 !important;
-}
-
-/* ================= BUTTONS ================= */
+/* Tombol Keren */
 div.stButton > button {
     background: linear-gradient(90deg, #2563eb, #06b6d4);
     color: white;
@@ -127,50 +108,27 @@ div.stButton > button:hover {
     box-shadow: 0 0 15px rgba(6, 182, 212, 0.5);
 }
 
-/* ================= LOADER ANIMATION ================= */
-#loader {
-    position: fixed; top:0; left:0; width: 100vw; height: 100vh;
-    background: #020617; z-index: 9999;
-    display: flex; justify-content: center; align-items: center;
+/* Input Form jadi Gelap */
+div[data-baseweb="input"] > div, div[data-baseweb="select"] > div, div[data-baseweb="base-input"] {
+    background-color: rgba(15, 23, 42, 0.6) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    color: white !important;
+    border-radius: 8px !important;
 }
-.spinner {
-    width: 50px; height: 50px;
-    border: 4px solid #1e293b; border-top: 4px solid #06b6d4;
-    border-radius: 50%; animation: spin 1s linear infinite;
+p, label {
+    color: #e2e8f0 !important;
 }
-@keyframes spin { 100% { transform: rotate(360deg); } }
 </style>
-
-<div id="loader"><div class="spinner"></div></div>
-
-<script>
-// Hide Loader after 1.5s
-setTimeout(() => {
-    document.getElementById("loader").style.display = "none";
-}, 1500);
-
-// Typewriter Effect
-const text = "Analisis Data. Respon Cepat. Mitigasi Krisis.";
-let i = 0;
-function typeWriter() {
-    if (i < text.length) {
-        document.getElementById("typewriter").innerHTML += text.charAt(i);
-        i++;
-        setTimeout(typeWriter, 50);
-    }
-}
-document.addEventListener("DOMContentLoaded", typeWriter);
-</script>
 """, unsafe_allow_html=True)
 
 # =========================================================
-# 3. KONEKSI GOOGLE SHEETS (REAL)
+# 3. KONEKSI GOOGLE SHEETS
 # =========================================================
-# Ganti dengan ID Spreadsheet Kamu
+# 👇 ID SPREADSHEET KAMU (JANGAN DIHAPUS)
 ID_SPREADSHEET = "1crJl0DsswyMGmq0ej_niIMfhSLdUIUx8u42HEu-sc3g" 
 
-# Ganti dengan API Key ImgBB Kamu
-API_KEY_IMGBB  = "827ccb0eea8a706c4c34a16891f84e7b" # <--- CONTOH, PASTE YANG ASLI
+# 👇 API KEY IMGBB KAMU (Paste lagi di sini ya!)
+API_KEY_IMGBB  = "827ccb0eea8a706c4c34a16891f84e7b" 
 
 scopes = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
 
@@ -194,7 +152,7 @@ def get_google_sheet():
 sheet = get_google_sheet()
 
 # =========================================================
-# 4. NAVIGATION (MENU ATAS)
+# 4. MENU NAVIGASI (Horizontal)
 # =========================================================
 selected = option_menu(
     menu_title=None,
@@ -216,7 +174,7 @@ if selected == "Home":
     st.markdown("""
     <div class="hero">
         <h1>SAINS DATA CRISIS CENTER</h1>
-        <div id="typewriter"></div>
+        <p>Pusat Analisis, Respon Cepat, dan Mitigasi Krisis Mahasiswa</p>
     </div>
     """, unsafe_allow_html=True)
 
@@ -247,7 +205,7 @@ if selected == "Home":
         """, unsafe_allow_html=True)
 
 # =========================================================
-# 6. HALAMAN: DASHBOARD PUBLIK (DATA ASLI)
+# 6. HALAMAN: DASHBOARD
 # =========================================================
 elif selected == "Dashboard":
     st.markdown("<h2 style='text-align:center;'>📊 Dashboard Analisis</h2>", unsafe_allow_html=True)
@@ -259,13 +217,10 @@ elif selected == "Dashboard":
         df = pd.DataFrame()
 
     if not df.empty:
-        # Bersihkan data
         if 'Waktu Lapor' in df.columns:
              df = df[df['Waktu Lapor'].astype(str).str.strip() != ""]
 
         col1, col2, col3 = st.columns(3)
-        
-        # Metrik Cards
         with col1:
             st.markdown(f"""<div class="glass-card"><div class="metric-value">{len(df)}</div><div class="metric-label">Total Laporan</div></div>""", unsafe_allow_html=True)
         with col2:
@@ -275,9 +230,7 @@ elif selected == "Dashboard":
             selesai = len(df[df['Status'] == 'Selesai'])
             st.markdown(f"""<div class="glass-card"><div class="metric-value" style="color:#10b981;">{selesai}</div><div class="metric-label">Masalah Selesai</div></div>""", unsafe_allow_html=True)
 
-        # Charts
         c_chart1, c_chart2 = st.columns(2)
-        
         with c_chart1:
             st.markdown("##### Kategori Masalah")
             if 'Kategori Masalah' in df.columns:
@@ -288,16 +241,14 @@ elif selected == "Dashboard":
         
         with c_chart2:
             st.markdown("##### Tren Laporan")
-            # Contoh data dummy utk tren (karena data waktu mungkin belum cukup)
             fig2 = go.Figure(go.Scatter(x=["Senin", "Selasa", "Rabu", "Kamis", "Jumat"], y=[5, 12, 8, 15, 10], line=dict(color="#06b6d4", width=4)))
             fig2.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)", font_color="white", height=350)
             st.plotly_chart(fig2, use_container_width=True)
-
     else:
         st.info("Data belum tersedia.")
 
 # =========================================================
-# 7. HALAMAN: LAPOR MASALAH (FORM)
+# 7. HALAMAN: LAPOR MASALAH
 # =========================================================
 elif selected == "Lapor Masalah":
     st.markdown("<div style='max-width: 700px; margin: auto;'>", unsafe_allow_html=True)
@@ -387,7 +338,7 @@ elif selected == "Cek Status":
                 st.error("Gagal mengambil data.")
 
 # =========================================================
-# 9. HALAMAN: ADMIN (SEDERHANA)
+# 9. HALAMAN: ADMIN
 # =========================================================
 elif selected == "Admin":
     st.markdown("<h2 style='text-align:center;'>🔐 Admin Area</h2>", unsafe_allow_html=True)
@@ -396,7 +347,6 @@ elif selected == "Admin":
         st.session_state['is_logged_in'] = False
 
     if not st.session_state['is_logged_in']:
-        col_pass, = st.columns(1) # Center? No, use glass card
         st.markdown("<div style='max-width:400px; margin:auto;'>", unsafe_allow_html=True)
         with st.form("login_form"):
             pwd = st.text_input("Password Admin", type="password")
@@ -408,12 +358,10 @@ elif selected == "Admin":
                     st.error("Password Salah")
         st.markdown("</div>", unsafe_allow_html=True)
     else:
-        st.success("Welcome Admin!")
         if st.button("Logout"):
             st.session_state['is_logged_in'] = False
             st.rerun()
         
-        # Tampilkan Data Admin
         try:
             data = sheet.get_all_records()
             df = pd.DataFrame(data)
