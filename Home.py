@@ -22,7 +22,7 @@ st.set_page_config(
 )
 
 # =========================================================
-# 2. GLOBAL CSS (STICKY FIX + ANTI KEPOTONG) 🛡️
+# 2. GLOBAL CSS (FIX ANTI KEPOTONG - VERSI EKSTRIM) 🛡️
 # =========================================================
 st.markdown("""
 <style>
@@ -52,19 +52,19 @@ iframe[title="streamlit_option_menu.option_menu"] {
     top: 0;
     left: 0;
     right: 0;
-    z-index: 9999;
+    z-index: 99999; /* Z-Index paling tinggi biar selalu di depan */
     width: 100%;
-    background: #f8fafc; /* Biar chat gak tembus ke menu */
+    background: #f8fafc; 
     padding-top: 10px;
     padding-bottom: 5px;
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 
-/* --- SOLUSI BIAR GAK KEPOTONG/TENGGELAM --- */
-/* Kita dorong konten utama ke bawah sejauh 140px biar aman dari menu */
+/* --- SOLUSI ANTI KEPOTONG (FORCE DOWN) --- */
+/* Kita paksa container utama turun JAUH ke bawah */
 .block-container {
-    padding-top: 140px !important; 
-    padding-bottom: 50px !important;
+    padding-top: 12rem !important; /* INI JARAKNYA LEBAR BANGET (sekitar 190px) */
+    padding-bottom: 5rem !important;
 }
 
 /* CARDS */
@@ -146,16 +146,23 @@ if "GEMINI_API_KEY" in st.secrets:
     except: pass
 
 # =========================================================
-# 4. MENU NAVIGASI (FIXED STATE)
+# 4. MENU NAVIGASI
 # =========================================================
-# key="nav_menu" penting biar menu gak reset ke Home pas klik tombol lain
+# Kita inisialisasi session state untuk menu biar gak loncat
+if 'selected_menu' not in st.session_state:
+    st.session_state.selected_menu = "Home"
+
+def on_change_menu(key):
+    # Callback untuk update state manual jika diperlukan
+    st.session_state.selected_menu = st.session_state[key]
+
 selected = option_menu(
     menu_title=None,
     options=["Home", "Lapor Masalah", "Cek Status", "Dashboard", "Sadas Bot", "Admin"],
     icons=["house", "exclamation-triangle-fill", "search", "bar-chart-fill", "robot", "lock-fill"],
     default_index=0,
     orientation="horizontal",
-    key="nav_menu",  # <--- INI SOLUSI BIAR MENU GAK PINDAH SENDIRI
+    key="nav_menu", # Kunci ini penting biar dia inget posisi
     styles={
         "container": {"padding": "5px", "background-color": "#ffffff", "border-radius": "12px", "border": "1px solid #e2e8f0"},
         "nav-link": {"font-size": "14px", "color": "#64748b", "margin": "0px"},
@@ -167,6 +174,9 @@ selected = option_menu(
 # 5. HALAMAN: HOME
 # =========================================================
 if selected == "Home":
+    # SPACER TAMBAHAN (Hantu Penurun Konten)
+    st.markdown("<div style='height: 20px;'></div>", unsafe_allow_html=True)
+    
     col_logo1, col_text, col_logo2 = st.columns([1.5, 6, 1.5])
     with col_logo1:
         if os.path.exists("logo_uin.png"): st.image("logo_uin.png", width=120)
@@ -203,6 +213,9 @@ if selected == "Home":
 # 6. HALAMAN: LAPOR MASALAH
 # =========================================================
 elif selected == "Lapor Masalah":
+    # SPACER TAMBAHAN
+    st.markdown("<div style='height: 20px;'></div>", unsafe_allow_html=True)
+    
     st.markdown("<div style='max-width: 700px; margin: auto;'>", unsafe_allow_html=True)
     st.markdown("<h2 style='text-align:center;'>📝 Form Pengaduan</h2>", unsafe_allow_html=True)
     with st.container():
@@ -243,6 +256,9 @@ elif selected == "Lapor Masalah":
 # 7. HALAMAN: CEK STATUS
 # =========================================================
 elif selected == "Cek Status":
+    # SPACER TAMBAHAN
+    st.markdown("<div style='height: 20px;'></div>", unsafe_allow_html=True)
+    
     st.markdown("<h2 style='text-align:center;'>🔍 Cek Status</h2>", unsafe_allow_html=True)
     col_x, col_y, col_z = st.columns([1,2,1])
     with col_y:
@@ -268,6 +284,9 @@ elif selected == "Cek Status":
 # 8. HALAMAN: DASHBOARD
 # =========================================================
 elif selected == "Dashboard":
+    # SPACER TAMBAHAN
+    st.markdown("<div style='height: 20px;'></div>", unsafe_allow_html=True)
+    
     st.markdown("<h2 style='text-align:center;'>📊 Dashboard Analisis</h2>", unsafe_allow_html=True)
     if sheet:
         try:
@@ -296,12 +315,15 @@ elif selected == "Dashboard":
         except: st.error("Error memuat dashboard.")
 
 # =========================================================
-# 9. HALAMAN: SADAS BOT (FIXED LAYOUT)
+# 9. HALAMAN: SADAS BOT (FIXED LAYOUT + HAPUS CHAT)
 # =========================================================
 elif selected == "Sadas Bot":
+    # SPACER TAMBAHAN (Ini penting biar judul bot gak kejedot menu)
+    st.markdown("<div style='height: 20px;'></div>", unsafe_allow_html=True)
+
     st.markdown("<div style='max-width: 700px; margin: auto;'>", unsafe_allow_html=True)
     
-    # --- HEADER & TOMBOL HAPUS (Layout Rapi) ---
+    # --- HEADER & TOMBOL HAPUS ---
     col_header, col_btn = st.columns([3, 1])
     with col_header:
         st.markdown(f"<h2 style='text-align:left; margin:0;'>🤖 Sadas Bot</h2>", unsafe_allow_html=True)
@@ -328,18 +350,15 @@ elif selected == "Sadas Bot":
         with st.chat_message("user"): st.markdown(prompt)
 
         response = ""
-        # --- LOGIKA DETEKTIF MODEL (POLOS TANPA TULISAN LOADING TEKNIS) ---
+        # --- LOGIKA DETEKTIF MODEL ---
         if "GEMINI_API_KEY" in st.secrets:
             try:
-                # 1. Cari model yang tersedia
                 available_models = []
                 for m in genai.list_models():
                     if 'generateContent' in m.supported_generation_methods:
                         available_models.append(m.name)
                 
-                # 2. Prioritas Model (Cari yang gratisan/umum dulu)
-                target_model = 'gemini-1.5-flash' # Default target
-                
+                target_model = 'gemini-1.5-flash' 
                 found_flash = False
                 for m in available_models:
                     if 'flash' in m: target_model = m; found_flash = True; break
@@ -348,12 +367,10 @@ elif selected == "Sadas Bot":
                     for m in available_models:
                         if 'pro' in m: target_model = m; break
                 
-                # 3. Jalankan Model
                 model = genai.GenerativeModel(target_model)
                 system_prompt = "Kamu adalah Sadas Bot, asisten virtual dari Sains Data UIN Raden Intan Lampung. Jawab sopan dan santai."
                 full_prompt = f"{system_prompt}\nUser: {prompt}"
                 
-                # LOADING YANG SIMPEL AJA
                 with st.spinner("Sadas Bot sedang mengetik..."):
                     ai_response = model.generate_content(full_prompt)
                     response = ai_response.text
@@ -371,6 +388,9 @@ elif selected == "Sadas Bot":
 # 10. HALAMAN: ADMIN
 # =========================================================
 elif selected == "Admin":
+    # SPACER TAMBAHAN
+    st.markdown("<div style='height: 20px;'></div>", unsafe_allow_html=True)
+    
     st.markdown("<h2 style='text-align:center;'>🔐 Admin Area</h2>", unsafe_allow_html=True)
     if 'is_logged_in' not in st.session_state: st.session_state['is_logged_in'] = False
 
