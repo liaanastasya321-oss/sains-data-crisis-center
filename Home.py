@@ -22,38 +22,63 @@ st.set_page_config(
 )
 
 # =========================================================
-# 2. GLOBAL CSS (LIGHT MODE + DESIGN FIX)
+# 2. GLOBAL CSS (LIGHT MODE + LOGO + LABEL JELAS)
 # =========================================================
 st.markdown("""
 <style>
+/* BACKGROUND */
 .stApp { background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%); color: #0f172a; }
+
+/* HIDE UI */
 #MainMenu {visibility: hidden;} footer {visibility: hidden;} header {visibility: hidden;} [data-testid="stSidebar"] {display: none;}
+
+/* FONT & INPUT */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
 html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
+
 .stTextInput input, .stTextArea textarea, .stSelectbox div[data-baseweb="select"] {
-    color: #334155 !important; background-color: #ffffff !important; border: 1px solid #94a3b8 !important; border-radius: 8px !important;
+    color: #334155 !important; background-color: #ffffff !important;
+    border: 1px solid #94a3b8 !important; border-radius: 8px !important;
 }
+
+/* LABEL HITAM JELAS */
 label, .stTextInput label, .stSelectbox label, .stTextArea label, .stFileUploader label, div[data-testid="stWidgetLabel"] p {
     color: #0f172a !important; font-size: 15px !important; font-weight: 700 !important;
 }
+
+/* GLASS CARD */
 .glass-card {
-    background: #ffffff; border-radius: 16px; padding: 24px; border: 1px solid #cbd5e1; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); margin-bottom: 20px;
+    background: #ffffff; border-radius: 16px; padding: 24px;
+    border: 1px solid #cbd5e1; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); margin-bottom: 20px;
 }
 .glass-card:hover { transform: translateY(-3px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); border-color: #3b82f6; }
+
+/* ANNOUNCE CARD */
 .announce-card {
-    background: #ffffff; border-radius: 12px; padding: 20px; margin-bottom: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; transition: transform 0.2s;
+    background: #ffffff; border-radius: 12px; padding: 20px; margin-bottom: 15px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; transition: transform 0.2s;
 }
 .announce-card:hover { transform: scale(1.01); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+
+/* TYPOGRAPHY */
 h1, h2, h3, h4, h5, h6 { color: #0f172a !important; font-weight: 800 !important; }
 p { color: #334155 !important; }
 .hero h1 {
-    font-size: 42px; background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 5px;
+    font-size: 42px; background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 5px;
 }
+
+/* BUTTON */
 div.stButton > button {
-    background: linear-gradient(90deg, #2563eb, #1d4ed8); color: white; border: none; padding: 10px 24px; border-radius: 8px; font-weight: bold; width: 100%;
+    background: linear-gradient(90deg, #2563eb, #1d4ed8); color: white; border: none;
+    padding: 10px 24px; border-radius: 8px; font-weight: bold; width: 100%;
 }
 div.stButton > button:hover { transform: scale(1.02); box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3); }
+
+/* LOGO CENTER */
 div[data-testid="stImage"] { display: flex; justify-content: center; align-items: center; }
+
+/* CHAT STYLE */
 .chat-message { padding: 1.5rem; border-radius: 0.5rem; margin-bottom: 1rem; display: flex; }
 .chat-message.user { background-color: #e0f2fe; border-left: 5px solid #0284c7; }
 .chat-message.bot { background-color: #f1f5f9; border-left: 5px solid #475569; }
@@ -87,39 +112,21 @@ except: sheet = None
 try: sheet_pengumuman = sh.worksheet("Pengumuman") if sh else None
 except: sheet_pengumuman = None
 
-# --- KONFIGURASI AI GEMINI (AUTO-DETECT) ---
-# Bagian ini akan mencari model yang tersedia secara otomatis
+# --- KONFIGURASI AI GEMINI (DEBUG MODE) ---
+# Bagian ini akan mencari model dan mencatat error kalau gagal
 model = None
-model_name_used = "Unknown"
+gemini_status = "Not Initialized"
 
 if "GEMINI_API_KEY" in st.secrets:
-    genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
     try:
-        # Cek daftar model yang tersedia di akun Google kamu
-        available_models = []
-        for m in genai.list_models():
-            if 'generateContent' in m.supported_generation_methods:
-                available_models.append(m.name)
-        
-        # Prioritas pemilihan model (Cari yang paling baru dulu)
-        if 'models/gemini-1.5-flash' in available_models:
-            model = genai.GenerativeModel('gemini-1.5-flash')
-            model_name_used = "Gemini 1.5 Flash"
-        elif 'models/gemini-pro' in available_models:
-            model = genai.GenerativeModel('gemini-pro')
-            model_name_used = "Gemini Pro"
-        elif available_models:
-            # Kalau gak nemu yg diatas, pake apa aja yang ada di urutan pertama
-            model = genai.GenerativeModel(available_models[0].name)
-            model_name_used = available_models[0].name
-        else:
-            # Fallback manual kalau list gagal
-            model = genai.GenerativeModel('gemini-pro')
-            model_name_used = "Gemini Pro (Fallback)"
-            
+        genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
+        # Pakai Model Paling Stabil: gemini-pro
+        model = genai.GenerativeModel('gemini-pro')
+        gemini_status = "Ready"
     except Exception as e:
-        model = None
-        model_name_used = f"Error Init: {e}"
+        gemini_status = f"Error Config: {str(e)}"
+else:
+    gemini_status = "API Key Missing in Secrets"
 
 # =========================================================
 # 4. MENU NAVIGASI
@@ -271,15 +278,15 @@ elif selected == "Dashboard":
         except: st.error("Error memuat dashboard.")
 
 # =========================================================
-# 9. HALAMAN: SADAS BOT (AUTO-DETECT MODE) 🧠
+# 9. HALAMAN: SADAS BOT (DIAGNOSIS MODE) 🧠
 # =========================================================
 elif selected == "Sadas Bot":
     st.markdown("<div style='max-width: 700px; margin: auto;'>", unsafe_allow_html=True)
     st.markdown(f"<h2 style='text-align:center;'>🤖 Sadas Bot</h2>", unsafe_allow_html=True)
     st.markdown("<p style='text-align:center;'>Tanya apa saja seputar akademik, tugas, atau curhat!</p>", unsafe_allow_html=True)
     
-    # Debug Kecil buat tau pake model apa (bisa dihapus nanti)
-    # st.caption(f"Connected to: {model_name_used}") 
+    # Debug Status (Hapus nanti kalau sudah fix)
+    # st.info(f"System Status: {gemini_status}")
 
     if "messages" not in st.session_state: st.session_state.messages = []
 
@@ -292,6 +299,7 @@ elif selected == "Sadas Bot":
         with st.chat_message("user"): st.markdown(prompt)
 
         response = ""
+        # --- LOGIKA CHECKING ---
         if model:
             try:
                 system_prompt = "Kamu adalah Sadas Bot, asisten virtual dari Sains Data UIN Raden Intan Lampung. Jawab sopan dan santai."
@@ -301,9 +309,9 @@ elif selected == "Sadas Bot":
                     ai_response = model.generate_content(full_prompt)
                     response = ai_response.text
             except Exception as e:
-                response = f"⚠️ Maaf kak, masih ada error: {str(e)}. Coba update requirements.txt ke versi >=0.8.0"
+                response = f"⚠️ Masih error nih kak. Detail errornya: {str(e)}"
         else:
-            response = "⚠️ API Key Gemini belum dipasang atau tidak ada model yang tersedia."
+            response = f"⚠️ Gagal memuat Otak Robot. Alasan: {gemini_status}. Coba cek 'Secrets' di pengaturan Streamlit."
 
         st.session_state.messages.append({"role": "assistant", "content": response})
         with st.chat_message("assistant"): st.markdown(response)
