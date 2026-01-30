@@ -57,38 +57,48 @@ iframe[title="streamlit_option_menu.option_menu"] {
     z-index: 999999;
     width: 100%;
     background: #f8fafc;
-    padding: 10px 0;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    padding: 5px 0;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
 }
 
-/* --- 3. PADDING KONTEN (JARAK BIAR GAK KEPOTONG) --- */
-/* Di Laptop/PC: Jaraknya segini */
+/* --- 3. PADDING KONTEN (PENTING! BEDA LAPTOP VS HP) --- */
+
+/* Tampilan Laptop/PC */
 .block-container {
     padding-top: 130px !important; 
     padding-bottom: 50px !important;
     margin-top: 0 !important;
 }
 
-/* Di HP: Jaraknya DITAMBAH karena menu di HP kadang jadi 2 baris/lebih tebal */
+/* Tampilan HP (Layar kecil) */
 @media (max-width: 600px) {
     .block-container {
-        padding-top: 160px !important; /* Jarak lebih lebar buat HP */
+        padding-top: 80px !important; /* Jarak atas dikurangi drastis di HP */
+        padding-left: 1rem !important;
+        padding-right: 1rem !important;
+    }
+    
+    /* Menu Sticky di HP agak tinggi, jadi kita sesuaikan iframe-nya */
+    iframe[title="streamlit_option_menu.option_menu"] {
+        height: auto !important;
+        min-height: 60px;
     }
 }
 
 /* --- 4. HEADER KHUSUS (LOGO - JUDUL - LOGO) SEBARIS --- */
 .header-container {
     display: flex;
-    flex-direction: row; /* Paksa sebaris */
+    flex-direction: row; 
     align-items: center;
-    justify-content: space-between; /* Jarak antar elemen */
+    justify-content: space-between; 
     width: 100%;
-    margin-bottom: 30px;
+    margin-bottom: 20px;
     background: transparent;
+    gap: 15px;
 }
 
 .logo-img {
-    width: 100px; /* Ukuran Laptop */
+    width: 90px; /* Ukuran Laptop */
     height: auto;
     object-fit: contain;
 }
@@ -96,36 +106,79 @@ iframe[title="streamlit_option_menu.option_menu"] {
 .title-text {
     flex: 1;
     text-align: center;
-    padding: 0 10px;
 }
 
 .title-text h1 {
-    font-size: 36px; /* Ukuran Laptop */
+    font-size: 32px; /* Ukuran Laptop */
     margin: 0;
     background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     font-weight: 800;
+    line-height: 1.2;
 }
 
 .title-text p {
-    font-size: 16px;
+    font-size: 14px;
     margin: 5px 0 0 0;
     color: #64748b;
 }
 
-/* Header di HP (Mengecil tapi Tetap Sebaris) */
+/* Header di HP (Mobile) */
 @media (max-width: 600px) {
-    .logo-img { width: 50px; } /* Logo mengecil */
-    .title-text h1 { font-size: 18px; } /* Judul mengecil */
-    .title-text p { font-size: 10px; display: none; } /* Deskripsi diilangin di HP biar rapi */
+    .header-container {
+        gap: 8px; /* Rapatkan jarak elemen */
+        margin-bottom: 10px;
+    }
+    .logo-img { 
+        width: 45px !important; /* Logo lebih kecil tapi proporsional */
+    } 
+    .title-text h1 { 
+        font-size: 18px !important; /* Judul pas, gak kekecilan */
+    } 
+    .title-text p { 
+        font-size: 10px !important; /* Deskripsi kecil */
+        line-height: 1.1;
+        margin-top: 2px;
+    } 
 }
 
-/* --- 5. STYLE LAINNYA --- */
+/* --- 5. KARTU MENU UTAMA (PELAPORAN, DATA, BOT) --- */
 .glass-card {
     background: #ffffff; border-radius: 16px; padding: 20px;
     border: 1px solid #cbd5e1; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); margin-bottom: 20px;
+    text-align: center; /* Tengahkan teks di kartu */
+    height: 100%; /* Biar tinggi kartu sama */
 }
+
+.glass-card h3 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    font-size: 20px !important; /* Ukuran Laptop */
+}
+
+.glass-card p {
+    font-size: 14px !important;
+    color: #475569;
+    line-height: 1.4;
+}
+
+/* Kartu di HP */
+@media (max-width: 600px) {
+    .glass-card {
+        padding: 15px; /* Padding lebih kecil */
+        margin-bottom: 10px;
+        border-radius: 12px;
+    }
+    .glass-card h3 {
+        font-size: 16px !important; /* Judul kartu dikecilin biar imbang */
+    }
+    .glass-card p {
+        font-size: 12px !important; /* Isi teks kartu dikecilin */
+    }
+}
+
+/* --- 6. STYLE LAINNYA --- */
 .announce-card {
     background: #ffffff; border-radius: 12px; padding: 15px; margin-bottom: 10px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.05); border: 1px solid #e2e8f0;
@@ -196,7 +249,7 @@ selected = option_menu(
     key="nav_menu",
     styles={
         "container": {"padding": "5px", "background-color": "#ffffff", "border-radius": "12px", "border": "1px solid #e2e8f0"},
-        "nav-link": {"font-size": "12px", "color": "#64748b", "margin": "0px"}, # Font dikecilin dikit biar muat di HP
+        "nav-link": {"font-size": "12px", "color": "#64748b", "margin": "0px", "padding": "5px"}, 
         "nav-link-selected": {"background-color": "#2563eb", "color": "white"},
     }
 )
@@ -209,7 +262,7 @@ if selected == "Home":
     img_uin = get_img_as_base64("logo_uin.png")
     img_him = get_img_as_base64("logo_him.png")
     
-    # 2. RENDER HEADER PAKE HTML BIAR GAK TUMPUK DI HP
+    # 2. RENDER HEADER PAKE HTML
     header_html = f"""
     <div class="header-container">
         <img src="data:image/png;base64,{img_uin}" class="logo-img">
@@ -223,10 +276,34 @@ if selected == "Home":
     st.markdown(header_html, unsafe_allow_html=True)
     st.write("---") 
 
+    # --- MENU KARTU (PAKAI HTML BIAR KONSISTEN DI HP) ---
+    # Streamlit columns di HP numpuk, jadi ini akan jadi susunan vertikal
     c1, c2, c3 = st.columns(3)
-    with c1: st.markdown("""<div class="glass-card"><h3 style="color:#2563eb;">📢 Pelaporan</h3><p style="font-size:14px;">Saluran resmi pengaduan masalah.</p></div>""", unsafe_allow_html=True)
-    with c2: st.markdown("""<div class="glass-card"><h3 style="color:#0891b2;">📊 Data</h3><p style="font-size:14px;">Pantau statistik keluhan real-time.</p></div>""", unsafe_allow_html=True)
-    with c3: st.markdown("""<div class="glass-card"><h3 style="color:#7c3aed;">🤖 Sadas Bot</h3><p style="font-size:14px;">Asisten AI cerdas 24/7.</p></div>""", unsafe_allow_html=True)
+    
+    # Isinya pakai HTML string biar bisa dikontrol CSS-nya
+    with c1: 
+        st.markdown("""
+        <div class="glass-card">
+            <h3 style="color:#2563eb;">📢 Pelaporan</h3>
+            <p>Saluran resmi pengaduan masalah.</p>
+        </div>
+        """, unsafe_allow_html=True)
+        
+    with c2: 
+        st.markdown("""
+        <div class="glass-card">
+            <h3 style="color:#0891b2;">📊 Transparansi</h3>
+            <p>Pantau statistik keluhan real-time.</p>
+        </div>
+        """, unsafe_allow_html=True)
+        
+    with c3: 
+        st.markdown("""
+        <div class="glass-card">
+            <h3 style="color:#7c3aed;">🤖 Sadas Bot</h3>
+            <p>Asisten AI cerdas 24/7.</p>
+        </div>
+        """, unsafe_allow_html=True)
 
     st.write("")
     st.subheader("📰 Informasi Terbaru")
@@ -372,7 +449,6 @@ elif selected == "Sadas Bot":
         with st.chat_message("user"): st.markdown(prompt)
 
         response = ""
-        # --- LOGIKA DETEKTIF MODEL ---
         if "GEMINI_API_KEY" in st.secrets:
             try:
                 available_models = []
