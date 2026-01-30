@@ -1,338 +1,170 @@
 import streamlit as st
-from streamlit_option_menu import option_menu
-import plotly.graph_objects as go
 import gspread
 from google.oauth2.service_account import Credentials
-import pandas as pd
-import json
-import os
-import requests
-import datetime
+import os, json
+from streamlit_option_menu import option_menu
 
-# =========================================================
-# 1. PAGE CONFIG
-# =========================================================
+# ======================================================
+# PAGE CONFIG
+# ======================================================
 st.set_page_config(
     page_title="Sains Data Crisis Center",
-    page_icon="🧬",
     layout="wide",
     initial_sidebar_state="collapsed"
 )
 
-# =========================================================
-# 2. GLOBAL CSS (LIGHT MODE + LABEL JELAS) ☀️
-# =========================================================
+# ======================================================
+# GLOBAL CSS + JS (HIDE STREAMLIT TOTAL)
+# ======================================================
 st.markdown("""
 <style>
-/* 1. BACKGROUND HALAMAN */
-.stApp {
-    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-    color: #0f172a;
-}
-
-/* 2. SEMBUNYIKAN UI BAWAAN */
-#MainMenu {visibility: hidden;}
-footer {visibility: hidden;}
-header {visibility: hidden;}
-[data-testid="stSidebar"] {display: none;}
-
-/* 3. FONT & INPUT */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
-html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
 
-.stTextInput input, .stTextArea textarea, .stSelectbox div[data-baseweb="select"] {
-    color: #334155 !important;
-    background-color: #ffffff !important;
-    border: 1px solid #94a3b8 !important;
-    border-radius: 8px !important;
+html, body, [class*="css"] {
+    font-family: 'Inter', sans-serif;
+    background: #020617;
+    color: #e5e7eb;
 }
 
-/* LABEL JUDUL FORM (HITAM TEBAL) */
-label, .stTextInput label, .stSelectbox label, .stTextArea label, .stFileUploader label, div[data-testid="stWidgetLabel"] p {
-    color: #0f172a !important;
-    font-size: 15px !important;
-    font-weight: 700 !important;
+#MainMenu, footer, header {visibility: hidden;}
+[data-testid="stSidebar"] {display:none;}
+
+.glass {
+    background: rgba(15,23,42,.65);
+    backdrop-filter: blur(16px);
+    border-radius: 18px;
+    padding: 28px;
+    border: 1px solid rgba(59,130,246,.25);
+    box-shadow: 0 0 30px rgba(6,182,212,.15);
+    transition: .3s;
+}
+.glass:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 0 40px rgba(6,182,212,.4);
 }
 
-/* 4. KARTU (GLASS CARD) */
-.glass-card {
-    background: #ffffff;
-    border-radius: 16px;
-    padding: 24px;
-    border: 1px solid #cbd5e1;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-    margin-bottom: 20px;
+.hero {
+    padding: 90px 60px;
+    text-align:center;
 }
-.glass-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-    border-color: #3b82f6;
-}
-
-/* 5. TYPOGRAPHY */
-h1, h2, h3, h4, h5, h6 { color: #0f172a !important; font-weight: 800 !important; }
-p { color: #334155 !important; }
-
-/* Judul Hero */
 .hero h1 {
-    font-size: 42px; /* Ukuran judul disesuaikan biar muat sama logo */
-    background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    margin-bottom: 5px;
+    font-size:56px;
+    font-weight:800;
+    background: linear-gradient(90deg,#3b82f6,#06b6d4);
+    -webkit-background-clip:text;
+    -webkit-text-fill-color:transparent;
+}
+#typewriter {
+    font-size:22px;
+    margin-top:14px;
+    color:#06b6d4;
 }
 
-/* 6. TOMBOL */
-div.stButton > button {
-    background: linear-gradient(90deg, #2563eb, #1d4ed8);
-    color: white; border: none; padding: 10px 24px;
-    border-radius: 8px; font-weight: bold; width: 100%;
+.card-btn button {
+    width:100%;
+    border-radius:14px;
+    border:none;
+    background: linear-gradient(135deg,#3b82f6,#06b6d4);
+    padding:14px;
+    color:white;
+    font-weight:600;
+    transition:.3s;
 }
-div.stButton > button:hover {
-    transform: scale(1.02);
-    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+.card-btn button:hover {
+    transform:scale(1.06);
+    box-shadow:0 0 25px rgba(6,182,212,.7);
 }
 
-/* 7. LOGO STYLE (Biar Rapi Tengah) */
-div[data-testid="stImage"] {
-    display: flex;
-    justify-content: center;
-    align-items: center;
+/* LOADER */
+#loader {
+    position:fixed;
+    inset:0;
+    background:#020617;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    z-index:9999;
 }
+.spinner {
+    width:70px;height:70px;
+    border:6px solid #1e293b;
+    border-top:6px solid #06b6d4;
+    border-radius:50%;
+    animation:spin 1s linear infinite;
+}
+@keyframes spin {100%{transform:rotate(360deg)}}
 </style>
+
+<div id="loader"><div class="spinner"></div></div>
+
+<script>
+setTimeout(()=>document.getElementById("loader").style.display="none",1200);
+
+const text="Platform Advokasi & Krisis Data Berbasis Teknologi";
+let i=0;
+function typeWriter(){
+ if(i<text.length){
+  document.getElementById("typewriter").innerHTML+=text.charAt(i);
+  i++; setTimeout(typeWriter,55);
+ }}
+document.addEventListener("DOMContentLoaded",typeWriter);
+</script>
 """, unsafe_allow_html=True)
 
-# =========================================================
-# 3. KONEKSI GOOGLE SHEETS
-# =========================================================
-ID_SPREADSHEET = "1crJl0DsswyMGmq0ej_niIMfhSLdUIUx8u42HEu-sc3g" 
-API_KEY_IMGBB  = "827ccb0eea8a706c4c34a16891f84e7b" 
+# ======================================================
+# DATABASE (TETAP SAMA)
+# ======================================================
+scopes = ["https://www.googleapis.com/auth/spreadsheets","https://www.googleapis.com/auth/drive"]
+try:
+    if "google_credentials" in st.secrets:
+        creds = Credentials.from_service_account_info(
+            json.loads(st.secrets["google_credentials"]),
+            scopes=scopes
+        )
+    else:
+        creds = Credentials.from_service_account_file("credentials.json", scopes=scopes)
+    sheet = gspread.authorize(creds).open("Database_Advokasi").worksheet("Pengumuman")
+    pengumuman = sheet.get_all_records()
+except:
+    pengumuman = []
 
-scopes = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
-
-@st.cache_resource
-def get_google_sheet():
-    try:
-        if "google_credentials" in st.secrets:
-            creds_dict = json.loads(st.secrets["google_credentials"])
-            creds = Credentials.from_service_account_info(creds_dict, scopes=scopes)
-        elif os.path.exists("credentials.json"):
-            creds = Credentials.from_service_account_file("credentials.json", scopes=scopes)
-        else:
-            return None
-        client = gspread.authorize(creds)
-        sheet = client.open_by_key(ID_SPREADSHEET).worksheet("Laporan")
-        return sheet
-    except Exception as e:
-        return None
-
-sheet = get_google_sheet()
-
-# =========================================================
-# 4. MENU NAVIGASI
-# =========================================================
+# ======================================================
+# NAVIGATION (SaaS Style)
+# ======================================================
 selected = option_menu(
-    menu_title=None,
-    options=["Home", "Dashboard", "Lapor Masalah", "Cek Status", "Admin"],
-    icons=["house", "bar-chart-fill", "exclamation-triangle-fill", "search", "lock-fill"],
-    default_index=0,
+    None,
+    ["Home","Lapor","Status","Dashboard","Admin"],
+    icons=["house","exclamation","search","bar-chart","lock"],
     orientation="horizontal",
     styles={
-        "container": {"padding": "5px", "background-color": "#ffffff", "border-radius": "12px", "border": "1px solid #e2e8f0"},
-        "nav-link": {"font-size": "14px", "color": "#64748b", "margin": "0px"},
-        "nav-link-selected": {"background-color": "#2563eb", "color": "white"},
+        "container":{"background":"rgba(2,6,23,.6)"},
+        "nav-link":{"color":"#94a3b8","font-size":"15px"},
+        "nav-link-selected":{"color":"#06b6d4","font-weight":"600"}
     }
 )
 
-# =========================================================
-# 5. HALAMAN: HOME (DENGAN LOGO) 🏛️
-# =========================================================
-if selected == "Home":
-    st.write("") # Spasi dikit
-    st.write("") 
+# ======================================================
+# HOME
+# ======================================================
+if selected=="Home":
+    st.markdown("""
+    <div class="hero">
+        <h1>Sains Data Crisis Center</h1>
+        <div id="typewriter"></div>
+    </div>
+    """, unsafe_allow_html=True)
 
-    # --- BAGIAN LOGO & JUDUL ---
-    # Kita bagi layar jadi 3 bagian: Kiri (Logo), Tengah (Judul), Kanan (Logo)
-    col_logo1, col_text, col_logo2 = st.columns([1.5, 6, 1.5])
-
-    with col_logo1:
-        # Cek apakah file ada, biar gak error kalau belum upload
-        if os.path.exists("logo_uin.png"):
-            st.image("logo_uin.png", width=120)
-        else:
-            st.warning("Upload logo_uin.png")
-
-    with col_text:
-        st.markdown("""
-        <div class="hero" style="text-align:center; padding: 10px 0;">
-            <h1>SAINS DATA CRISIS CENTER</h1>
-            <p style="font-size:16px; margin-top:-10px;">Pusat Analisis, Respon Cepat, dan Mitigasi Krisis Mahasiswa</p>
-        </div>
-        """, unsafe_allow_html=True)
-
-    with col_logo2:
-        if os.path.exists("logo_him.png"):
-            st.image("logo_him.png", width=120)
-        else:
-            st.warning("Upload logo_him.png")
-    
-    # --- BATAS LOGO ---
-
-    st.write("---") # Garis Pembatas Tipis
-
-    c1, c2, c3 = st.columns(3)
-    with c1:
-        st.markdown("""<div class="glass-card"><h2 style="color:#2563eb !important;">📢 Pelaporan</h2><p>Saluran resmi pengaduan masalah akademik & fasilitas.</p></div>""", unsafe_allow_html=True)
-    with c2:
-        st.markdown("""<div class="glass-card"><h2 style="color:#0891b2 !important;">📊 Transparansi</h2><p>Pantau data statistik keluhan mahasiswa secara real-time.</p></div>""", unsafe_allow_html=True)
-    with c3:
-        st.markdown("""<div class="glass-card"><h2 style="color:#7c3aed !important;">🚀 Responsif</h2><p>Tim advokasi siap menindaklanjuti laporan dengan cepat.</p></div>""", unsafe_allow_html=True)
-
-# =========================================================
-# 6. HALAMAN: DASHBOARD
-# =========================================================
-elif selected == "Dashboard":
-    st.markdown("<h2 style='text-align:center;'>📊 Dashboard Analisis</h2>", unsafe_allow_html=True)
-    try:
-        data = sheet.get_all_records()
-        df = pd.DataFrame(data)
-    except:
-        df = pd.DataFrame()
-
-    if not df.empty:
-        if 'Waktu Lapor' in df.columns:
-             df = df[df['Waktu Lapor'].astype(str).str.strip() != ""]
-        
-        col1, col2, col3 = st.columns(3)
-        with col1: st.markdown(f"""<div class="glass-card"><div class="metric-value">{len(df)}</div><div class="metric-label">Total Laporan</div></div>""", unsafe_allow_html=True)
-        with col2: st.markdown(f"""<div class="glass-card"><div class="metric-value" style="color:#d97706;">{len(df[df['Status'] == 'Pending'])}</div><div class="metric-label">Menunggu</div></div>""", unsafe_allow_html=True)
-        with col3: st.markdown(f"""<div class="glass-card"><div class="metric-value" style="color:#059669;">{len(df[df['Status'] == 'Selesai'])}</div><div class="metric-label">Selesai</div></div>""", unsafe_allow_html=True)
-        
-        c_chart1, c_chart2 = st.columns(2)
-        with c_chart1:
-            st.markdown("##### Kategori Masalah")
-            if 'Kategori Masalah' in df.columns:
-                pie_data = df['Kategori Masalah'].value_counts()
-                fig = go.Figure(data=[go.Pie(labels=pie_data.index, values=pie_data.values, hole=.5)])
-                fig.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)", font_color="#1e293b")
-                st.plotly_chart(fig, use_container_width=True)
-        with c_chart2:
-            st.markdown("##### Tren Harian")
-            fig2 = go.Figure(go.Scatter(x=["Senin", "Selasa", "Rabu", "Kamis", "Jumat"], y=[5, 12, 8, 15, 10], line=dict(color="#2563eb", width=4)))
-            fig2.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)", font_color="#1e293b", height=350)
-            st.plotly_chart(fig2, use_container_width=True)
-    else:
-        st.info("Data belum tersedia.")
-
-# =========================================================
-# 7. HALAMAN: LAPOR MASALAH
-# =========================================================
-elif selected == "Lapor Masalah":
-    st.markdown("<div style='max-width: 700px; margin: auto;'>", unsafe_allow_html=True)
-    st.markdown("<h2 style='text-align:center;'>📝 Form Pengaduan</h2>", unsafe_allow_html=True)
-    
-    with st.container():
-        st.markdown('<div class="glass-card">', unsafe_allow_html=True)
-        with st.form("form_lapor_keren", clear_on_submit=True):
-            nama = st.text_input("Nama Lengkap")
-            col_a, col_b = st.columns(2)
-            with col_a: npm = st.text_input("NPM")
-            with col_b: jurusan = st.selectbox("Prodi", ["Sains Data", "Biologi", "Fisika", "Matematika"])
-            
-            kategori = st.selectbox("Kategori Masalah", ["Fasilitas", "Akademik", "Keuangan", "Lainnya"])
-            keluhan = st.text_area("Deskripsi Detail")
-            bukti_file = st.file_uploader("Upload Bukti (JPG/PNG)", type=["png", "jpg", "jpeg"])
-            
-            st.markdown("<br>", unsafe_allow_html=True)
-            submitted = st.form_submit_button("🚀 Kirim Laporan")
-            
-            if submitted:
-                if not keluhan:
-                    st.warning("Mohon isi deskripsi laporan.")
-                else:
-                    with st.spinner("Mengirim ke Server..."):
-                        waktu = datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S")
-                        link_bukti = "-"
-                        if bukti_file:
-                            try:
-                                files = {"image": bukti_file.getvalue()}
-                                params = {"key": API_KEY_IMGBB}
-                                res = requests.post("https://api.imgbb.com/1/upload", params=params, files=files)
-                                data_res = res.json()
-                                if data_res.get("success"): link_bukti = data_res["data"]["url"]
-                            except: pass
-                        try:
-                            sheet.append_row([waktu, nama, npm, jurusan, kategori, keluhan, "Pending", link_bukti])
-                            st.success("✅ Laporan Berhasil Dikirim!")
-                        except Exception as e:
-                            st.error(f"Error Database: {e}")
-        st.markdown('</div>', unsafe_allow_html=True)
-    st.markdown("</div>", unsafe_allow_html=True)
-
-# =========================================================
-# 8. HALAMAN: CEK STATUS
-# =========================================================
-elif selected == "Cek Status":
-    st.markdown("<h2 style='text-align:center;'>🔍 Cek Status Laporan</h2>", unsafe_allow_html=True)
-    col_x, col_y, col_z = st.columns([1,2,1])
-    with col_y:
-        npm_input = st.text_input("Masukkan NPM Anda", placeholder="Contoh: 2117041xxx")
-        cek_btn = st.button("Lacak")
-        if cek_btn and npm_input:
-            try:
-                data = sheet.get_all_records()
-                df = pd.DataFrame(data)
-                
-                if 'Waktu Lapor' in df.columns:
-                    df = df[df['Waktu Lapor'].astype(str).str.strip() != ""]
-
-                df['NPM'] = df['NPM'].astype(str)
-                hasil = df[df['NPM'] == npm_input]
-                
-                if not hasil.empty:
-                    for idx, row in hasil.iterrows():
-                        status = row['Status']
-                        color = "#d97706" if status == "Pending" else ("#059669" if status == "Selesai" else "#2563eb")
-                        st.markdown(f"""
-                        <div class="glass-card" style="border-left: 5px solid {color}; text-align:left;">
-                            <h4 style="margin:0; color:#1e293b;">{row['Kategori Masalah']}</h4>
-                            <small style="color:#64748b;">{row['Waktu Lapor']}</small>
-                            <p style="margin-top:10px; color:#334155;">"{row['Detail Keluhan']}"</p>
-                            <div style="background:{color}22; color:{color}; padding: 5px 10px; border-radius:8px; display:inline-block; font-weight:bold; margin-top:5px;">
-                                {status}
-                            </div>
-                        </div>
-                        """, unsafe_allow_html=True)
-                else: st.warning("Belum ada laporan ditemukan.")
-            except: st.error("Gagal mengambil data.")
-
-# =========================================================
-# 9. HALAMAN: ADMIN
-# =========================================================
-elif selected == "Admin":
-    st.markdown("<h2 style='text-align:center;'>🔐 Admin Area</h2>", unsafe_allow_html=True)
-    if 'is_logged_in' not in st.session_state: st.session_state['is_logged_in'] = False
-
-    if not st.session_state['is_logged_in']:
-        st.markdown("<div style='max-width:400px; margin:auto;'>", unsafe_allow_html=True)
-        with st.form("login_form"):
-            pwd = st.text_input("Password Admin", type="password")
-            if st.form_submit_button("Login"):
-                if pwd == "RAHASIA PIKM😭":
-                    st.session_state['is_logged_in'] = True
-                    st.rerun()
-                else: st.error("Password Salah")
-        st.markdown("</div>", unsafe_allow_html=True)
-    else:
-        if st.button("Logout"):
-            st.session_state['is_logged_in'] = False
-            st.rerun()
-        try:
-            data = sheet.get_all_records()
-            df = pd.DataFrame(data)
-            if not df.empty:
-                if 'Waktu Lapor' in df.columns:
-                     df = df[df['Waktu Lapor'].astype(str).str.strip() != ""]
-                     df.reset_index(drop=True, inplace=True)
-            st.dataframe(df, use_container_width=True)
-        except: st.error("Data kosong")
+    c1,c2,c3,c4 = st.columns(4)
+    menu = [
+        ("📝","Lapor Masalah","pages/Lapor_Masalah.py"),
+        ("🔍","Cek Status","pages/Cek_Status.py"),
+        ("📊","Data Publik","pages/Dashboard_Publik.py"),
+        ("🤖","Tanya Bot","pages/Sadas_Bot.py")
+    ]
+    for col,(ico,title,page) in zip([c1,c2,c3,c4],menu):
+        with col:
+            st.markdown(f"<div class='glass'><h2>{ico}</h2><h4>{title}</h4></div>",unsafe_allow_html=True)
+            st.markdown("<div class='card-btn'>",unsafe_allow_html=True)
+            if st.button("Buka"):
+                st.switch_page(page)
+            st.markdown("</div>",unsafe_allow_html=True)
