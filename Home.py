@@ -8,6 +8,7 @@ import json
 import os
 import requests
 import datetime
+import google.generativeai as genai
 
 # =========================================================
 # 1. PAGE CONFIG
@@ -75,7 +76,7 @@ p { color: #334155 !important; }
 
 /* Judul Hero */
 .hero h1 {
-    font-size: 42px; /* Ukuran judul disesuaikan biar muat sama logo */
+    font-size: 42px;
     background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -93,20 +94,20 @@ div.stButton > button:hover {
     box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
 }
 
-/* 7. LOGO STYLE (Biar Rapi Tengah) */
+/* 7. LOGO STYLE */
 div[data-testid="stImage"] {
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    display: flex; justify-content: center; align-items: center;
 }
 </style>
 """, unsafe_allow_html=True)
 
 # =========================================================
-# 3. KONEKSI GOOGLE SHEETS
+# 3. KONEKSI & KONFIGURASI API
 # =========================================================
 ID_SPREADSHEET = "1crJl0DsswyMGmq0ej_niIMfhSLdUIUx8u42HEu-sc3g" 
 API_KEY_IMGBB  = "827ccb0eea8a706c4c34a16891f84e7b" 
+# Masukkan API KEY GEMINI di sini jika punya, atau biarkan kosong dulu
+API_KEY_GEMINI = "" 
 
 scopes = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
 
@@ -129,12 +130,13 @@ def get_google_sheet():
 sheet = get_google_sheet()
 
 # =========================================================
-# 4. MENU NAVIGASI
+# 4. MENU NAVIGASI (URUTAN BARU)
 # =========================================================
 selected = option_menu(
     menu_title=None,
-    options=["Home", "Dashboard", "Lapor Masalah", "Cek Status", "Admin"],
-    icons=["house", "bar-chart-fill", "exclamation-triangle-fill", "search", "lock-fill"],
+    # Urutan: Home -> Lapor -> Cek -> Dashboard -> Bot -> Admin
+    options=["Home", "Lapor Masalah", "Cek Status", "Dashboard", "Sadas Bot", "Admin"],
+    icons=["house", "exclamation-triangle-fill", "search", "bar-chart-fill", "robot", "lock-fill"],
     default_index=0,
     orientation="horizontal",
     styles={
@@ -145,22 +147,15 @@ selected = option_menu(
 )
 
 # =========================================================
-# 5. HALAMAN: HOME (DENGAN LOGO) 🏛️
+# 5. HALAMAN: HOME
 # =========================================================
 if selected == "Home":
-    st.write("") # Spasi dikit
     st.write("") 
-
-    # --- BAGIAN LOGO & JUDUL ---
-    # Kita bagi layar jadi 3 bagian: Kiri (Logo), Tengah (Judul), Kanan (Logo)
+    st.write("") 
     col_logo1, col_text, col_logo2 = st.columns([1.5, 6, 1.5])
 
     with col_logo1:
-        # Cek apakah file ada, biar gak error kalau belum upload
-        if os.path.exists("logo_uin.png"):
-            st.image("logo_uin.png", width=120)
-        else:
-            st.warning("Upload logo_uin.png")
+        if os.path.exists("logo_uin.png"): st.image("logo_uin.png", width=120)
 
     with col_text:
         st.markdown("""
@@ -171,14 +166,9 @@ if selected == "Home":
         """, unsafe_allow_html=True)
 
     with col_logo2:
-        if os.path.exists("logo_him.png"):
-            st.image("logo_him.png", width=120)
-        else:
-            st.warning("Upload logo_him.png")
+        if os.path.exists("logo_him.png"): st.image("logo_him.png", width=120)
     
-    # --- BATAS LOGO ---
-
-    st.write("---") # Garis Pembatas Tipis
+    st.write("---")
 
     c1, c2, c3 = st.columns(3)
     with c1:
@@ -186,46 +176,10 @@ if selected == "Home":
     with c2:
         st.markdown("""<div class="glass-card"><h2 style="color:#0891b2 !important;">📊 Transparansi</h2><p>Pantau data statistik keluhan mahasiswa secara real-time.</p></div>""", unsafe_allow_html=True)
     with c3:
-        st.markdown("""<div class="glass-card"><h2 style="color:#7c3aed !important;">🚀 Responsif</h2><p>Tim advokasi siap menindaklanjuti laporan dengan cepat.</p></div>""", unsafe_allow_html=True)
+        st.markdown("""<div class="glass-card"><h2 style="color:#7c3aed !important;">🤖 AI Assistant</h2><p>Tanya jawab seputar akademik dengan Sadas Bot.</p></div>""", unsafe_allow_html=True)
 
 # =========================================================
-# 6. HALAMAN: DASHBOARD
-# =========================================================
-elif selected == "Dashboard":
-    st.markdown("<h2 style='text-align:center;'>📊 Dashboard Analisis</h2>", unsafe_allow_html=True)
-    try:
-        data = sheet.get_all_records()
-        df = pd.DataFrame(data)
-    except:
-        df = pd.DataFrame()
-
-    if not df.empty:
-        if 'Waktu Lapor' in df.columns:
-             df = df[df['Waktu Lapor'].astype(str).str.strip() != ""]
-        
-        col1, col2, col3 = st.columns(3)
-        with col1: st.markdown(f"""<div class="glass-card"><div class="metric-value">{len(df)}</div><div class="metric-label">Total Laporan</div></div>""", unsafe_allow_html=True)
-        with col2: st.markdown(f"""<div class="glass-card"><div class="metric-value" style="color:#d97706;">{len(df[df['Status'] == 'Pending'])}</div><div class="metric-label">Menunggu</div></div>""", unsafe_allow_html=True)
-        with col3: st.markdown(f"""<div class="glass-card"><div class="metric-value" style="color:#059669;">{len(df[df['Status'] == 'Selesai'])}</div><div class="metric-label">Selesai</div></div>""", unsafe_allow_html=True)
-        
-        c_chart1, c_chart2 = st.columns(2)
-        with c_chart1:
-            st.markdown("##### Kategori Masalah")
-            if 'Kategori Masalah' in df.columns:
-                pie_data = df['Kategori Masalah'].value_counts()
-                fig = go.Figure(data=[go.Pie(labels=pie_data.index, values=pie_data.values, hole=.5)])
-                fig.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)", font_color="#1e293b")
-                st.plotly_chart(fig, use_container_width=True)
-        with c_chart2:
-            st.markdown("##### Tren Harian")
-            fig2 = go.Figure(go.Scatter(x=["Senin", "Selasa", "Rabu", "Kamis", "Jumat"], y=[5, 12, 8, 15, 10], line=dict(color="#2563eb", width=4)))
-            fig2.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)", font_color="#1e293b", height=350)
-            st.plotly_chart(fig2, use_container_width=True)
-    else:
-        st.info("Data belum tersedia.")
-
-# =========================================================
-# 7. HALAMAN: LAPOR MASALAH
+# 6. HALAMAN: LAPOR MASALAH
 # =========================================================
 elif selected == "Lapor Masalah":
     st.markdown("<div style='max-width: 700px; margin: auto;'>", unsafe_allow_html=True)
@@ -270,7 +224,7 @@ elif selected == "Lapor Masalah":
     st.markdown("</div>", unsafe_allow_html=True)
 
 # =========================================================
-# 8. HALAMAN: CEK STATUS
+# 7. HALAMAN: CEK STATUS
 # =========================================================
 elif selected == "Cek Status":
     st.markdown("<h2 style='text-align:center;'>🔍 Cek Status Laporan</h2>", unsafe_allow_html=True)
@@ -307,7 +261,80 @@ elif selected == "Cek Status":
             except: st.error("Gagal mengambil data.")
 
 # =========================================================
-# 9. HALAMAN: ADMIN
+# 8. HALAMAN: DASHBOARD
+# =========================================================
+elif selected == "Dashboard":
+    st.markdown("<h2 style='text-align:center;'>📊 Dashboard Analisis</h2>", unsafe_allow_html=True)
+    try:
+        data = sheet.get_all_records()
+        df = pd.DataFrame(data)
+    except:
+        df = pd.DataFrame()
+
+    if not df.empty:
+        if 'Waktu Lapor' in df.columns:
+             df = df[df['Waktu Lapor'].astype(str).str.strip() != ""]
+        
+        col1, col2, col3 = st.columns(3)
+        with col1: st.markdown(f"""<div class="glass-card"><div class="metric-value">{len(df)}</div><div class="metric-label">Total Laporan</div></div>""", unsafe_allow_html=True)
+        with col2: st.markdown(f"""<div class="glass-card"><div class="metric-value" style="color:#d97706;">{len(df[df['Status'] == 'Pending'])}</div><div class="metric-label">Menunggu</div></div>""", unsafe_allow_html=True)
+        with col3: st.markdown(f"""<div class="glass-card"><div class="metric-value" style="color:#059669;">{len(df[df['Status'] == 'Selesai'])}</div><div class="metric-label">Selesai</div></div>""", unsafe_allow_html=True)
+        
+        c_chart1, c_chart2 = st.columns(2)
+        with c_chart1:
+            st.markdown("##### Kategori Masalah")
+            if 'Kategori Masalah' in df.columns:
+                pie_data = df['Kategori Masalah'].value_counts()
+                fig = go.Figure(data=[go.Pie(labels=pie_data.index, values=pie_data.values, hole=.5)])
+                fig.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)", font_color="#1e293b")
+                st.plotly_chart(fig, use_container_width=True)
+        with c_chart2:
+            st.markdown("##### Tren Harian")
+            fig2 = go.Figure(go.Scatter(x=["Senin", "Selasa", "Rabu", "Kamis", "Jumat"], y=[5, 12, 8, 15, 10], line=dict(color="#2563eb", width=4)))
+            fig2.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)", font_color="#1e293b", height=350)
+            st.plotly_chart(fig2, use_container_width=True)
+    else:
+        st.info("Data belum tersedia.")
+
+# =========================================================
+# 9. HALAMAN: SADAS BOT (DIKEMBALIKAN) 🤖
+# =========================================================
+elif selected == "Sadas Bot":
+    st.markdown("<h2 style='text-align:center;'>🤖 Sadas Bot AI</h2>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align:center;'>Asisten Virtual Mahasiswa Sains Data (Beta)</p>", unsafe_allow_html=True)
+
+    if "chat_history" not in st.session_state:
+        st.session_state["chat_history"] = []
+
+    # Tampilkan Chat
+    for role, message in st.session_state["chat_history"]:
+        with st.chat_message(role):
+            st.write(message)
+
+    # Input Chat
+    if prompt := st.chat_input("Ketik pertanyaanmu di sini..."):
+        st.session_state["chat_history"].append(("user", prompt))
+        with st.chat_message("user"):
+            st.write(prompt)
+
+        # Logika Balasan Bot
+        with st.chat_message("assistant"):
+            if not API_KEY_GEMINI:
+                 response_text = "Maaf, API Key Gemini belum dipasang oleh Admin. Bot belum bisa berpikir. 🤯"
+                 st.write(response_text)
+                 st.session_state["chat_history"].append(("assistant", response_text))
+            else:
+                try:
+                    genai.configure(api_key=API_KEY_GEMINI)
+                    model = genai.GenerativeModel('gemini-pro')
+                    response = model.generate_content(prompt)
+                    st.write(response.text)
+                    st.session_state["chat_history"].append(("assistant", response.text))
+                except Exception as e:
+                    st.error(f"Bot Error: {e}")
+
+# =========================================================
+# 10. HALAMAN: ADMIN
 # =========================================================
 elif selected == "Admin":
     st.markdown("<h2 style='text-align:center;'>🔐 Admin Area</h2>", unsafe_allow_html=True)
