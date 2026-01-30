@@ -20,7 +20,7 @@ st.set_page_config(
 )
 
 # =========================================================
-# 2. GLOBAL CSS (TAMPILAN KEREN - TANPA LOADING SCREEN)
+# 2. GLOBAL CSS (VERSI FONT SUDAH DIPERBAIKI) 🛠️
 # =========================================================
 st.markdown("""
 <style>
@@ -30,13 +30,39 @@ footer {visibility: hidden;}
 header {visibility: hidden;}
 [data-testid="stSidebar"] {display: none;}
 
-/* Font Keren */
+/* Font Utama */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
 
 html, body, [class*="css"] {
     font-family: 'Inter', sans-serif;
-    background: radial-gradient(circle at top, #0f172a, #020617); /* Warna Navy Gelap */
+    background: radial-gradient(circle at top, #0f172a, #020617); /* Navy Gelap */
     color: #e5e7eb;
+}
+
+/* --- PERBAIKAN KOLOM KETIK (INPUT FIX) --- */
+/* Ini supaya background kotak input jadi gelap transparan */
+.stTextInput input, .stTextArea textarea, .stSelectbox div[data-baseweb="select"] {
+    color: #ffffff !important; /* Tulisan jadi PUTIH */
+    background-color: rgba(30, 41, 59, 0.7) !important; /* Background Abu Gelap */
+    border: 1px solid rgba(255, 255, 255, 0.2) !important; /* Garis Tepi Putih Tipis */
+    caret-color: #06b6d4 !important; /* Kursor kedip-kedip warna CYAN */
+}
+
+/* Supaya Placeholder (tulisan samar) kelihatan */
+::placeholder {
+    color: #94a3b8 !important;
+    opacity: 1;
+}
+
+/* Kalau kotak input lagi diklik/aktif */
+.stTextInput input:focus, .stTextArea textarea:focus {
+    border-color: #06b6d4 !important; /* Garis jadi Cyan */
+    box-shadow: 0 0 10px rgba(6, 182, 212, 0.3);
+}
+
+/* Label di atas kotak input */
+label, .stMarkdown p {
+    color: #e2e8f0 !important; 
 }
 
 /* Kartu Kaca (Glassmorphism) */
@@ -54,16 +80,15 @@ html, body, [class*="css"] {
 
 .glass-card:hover {
     transform: translateY(-5px);
-    border-color: rgba(6, 182, 212, 0.5); /* Biru Neon pas di-hover */
+    border-color: rgba(6, 182, 212, 0.5);
     box-shadow: 0 0 20px rgba(6, 182, 212, 0.2);
 }
 
-/* Judul Besar */
+/* Judul Hero */
 .hero {
     padding: 60px 20px;
     text-align: center;
 }
-
 .hero h1 {
     font-size: 48px;
     font-weight: 800;
@@ -72,51 +97,23 @@ html, body, [class*="css"] {
     -webkit-text-fill-color: transparent;
     margin-bottom: 10px;
 }
-
 .hero p {
-    font-size: 18px;
-    color: #94a3b8;
-    margin-top: 10px;
+    font-size: 18px; color: #94a3b8; margin-top: 10px;
 }
 
 /* Angka Dashboard */
-.metric-value {
-    font-size: 42px;
-    font-weight: 700;
-    color: #06b6d4;
-}
-.metric-label {
-    font-size: 14px;
-    color: #cbd5e1;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-}
+.metric-value { font-size: 42px; font-weight: 700; color: #06b6d4; }
+.metric-label { font-size: 14px; color: #cbd5e1; text-transform: uppercase; letter-spacing: 1px; }
 
-/* Tombol Keren */
+/* Tombol */
 div.stButton > button {
     background: linear-gradient(90deg, #2563eb, #06b6d4);
-    color: white;
-    border: none;
-    padding: 10px 24px;
-    border-radius: 8px;
-    font-weight: 600;
-    width: 100%;
+    color: white; border: none; padding: 10px 24px;
+    border-radius: 8px; font-weight: 600; width: 100%;
     transition: transform 0.2s;
 }
 div.stButton > button:hover {
-    transform: scale(1.02);
-    box-shadow: 0 0 15px rgba(6, 182, 212, 0.5);
-}
-
-/* Input Form jadi Gelap */
-div[data-baseweb="input"] > div, div[data-baseweb="select"] > div, div[data-baseweb="base-input"] {
-    background-color: rgba(15, 23, 42, 0.6) !important;
-    border: 1px solid rgba(255, 255, 255, 0.1) !important;
-    color: white !important;
-    border-radius: 8px !important;
-}
-p, label {
-    color: #e2e8f0 !important;
+    transform: scale(1.02); box-shadow: 0 0 15px rgba(6, 182, 212, 0.5);
 }
 </style>
 """, unsafe_allow_html=True)
@@ -124,10 +121,7 @@ p, label {
 # =========================================================
 # 3. KONEKSI GOOGLE SHEETS
 # =========================================================
-# 👇 ID SPREADSHEET KAMU (JANGAN DIHAPUS)
 ID_SPREADSHEET = "1crJl0DsswyMGmq0ej_niIMfhSLdUIUx8u42HEu-sc3g" 
-
-# 👇 API KEY IMGBB KAMU (Paste lagi di sini ya!)
 API_KEY_IMGBB  = "827ccb0eea8a706c4c34a16891f84e7b" 
 
 scopes = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
@@ -142,7 +136,6 @@ def get_google_sheet():
             creds = Credentials.from_service_account_file("credentials.json", scopes=scopes)
         else:
             return None
-        
         client = gspread.authorize(creds)
         sheet = client.open_by_key(ID_SPREADSHEET).worksheet("Laporan")
         return sheet
@@ -152,7 +145,7 @@ def get_google_sheet():
 sheet = get_google_sheet()
 
 # =========================================================
-# 4. MENU NAVIGASI (Horizontal)
+# 4. MENU NAVIGASI
 # =========================================================
 selected = option_menu(
     menu_title=None,
@@ -179,37 +172,18 @@ if selected == "Home":
     """, unsafe_allow_html=True)
 
     c1, c2, c3 = st.columns(3)
-    
     with c1:
-        st.markdown("""
-        <div class="glass-card">
-            <h2 style="color:#3b82f6;">📢 Pelaporan</h2>
-            <p>Saluran resmi pengaduan masalah akademik, fasilitas, dan keuangan secara aman.</p>
-        </div>
-        """, unsafe_allow_html=True)
-    
+        st.markdown("""<div class="glass-card"><h2 style="color:#3b82f6;">📢 Pelaporan</h2><p>Saluran resmi pengaduan masalah akademik & fasilitas.</p></div>""", unsafe_allow_html=True)
     with c2:
-        st.markdown("""
-        <div class="glass-card">
-            <h2 style="color:#06b6d4;">📊 Transparansi</h2>
-            <p>Pantau data statistik keluhan mahasiswa secara real-time melalui dashboard publik.</p>
-        </div>
-        """, unsafe_allow_html=True)
-
+        st.markdown("""<div class="glass-card"><h2 style="color:#06b6d4;">📊 Transparansi</h2><p>Pantau data statistik keluhan mahasiswa secara real-time.</p></div>""", unsafe_allow_html=True)
     with c3:
-        st.markdown("""
-        <div class="glass-card">
-            <h2 style="color:#8b5cf6;">🚀 Responsif</h2>
-            <p>Tim advokasi siap menindaklanjuti laporan Anda dengan cepat dan tuntas.</p>
-        </div>
-        """, unsafe_allow_html=True)
+        st.markdown("""<div class="glass-card"><h2 style="color:#8b5cf6;">🚀 Responsif</h2><p>Tim advokasi siap menindaklanjuti laporan dengan cepat.</p></div>""", unsafe_allow_html=True)
 
 # =========================================================
 # 6. HALAMAN: DASHBOARD
 # =========================================================
 elif selected == "Dashboard":
     st.markdown("<h2 style='text-align:center;'>📊 Dashboard Analisis</h2>", unsafe_allow_html=True)
-    
     try:
         data = sheet.get_all_records()
         df = pd.DataFrame(data)
@@ -219,17 +193,11 @@ elif selected == "Dashboard":
     if not df.empty:
         if 'Waktu Lapor' in df.columns:
              df = df[df['Waktu Lapor'].astype(str).str.strip() != ""]
-
         col1, col2, col3 = st.columns(3)
-        with col1:
-            st.markdown(f"""<div class="glass-card"><div class="metric-value">{len(df)}</div><div class="metric-label">Total Laporan</div></div>""", unsafe_allow_html=True)
-        with col2:
-            pending = len(df[df['Status'] == 'Pending'])
-            st.markdown(f"""<div class="glass-card"><div class="metric-value" style="color:#f59e0b;">{pending}</div><div class="metric-label">Sedang Menunggu</div></div>""", unsafe_allow_html=True)
-        with col3:
-            selesai = len(df[df['Status'] == 'Selesai'])
-            st.markdown(f"""<div class="glass-card"><div class="metric-value" style="color:#10b981;">{selesai}</div><div class="metric-label">Masalah Selesai</div></div>""", unsafe_allow_html=True)
-
+        with col1: st.markdown(f"""<div class="glass-card"><div class="metric-value">{len(df)}</div><div class="metric-label">Total Laporan</div></div>""", unsafe_allow_html=True)
+        with col2: st.markdown(f"""<div class="glass-card"><div class="metric-value" style="color:#f59e0b;">{len(df[df['Status'] == 'Pending'])}</div><div class="metric-label">Menunggu</div></div>""", unsafe_allow_html=True)
+        with col3: st.markdown(f"""<div class="glass-card"><div class="metric-value" style="color:#10b981;">{len(df[df['Status'] == 'Selesai'])}</div><div class="metric-label">Selesai</div></div>""", unsafe_allow_html=True)
+        
         c_chart1, c_chart2 = st.columns(2)
         with c_chart1:
             st.markdown("##### Kategori Masalah")
@@ -238,9 +206,8 @@ elif selected == "Dashboard":
                 fig = go.Figure(data=[go.Pie(labels=pie_data.index, values=pie_data.values, hole=.5)])
                 fig.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)", font_color="white")
                 st.plotly_chart(fig, use_container_width=True)
-        
         with c_chart2:
-            st.markdown("##### Tren Laporan")
+            st.markdown("##### Tren Harian (Simulasi)")
             fig2 = go.Figure(go.Scatter(x=["Senin", "Selasa", "Rabu", "Kamis", "Jumat"], y=[5, 12, 8, 15, 10], line=dict(color="#06b6d4", width=4)))
             fig2.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)", font_color="white", height=350)
             st.plotly_chart(fig2, use_container_width=True)
@@ -276,26 +243,19 @@ elif selected == "Lapor Masalah":
                     with st.spinner("Mengirim ke Server..."):
                         waktu = datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S")
                         link_bukti = "-"
-                        
-                        # Upload ImgBB
                         if bukti_file:
                             try:
                                 files = {"image": bukti_file.getvalue()}
                                 params = {"key": API_KEY_IMGBB}
                                 res = requests.post("https://api.imgbb.com/1/upload", params=params, files=files)
                                 data_res = res.json()
-                                if data_res.get("success"):
-                                    link_bukti = data_res["data"]["url"]
-                            except:
-                                st.error("Gagal upload gambar, tapi laporan tetap dikirim.")
-
-                        # Simpan ke Sheets
+                                if data_res.get("success"): link_bukti = data_res["data"]["url"]
+                            except: pass
                         try:
                             sheet.append_row([waktu, nama, npm, jurusan, kategori, keluhan, "Pending", link_bukti])
                             st.success("✅ Laporan Berhasil Dikirim!")
                         except Exception as e:
                             st.error(f"Error Database: {e}")
-
         st.markdown('</div>', unsafe_allow_html=True)
     st.markdown("</div>", unsafe_allow_html=True)
 
@@ -304,24 +264,20 @@ elif selected == "Lapor Masalah":
 # =========================================================
 elif selected == "Cek Status":
     st.markdown("<h2 style='text-align:center;'>🔍 Cek Status Laporan</h2>", unsafe_allow_html=True)
-    
     col_x, col_y, col_z = st.columns([1,2,1])
     with col_y:
         npm_input = st.text_input("Masukkan NPM Anda", placeholder="Contoh: 2117041xxx")
         cek_btn = st.button("Lacak")
-        
         if cek_btn and npm_input:
             try:
                 data = sheet.get_all_records()
                 df = pd.DataFrame(data)
                 df['NPM'] = df['NPM'].astype(str)
                 hasil = df[df['NPM'] == npm_input]
-                
                 if not hasil.empty:
                     for idx, row in hasil.iterrows():
                         status = row['Status']
                         color = "#f59e0b" if status == "Pending" else ("#10b981" if status == "Selesai" else "#3b82f6")
-                        
                         st.markdown(f"""
                         <div class="glass-card" style="border-left: 5px solid {color}; text-align:left;">
                             <h4 style="margin:0;">{row['Kategori Masalah']}</h4>
@@ -332,19 +288,15 @@ elif selected == "Cek Status":
                             </div>
                         </div>
                         """, unsafe_allow_html=True)
-                else:
-                    st.warning("Belum ada laporan ditemukan untuk NPM ini.")
-            except:
-                st.error("Gagal mengambil data.")
+                else: st.warning("Belum ada laporan ditemukan.")
+            except: st.error("Gagal mengambil data.")
 
 # =========================================================
 # 9. HALAMAN: ADMIN
 # =========================================================
 elif selected == "Admin":
     st.markdown("<h2 style='text-align:center;'>🔐 Admin Area</h2>", unsafe_allow_html=True)
-    
-    if 'is_logged_in' not in st.session_state:
-        st.session_state['is_logged_in'] = False
+    if 'is_logged_in' not in st.session_state: st.session_state['is_logged_in'] = False
 
     if not st.session_state['is_logged_in']:
         st.markdown("<div style='max-width:400px; margin:auto;'>", unsafe_allow_html=True)
@@ -354,17 +306,14 @@ elif selected == "Admin":
                 if pwd == "RAHASIA PIKM😭":
                     st.session_state['is_logged_in'] = True
                     st.rerun()
-                else:
-                    st.error("Password Salah")
+                else: st.error("Password Salah")
         st.markdown("</div>", unsafe_allow_html=True)
     else:
         if st.button("Logout"):
             st.session_state['is_logged_in'] = False
             st.rerun()
-        
         try:
             data = sheet.get_all_records()
             df = pd.DataFrame(data)
             st.dataframe(df)
-        except:
-            st.error("Data kosong")
+        except: st.error("Data kosong")
