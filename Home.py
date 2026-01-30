@@ -112,21 +112,42 @@ except: sheet = None
 try: sheet_pengumuman = sh.worksheet("Pengumuman") if sh else None
 except: sheet_pengumuman = None
 
-# --- KONFIGURASI AI GEMINI (DEBUG MODE) ---
-# Bagian ini akan mencari model dan mencatat error kalau gagal
+# --- KONFIGURASI AI GEMINI (AUTO-DETECT / CARI SENDIRI) ---
 model = None
-gemini_status = "Not Initialized"
+status_gemini = "Menunggu..."
 
 if "GEMINI_API_KEY" in st.secrets:
     try:
         genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
-        # Pakai Model Paling Stabil: gemini-pro
-        model = genai.GenerativeModel('gemini-pro')
-        gemini_status = "Ready"
+        
+        # 1. Minta Google kasih daftar model yang tersedia
+        available_models = []
+        for m in genai.list_models():
+            # Cari model yang bisa 'generateContent' (bisa ngobrol)
+            if 'generateContent' in m.supported_generation_methods:
+                available_models.append(m.name)
+        
+        # 2. Pilih salah satu yang ketemu
+        if available_models:
+            # Prioritas: Cari yang ada kata 'flash' atau 'pro'
+            selected_model = available_models[0] # Default ambil yang pertama
+            for m in available_models:
+                if 'gemini-1.5-flash' in m:
+                    selected_model = m
+                    break
+                elif 'gemini-pro' in m:
+                    selected_model = m
+            
+            # 3. Pasang modelnya
+            model = genai.GenerativeModel(selected_model)
+            status_gemini = f"Aktif ({selected_model})"
+        else:
+            status_gemini = "Tidak ada model AI yang tersedia untuk API Key ini."
+            
     except Exception as e:
-        gemini_status = f"Error Config: {str(e)}"
+        status_gemini = f"Error Koneksi AI: {str(e)}"
 else:
-    gemini_status = "API Key Missing in Secrets"
+    status_gemini = "API Key belum dipasang."
 
 # =========================================================
 # 4. MENU NAVIGASI
@@ -278,16 +299,16 @@ elif selected == "Dashboard":
         except: st.error("Error memuat dashboard.")
 
 # =========================================================
-# 9. HALAMAN: SADAS BOT (DIAGNOSIS MODE) 🧠
+# 9. HALAMAN: SADAS BOT (AUTO-SEARCH MODEL) 🧠
 # =========================================================
 elif selected == "Sadas Bot":
     st.markdown("<div style='max-width: 700px; margin: auto;'>", unsafe_allow_html=True)
-    st.markdown(f"<h2 style='text-align:center;'>🤖 Sadas Bot</h2>", unsafe_allow_html=True)
+    st.markdown("<h2 style='text-align:center;'>🤖 Sadas Bot</h2>", unsafe_allow_html=True)
     st.markdown("<p style='text-align:center;'>Tanya apa saja seputar akademik, tugas, atau curhat!</p>", unsafe_allow_html=True)
     
-    # Debug Status (Hapus nanti kalau sudah fix)
-    # st.info(f"System Status: {gemini_status}")
-
+    # Menampilkan Status Koneksi (Bisa dihapus nanti kalau sudah oke)
+    # st.caption(f"Status Otak Robot: {status_gemini}")
+    
     if "messages" not in st.session_state: st.session_state.messages = []
 
     for message in st.session_state.messages:
@@ -299,7 +320,7 @@ elif selected == "Sadas Bot":
         with st.chat_message("user"): st.markdown(prompt)
 
         response = ""
-        # --- LOGIKA CHECKING ---
+        # --- LOGIKA AI GEMINI ---
         if model:
             try:
                 system_prompt = "Kamu adalah Sadas Bot, asisten virtual dari Sains Data UIN Raden Intan Lampung. Jawab sopan dan santai."
@@ -309,9 +330,9 @@ elif selected == "Sadas Bot":
                     ai_response = model.generate_content(full_prompt)
                     response = ai_response.text
             except Exception as e:
-                response = f"⚠️ Masih error nih kak. Detail errornya: {str(e)}"
+                response = f"⚠️ Duh, error lagi nih: {str(e)}. Tapi tenang, setidaknya kita sudah coba auto-detect."
         else:
-            response = f"⚠️ Gagal memuat Otak Robot. Alasan: {gemini_status}. Coba cek 'Secrets' di pengaturan Streamlit."
+            response = f"⚠️ Gagal memuat Otak Robot. Alasan: {status_gemini}"
 
         st.session_state.messages.append({"role": "assistant", "content": response})
         with st.chat_message("assistant"): st.markdown(response)
