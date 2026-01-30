@@ -22,15 +22,19 @@ st.set_page_config(
 )
 
 # =========================================================
-# 2. GLOBAL CSS (FIX TENGAH-TENGAH: 9.5rem) 🎯
+# 2. GLOBAL CSS (SUPER PRESISI - PIXEL PERFECT) 📐
 # =========================================================
 st.markdown("""
 <style>
 /* BACKGROUND */
 .stApp { background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%); color: #0f172a; }
 
-/* HIDE UI BAWAAN */
-#MainMenu {visibility: hidden;} footer {visibility: hidden;} header {visibility: hidden;} [data-testid="stSidebar"] {display: none;}
+/* HAPUS SEMUA HEADER & DEKORASI BAWAAN STREAMLIT YANG MAKAN TEMPAT */
+#MainMenu {visibility: hidden;} 
+footer {visibility: hidden;} 
+header {visibility: hidden;} 
+[data-testid="stSidebar"] {display: none;}
+.stApp > header {display: none;} /* Ini penting biar header beneran ilang spacenya */
 
 /* FONT & INPUT */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
@@ -55,16 +59,19 @@ iframe[title="streamlit_option_menu.option_menu"] {
     z-index: 99999;
     width: 100%;
     background: #f8fafc;
-    padding-top: 10px;
-    padding-bottom: 10px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    /* Kita kecilin padding menu biar gak terlalu tebal */
+    padding-top: 5px; 
+    padding-bottom: 5px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
 }
 
-/* --- SOLUSI PAS (GOLDILOCKS ZONE) --- */
-/* 9.5rem adalah titik tengah antara kependekan & kejauhan */
+/* --- SOLUSI PRESISI PIXEL (THE SWEET SPOT) --- */
+/* Kita pakai 120px. Ini jarak Emas. 
+   Menu tingginya sekitar 80px + buffer 40px = 120px. */
 .block-container {
-    padding-top: 9.5rem !important; 
-    padding-bottom: 5rem !important;
+    padding-top: 120px !important; 
+    padding-bottom: 50px !important;
+    margin-top: 0 !important; /* Hapus margin hantu */
 }
 
 /* CARDS */
@@ -330,6 +337,7 @@ elif selected == "Sadas Bot":
         with st.chat_message("user"): st.markdown(prompt)
 
         response = ""
+        # --- LOGIKA DETEKTIF MODEL ---
         if "GEMINI_API_KEY" in st.secrets:
             try:
                 available_models = []
