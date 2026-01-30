@@ -22,19 +22,15 @@ st.set_page_config(
 )
 
 # =========================================================
-# 2. GLOBAL CSS (SUPER PRESISI - PIXEL PERFECT) 📐
+# 2. GLOBAL CSS (STICKY NAVBAR + LIGHT MODE) 🌟
 # =========================================================
 st.markdown("""
 <style>
 /* BACKGROUND */
 .stApp { background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%); color: #0f172a; }
 
-/* HAPUS SEMUA HEADER & DEKORASI BAWAAN STREAMLIT YANG MAKAN TEMPAT */
-#MainMenu {visibility: hidden;} 
-footer {visibility: hidden;} 
-header {visibility: hidden;} 
-[data-testid="stSidebar"] {display: none;}
-.stApp > header {display: none;} /* Ini penting biar header beneran ilang spacenya */
+/* HIDE UI BAWAAN */
+#MainMenu {visibility: hidden;} footer {visibility: hidden;} header {visibility: hidden;} [data-testid="stSidebar"] {display: none;}
 
 /* FONT & INPUT */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
@@ -51,27 +47,23 @@ label, .stTextInput label, .stSelectbox label, .stTextArea label, .stFileUploade
 }
 
 /* --- FITUR: STICKY MENU (MENU NEMPEL DI ATAS) --- */
+/* Ini trik CSS biar menunya diem di atas pas di-scroll */
 iframe[title="streamlit_option_menu.option_menu"] {
     position: fixed;
     top: 0;
     left: 0;
     right: 0;
-    z-index: 99999;
+    z-index: 9999;
     width: 100%;
-    background: #f8fafc;
-    /* Kita kecilin padding menu biar gak terlalu tebal */
-    padding-top: 5px; 
+    background: #f8fafc; /* Warna background menu biar teks chat gak tembus */
+    padding-top: 10px;
     padding-bottom: 5px;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 
-/* --- SOLUSI PRESISI PIXEL (THE SWEET SPOT) --- */
-/* Kita pakai 120px. Ini jarak Emas. 
-   Menu tingginya sekitar 80px + buffer 40px = 120px. */
+/* Geser konten ke bawah biar gak ketutupan menu yang nempel */
 .block-container {
-    padding-top: 120px !important; 
-    padding-bottom: 50px !important;
-    margin-top: 0 !important; /* Hapus margin hantu */
+    padding-top: 80px !important;
 }
 
 /* CARDS */
@@ -109,7 +101,6 @@ div.stButton > button:hover { transform: scale(1.02); box-shadow: 0 4px 12px rgb
     font-size: 12px !important;
     padding: 5px 10px !important;
     width: auto !important;
-    float: right;
 }
 
 div[data-testid="stImage"] { display: flex; justify-content: center; align-items: center; }
@@ -153,18 +144,15 @@ if "GEMINI_API_KEY" in st.secrets:
     except: pass
 
 # =========================================================
-# 4. MENU NAVIGASI (FIXED)
+# 4. MENU NAVIGASI (STICKY)
 # =========================================================
-if 'selected_menu' not in st.session_state:
-    st.session_state.selected_menu = "Home"
-
+# Menu ini akan otomatis nempel di atas karena CSS "position: fixed" tadi
 selected = option_menu(
     menu_title=None,
     options=["Home", "Lapor Masalah", "Cek Status", "Dashboard", "Sadas Bot", "Admin"],
     icons=["house", "exclamation-triangle-fill", "search", "bar-chart-fill", "robot", "lock-fill"],
     default_index=0,
     orientation="horizontal",
-    key="nav_menu",
     styles={
         "container": {"padding": "5px", "background-color": "#ffffff", "border-radius": "12px", "border": "1px solid #e2e8f0"},
         "nav-link": {"font-size": "14px", "color": "#64748b", "margin": "0px"},
@@ -176,6 +164,7 @@ selected = option_menu(
 # 5. HALAMAN: HOME
 # =========================================================
 if selected == "Home":
+    st.write("") 
     col_logo1, col_text, col_logo2 = st.columns([1.5, 6, 1.5])
     with col_logo1:
         if os.path.exists("logo_uin.png"): st.image("logo_uin.png", width=120)
@@ -305,16 +294,16 @@ elif selected == "Dashboard":
         except: st.error("Error memuat dashboard.")
 
 # =========================================================
-# 9. HALAMAN: SADAS BOT (FIXED LAYOUT)
+# 9. HALAMAN: SADAS BOT (FITUR HAPUS CHAT + STICKY)
 # =========================================================
 elif selected == "Sadas Bot":
     st.markdown("<div style='max-width: 700px; margin: auto;'>", unsafe_allow_html=True)
     
     # --- HEADER & TOMBOL HAPUS ---
-    col_header, col_btn = st.columns([3, 1])
+    col_header, col_btn = st.columns([8, 2])
     with col_header:
-        st.markdown(f"<h2 style='text-align:left; margin:0;'>🤖 Sadas Bot</h2>", unsafe_allow_html=True)
-        st.markdown("<p style='text-align:left; color:#64748b; margin-top:0px;'>Asisten Akademik Virtual</p>", unsafe_allow_html=True)
+        st.markdown(f"<h2 style='text-align:left; margin-top:0;'>🤖 Sadas Bot</h2>", unsafe_allow_html=True)
+        st.markdown("<p style='text-align:left; color:#64748b; margin-top:-10px;'>Asisten Akademik Virtual</p>", unsafe_allow_html=True)
     
     with col_btn:
         st.markdown('<div class="hapus-chat-btn">', unsafe_allow_html=True)
@@ -337,15 +326,18 @@ elif selected == "Sadas Bot":
         with st.chat_message("user"): st.markdown(prompt)
 
         response = ""
-        # --- LOGIKA DETEKTIF MODEL ---
+        # --- LOGIKA DETEKTIF MODEL (POLOS TANPA TULISAN LOADING TEKNIS) ---
         if "GEMINI_API_KEY" in st.secrets:
             try:
+                # 1. Cari model yang tersedia
                 available_models = []
                 for m in genai.list_models():
                     if 'generateContent' in m.supported_generation_methods:
                         available_models.append(m.name)
                 
-                target_model = 'gemini-1.5-flash' 
+                # 2. Prioritas Model
+                target_model = 'gemini-1.5-flash' # Default
+                
                 found_flash = False
                 for m in available_models:
                     if 'flash' in m: target_model = m; found_flash = True; break
@@ -354,10 +346,12 @@ elif selected == "Sadas Bot":
                     for m in available_models:
                         if 'pro' in m: target_model = m; break
                 
+                # 3. Jalankan Model
                 model = genai.GenerativeModel(target_model)
                 system_prompt = "Kamu adalah Sadas Bot, asisten virtual dari Sains Data UIN Raden Intan Lampung. Jawab sopan dan santai."
                 full_prompt = f"{system_prompt}\nUser: {prompt}"
                 
+                # LOADING YANG SIMPEL AJA
                 with st.spinner("Sadas Bot sedang mengetik..."):
                     ai_response = model.generate_content(full_prompt)
                     response = ai_response.text
