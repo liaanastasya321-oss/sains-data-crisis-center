@@ -20,15 +20,14 @@ st.set_page_config(
 )
 
 # =========================================================
-# 2. GLOBAL CSS (FIX TAMPILAN GELAP & LABEL JELAS)
+# 2. GLOBAL CSS (VERSI LIGHT MODE / TERANG) ☀️
 # =========================================================
 st.markdown("""
 <style>
-/* 1. PAKSA BACKGROUND JADI GELAP (NAVY) */
+/* 1. BACKGROUND HALAMAN (PUTIH KEBIRUAN BERSIH) */
 .stApp {
-    background-color: #0f172a;
-    background-image: radial-gradient(circle at top, #1e293b, #020617);
-    color: #ffffff;
+    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+    color: #1e293b; /* Tulisan Utama jadi HITAM/GELAP */
 }
 
 /* 2. SEMBUNYIKAN UI BAWAAN */
@@ -43,77 +42,79 @@ html, body, [class*="css"] {
     font-family: 'Inter', sans-serif;
 }
 
-/* 4. PERBAIKAN WARNA INPUT FORM (KOTAK ISIAN) */
+/* 4. PERBAIKAN WARNA INPUT FORM (KOTAK ISIAN JELAS) */
 .stTextInput input, .stTextArea textarea, .stSelectbox div[data-baseweb="select"] {
-    color: #ffffff !important;           
-    background-color: rgba(30, 41, 59, 0.8) !important; 
-    border: 1px solid rgba(255, 255, 255, 0.3) !important; 
+    color: #334155 !important;           /* Tulisan yang diketik: HITAM KELABU */
+    background-color: #ffffff !important; /* Background Kotak: PUTIH BERSIH */
+    border: 1px solid #cbd5e1 !important; /* Garis Tepi: ABU-ABU */
+    border-radius: 8px !important;
 }
 
 /* LABEL JUDUL DI ATAS KOTAK INPUT */
 div[data-testid="stWidgetLabel"] p {
-    color: #00d4ff !important; /* Warna CYAN NEON */
+    color: #0f172a !important; /* Warna Label: NAVY GELAP (JELAS) */
     font-size: 14px !important;
     font-weight: 600 !important;
 }
 
-/* Placeholder */
+/* Placeholder (Tulisan samar) */
 ::placeholder {
     color: #94a3b8 !important;
     opacity: 1;
 }
 
-/* Efek Fokus */
+/* Efek Fokus (Pas diklik) */
 .stTextInput input:focus, .stTextArea textarea:focus {
-    border-color: #06b6d4 !important;
-    box-shadow: 0 0 8px rgba(6, 182, 212, 0.5);
+    border-color: #2563eb !important; /* Garis jadi BIRU pas diklik */
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
 }
 
-/* 5. KARTU KACA (GLASSMORPHISM) */
+/* 5. KARTU (CARD STYLE - LIGHT) */
 .glass-card {
-    background: rgba(30, 41, 59, 0.4);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
+    background: #ffffff; /* Kartu Putih */
     border-radius: 16px;
     padding: 24px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
     margin-bottom: 20px;
+    transition: all 0.3s ease;
 }
 .glass-card:hover {
     transform: translateY(-3px);
-    border-color: rgba(6, 182, 212, 0.5);
-    box-shadow: 0 0 20px rgba(6, 182, 212, 0.2);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    border-color: #3b82f6; /* Garis Biru pas hover */
 }
 
-/* 6. TYPOGRAPHY */
-h1, h2, h3 { color: white !important; }
-p { color: #cbd5e1 !important; }
+/* 6. TYPOGRAPHY (JUDUL GELAP) */
+h1, h2, h3 { color: #0f172a !important; }
+p { color: #475569 !important; }
 
 .hero { padding: 60px 20px; text-align: center; }
 .hero h1 {
     font-size: 48px;
     font-weight: 800;
-    background: linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    color: #1e3a8a !important; /* Biru Tua */
     margin-bottom: 10px;
+}
+.hero p {
+    font-size: 18px;
+    color: #64748b !important;
 }
 
 /* 7. TOMBOL */
 div.stButton > button {
-    background: linear-gradient(90deg, #2563eb, #06b6d4);
+    background: linear-gradient(90deg, #2563eb, #1d4ed8); /* Biru Profesional */
     color: white; border: none; padding: 10px 24px;
     border-radius: 8px; font-weight: bold; width: 100%;
 }
 div.stButton > button:hover {
     transform: scale(1.02);
-    box-shadow: 0 0 15px rgba(6, 182, 212, 0.6);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
 }
 
 /* Angka Dashboard */
-.metric-value { font-size: 42px; font-weight: 700; color: #06b6d4; }
-.metric-label { font-size: 14px; color: #cbd5e1; text-transform: uppercase; }
+.metric-value { font-size: 42px; font-weight: 700; color: #2563eb; }
+.metric-label { font-size: 14px; color: #64748b; text-transform: uppercase; font-weight: 600; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -144,7 +145,7 @@ def get_google_sheet():
 sheet = get_google_sheet()
 
 # =========================================================
-# 4. MENU NAVIGASI
+# 4. MENU NAVIGASI (LIGHT THEME)
 # =========================================================
 selected = option_menu(
     menu_title=None,
@@ -153,9 +154,9 @@ selected = option_menu(
     default_index=0,
     orientation="horizontal",
     styles={
-        "container": {"padding": "5px", "background-color": "rgba(15, 23, 42, 0.8)", "border-radius": "12px"},
-        "nav-link": {"font-size": "14px", "color": "#cbd5e1", "margin": "0px"},
-        "nav-link-selected": {"background-color": "#06b6d4", "color": "white"},
+        "container": {"padding": "5px", "background-color": "#ffffff", "border-radius": "12px", "border": "1px solid #e2e8f0"},
+        "nav-link": {"font-size": "14px", "color": "#64748b", "margin": "0px"},
+        "nav-link-selected": {"background-color": "#2563eb", "color": "white"},
     }
 )
 
@@ -172,14 +173,14 @@ if selected == "Home":
 
     c1, c2, c3 = st.columns(3)
     with c1:
-        st.markdown("""<div class="glass-card"><h2 style="color:#3b82f6;">📢 Pelaporan</h2><p>Saluran resmi pengaduan masalah akademik & fasilitas.</p></div>""", unsafe_allow_html=True)
+        st.markdown("""<div class="glass-card"><h2 style="color:#2563eb;">📢 Pelaporan</h2><p>Saluran resmi pengaduan masalah akademik & fasilitas.</p></div>""", unsafe_allow_html=True)
     with c2:
-        st.markdown("""<div class="glass-card"><h2 style="color:#06b6d4;">📊 Transparansi</h2><p>Pantau data statistik keluhan mahasiswa secara real-time.</p></div>""", unsafe_allow_html=True)
+        st.markdown("""<div class="glass-card"><h2 style="color:#0891b2;">📊 Transparansi</h2><p>Pantau data statistik keluhan mahasiswa secara real-time.</p></div>""", unsafe_allow_html=True)
     with c3:
-        st.markdown("""<div class="glass-card"><h2 style="color:#8b5cf6;">🚀 Responsif</h2><p>Tim advokasi siap menindaklanjuti laporan dengan cepat.</p></div>""", unsafe_allow_html=True)
+        st.markdown("""<div class="glass-card"><h2 style="color:#7c3aed;">🚀 Responsif</h2><p>Tim advokasi siap menindaklanjuti laporan dengan cepat.</p></div>""", unsafe_allow_html=True)
 
 # =========================================================
-# 6. HALAMAN: DASHBOARD (PEMBERSIHAN DATA)
+# 6. HALAMAN: DASHBOARD (RAPAT KE ATAS)
 # =========================================================
 elif selected == "Dashboard":
     st.markdown("<h2 style='text-align:center;'>📊 Dashboard Analisis</h2>", unsafe_allow_html=True)
@@ -190,16 +191,14 @@ elif selected == "Dashboard":
         df = pd.DataFrame()
 
     if not df.empty:
-        # --- LOGIKA PEMBERSIH DATA ---
+        # FILTER PEMBERSIH
         if 'Waktu Lapor' in df.columns:
-             # Buang baris yang Waktu Lapor-nya kosong
              df = df[df['Waktu Lapor'].astype(str).str.strip() != ""]
-        # -----------------------------
-
+        
         col1, col2, col3 = st.columns(3)
         with col1: st.markdown(f"""<div class="glass-card"><div class="metric-value">{len(df)}</div><div class="metric-label">Total Laporan</div></div>""", unsafe_allow_html=True)
-        with col2: st.markdown(f"""<div class="glass-card"><div class="metric-value" style="color:#f59e0b;">{len(df[df['Status'] == 'Pending'])}</div><div class="metric-label">Menunggu</div></div>""", unsafe_allow_html=True)
-        with col3: st.markdown(f"""<div class="glass-card"><div class="metric-value" style="color:#10b981;">{len(df[df['Status'] == 'Selesai'])}</div><div class="metric-label">Selesai</div></div>""", unsafe_allow_html=True)
+        with col2: st.markdown(f"""<div class="glass-card"><div class="metric-value" style="color:#d97706;">{len(df[df['Status'] == 'Pending'])}</div><div class="metric-label">Menunggu</div></div>""", unsafe_allow_html=True)
+        with col3: st.markdown(f"""<div class="glass-card"><div class="metric-value" style="color:#059669;">{len(df[df['Status'] == 'Selesai'])}</div><div class="metric-label">Selesai</div></div>""", unsafe_allow_html=True)
         
         c_chart1, c_chart2 = st.columns(2)
         with c_chart1:
@@ -207,12 +206,13 @@ elif selected == "Dashboard":
             if 'Kategori Masalah' in df.columns:
                 pie_data = df['Kategori Masalah'].value_counts()
                 fig = go.Figure(data=[go.Pie(labels=pie_data.index, values=pie_data.values, hole=.5)])
-                fig.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)", font_color="white")
+                # Warna Chart disesuaikan Light Mode
+                fig.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)", font_color="#1e293b")
                 st.plotly_chart(fig, use_container_width=True)
         with c_chart2:
-            st.markdown("##### Tren Harian (Simulasi)")
-            fig2 = go.Figure(go.Scatter(x=["Senin", "Selasa", "Rabu", "Kamis", "Jumat"], y=[5, 12, 8, 15, 10], line=dict(color="#06b6d4", width=4)))
-            fig2.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)", font_color="white", height=350)
+            st.markdown("##### Tren Harian")
+            fig2 = go.Figure(go.Scatter(x=["Senin", "Selasa", "Rabu", "Kamis", "Jumat"], y=[5, 12, 8, 15, 10], line=dict(color="#2563eb", width=4)))
+            fig2.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)", font_color="#1e293b", height=350)
             st.plotly_chart(fig2, use_container_width=True)
     else:
         st.info("Data belum tersedia.")
@@ -276,7 +276,6 @@ elif selected == "Cek Status":
                 data = sheet.get_all_records()
                 df = pd.DataFrame(data)
                 
-                # Filter Data Kosong
                 if 'Waktu Lapor' in df.columns:
                     df = df[df['Waktu Lapor'].astype(str).str.strip() != ""]
 
@@ -286,13 +285,15 @@ elif selected == "Cek Status":
                 if not hasil.empty:
                     for idx, row in hasil.iterrows():
                         status = row['Status']
-                        color = "#f59e0b" if status == "Pending" else ("#10b981" if status == "Selesai" else "#3b82f6")
+                        # Warna Status Light Mode
+                        color = "#d97706" if status == "Pending" else ("#059669" if status == "Selesai" else "#2563eb")
+                        
                         st.markdown(f"""
                         <div class="glass-card" style="border-left: 5px solid {color}; text-align:left;">
-                            <h4 style="margin:0;">{row['Kategori Masalah']}</h4>
-                            <small style="color:#94a3b8">{row['Waktu Lapor']}</small>
-                            <p style="margin-top:10px;">"{row['Detail Keluhan']}"</p>
-                            <div style="background:{color}33; color:{color}; padding: 5px 10px; border-radius:8px; display:inline-block; font-weight:bold; margin-top:5px;">
+                            <h4 style="margin:0; color:#1e293b;">{row['Kategori Masalah']}</h4>
+                            <small style="color:#64748b;">{row['Waktu Lapor']}</small>
+                            <p style="margin-top:10px; color:#334155;">"{row['Detail Keluhan']}"</p>
+                            <div style="background:{color}22; color:{color}; padding: 5px 10px; border-radius:8px; display:inline-block; font-weight:bold; margin-top:5px;">
                                 {status}
                             </div>
                         </div>
@@ -301,7 +302,7 @@ elif selected == "Cek Status":
             except: st.error("Gagal mengambil data.")
 
 # =========================================================
-# 9. HALAMAN: ADMIN (DENGAN FIX TABLE RAPI) 🔧
+# 9. HALAMAN: ADMIN (FIX TABEL RAPI KE ATAS)
 # =========================================================
 elif selected == "Admin":
     st.markdown("<h2 style='text-align:center;'>🔐 Admin Area</h2>", unsafe_allow_html=True)
@@ -328,9 +329,9 @@ elif selected == "Admin":
             # --- LOGIKA PEMBERSIH DATA ADMIN (FIX RAPI) ---
             if not df.empty:
                 if 'Waktu Lapor' in df.columns:
-                     # 1. Hapus Baris Kosong (Menaikkan data ke atas)
+                     # 1. Hapus Baris Kosong
                      df = df[df['Waktu Lapor'].astype(str).str.strip() != ""]
-                     # 2. Reset Nomor Urut (Biar mulai dari 0 lagi)
+                     # 2. Reset Nomor Urut (Biar tabel naik ke atas)
                      df.reset_index(drop=True, inplace=True)
             # ----------------------------------------------
 
