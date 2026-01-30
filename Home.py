@@ -8,7 +8,7 @@ import json
 import os
 import requests
 import datetime
-import google.generativeai as genai
+import time
 
 # =========================================================
 # 1. PAGE CONFIG
@@ -21,7 +21,7 @@ st.set_page_config(
 )
 
 # =========================================================
-# 2. GLOBAL CSS (LIGHT MODE + LABEL JELAS) ☀️
+# 2. GLOBAL CSS (LIGHT MODE + LOGO + DESIGN TETAP) 🏛️
 # =========================================================
 st.markdown("""
 <style>
@@ -94,20 +94,33 @@ div.stButton > button:hover {
     box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
 }
 
-/* 7. LOGO STYLE */
+/* 7. LOGO STYLE (Biar Rapi Tengah) */
 div[data-testid="stImage"] {
-    display: flex; justify-content: center; align-items: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* 8. STYLE KHUSUS BOT CHAT */
+.chat-message {
+    padding: 1.5rem; border-radius: 0.5rem; margin-bottom: 1rem; display: flex
+}
+.chat-message.user {
+    background-color: #e0f2fe;
+    border-left: 5px solid #0284c7;
+}
+.chat-message.bot {
+    background-color: #f1f5f9;
+    border-left: 5px solid #475569;
 }
 </style>
 """, unsafe_allow_html=True)
 
 # =========================================================
-# 3. KONEKSI & KONFIGURASI API
+# 3. KONEKSI GOOGLE SHEETS
 # =========================================================
 ID_SPREADSHEET = "1crJl0DsswyMGmq0ej_niIMfhSLdUIUx8u42HEu-sc3g" 
 API_KEY_IMGBB  = "827ccb0eea8a706c4c34a16891f84e7b" 
-# Masukkan API KEY GEMINI di sini jika punya, atau biarkan kosong dulu
-API_KEY_GEMINI = "" 
 
 scopes = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
 
@@ -130,11 +143,11 @@ def get_google_sheet():
 sheet = get_google_sheet()
 
 # =========================================================
-# 4. MENU NAVIGASI (URUTAN BARU)
+# 4. MENU NAVIGASI (URUTAN BARU + ADA BOT) 🤖
 # =========================================================
 selected = option_menu(
     menu_title=None,
-    # Urutan: Home -> Lapor -> Cek -> Dashboard -> Bot -> Admin
+    # URUTAN SESUAI REQUEST:
     options=["Home", "Lapor Masalah", "Cek Status", "Dashboard", "Sadas Bot", "Admin"],
     icons=["house", "exclamation-triangle-fill", "search", "bar-chart-fill", "robot", "lock-fill"],
     default_index=0,
@@ -147,15 +160,19 @@ selected = option_menu(
 )
 
 # =========================================================
-# 5. HALAMAN: HOME
+# 5. HALAMAN: HOME (DENGAN LOGO)
 # =========================================================
 if selected == "Home":
     st.write("") 
     st.write("") 
+
     col_logo1, col_text, col_logo2 = st.columns([1.5, 6, 1.5])
 
     with col_logo1:
-        if os.path.exists("logo_uin.png"): st.image("logo_uin.png", width=120)
+        if os.path.exists("logo_uin.png"):
+            st.image("logo_uin.png", width=120)
+        else:
+            st.warning("Upload logo_uin.png")
 
     with col_text:
         st.markdown("""
@@ -166,9 +183,12 @@ if selected == "Home":
         """, unsafe_allow_html=True)
 
     with col_logo2:
-        if os.path.exists("logo_him.png"): st.image("logo_him.png", width=120)
-    
-    st.write("---")
+        if os.path.exists("logo_him.png"):
+            st.image("logo_him.png", width=120)
+        else:
+            st.warning("Upload logo_him.png")
+
+    st.write("---") 
 
     c1, c2, c3 = st.columns(3)
     with c1:
@@ -176,10 +196,10 @@ if selected == "Home":
     with c2:
         st.markdown("""<div class="glass-card"><h2 style="color:#0891b2 !important;">📊 Transparansi</h2><p>Pantau data statistik keluhan mahasiswa secara real-time.</p></div>""", unsafe_allow_html=True)
     with c3:
-        st.markdown("""<div class="glass-card"><h2 style="color:#7c3aed !important;">🤖 AI Assistant</h2><p>Tanya jawab seputar akademik dengan Sadas Bot.</p></div>""", unsafe_allow_html=True)
+        st.markdown("""<div class="glass-card"><h2 style="color:#7c3aed !important;">🤖 Sadas Bot</h2><p>Asisten AI cerdas siap menjawab pertanyaanmu 24/7.</p></div>""", unsafe_allow_html=True)
 
 # =========================================================
-# 6. HALAMAN: LAPOR MASALAH
+# 6. HALAMAN: LAPOR MASALAH (FORM)
 # =========================================================
 elif selected == "Lapor Masalah":
     st.markdown("<div style='max-width: 700px; margin: auto;'>", unsafe_allow_html=True)
@@ -261,7 +281,7 @@ elif selected == "Cek Status":
             except: st.error("Gagal mengambil data.")
 
 # =========================================================
-# 8. HALAMAN: DASHBOARD
+# 8. HALAMAN: DASHBOARD (DIURUTAN KE-4)
 # =========================================================
 elif selected == "Dashboard":
     st.markdown("<h2 style='text-align:center;'>📊 Dashboard Analisis</h2>", unsafe_allow_html=True)
@@ -300,41 +320,53 @@ elif selected == "Dashboard":
 # 9. HALAMAN: SADAS BOT (DIKEMBALIKAN) 🤖
 # =========================================================
 elif selected == "Sadas Bot":
-    st.markdown("<h2 style='text-align:center;'>🤖 Sadas Bot AI</h2>", unsafe_allow_html=True)
-    st.markdown("<p style='text-align:center;'>Asisten Virtual Mahasiswa Sains Data (Beta)</p>", unsafe_allow_html=True)
-
-    if "chat_history" not in st.session_state:
-        st.session_state["chat_history"] = []
+    st.markdown("<div style='max-width: 700px; margin: auto;'>", unsafe_allow_html=True)
+    st.markdown("<h2 style='text-align:center;'>🤖 Sadas Bot</h2>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align:center;'>Asisten Virtual Sains Data Crisis Center</p>", unsafe_allow_html=True)
+    
+    # Inisialisasi History Chat
+    if "messages" not in st.session_state:
+        st.session_state.messages = []
 
     # Tampilkan Chat
-    for role, message in st.session_state["chat_history"]:
-        with st.chat_message(role):
-            st.write(message)
+    for message in st.session_state.messages:
+        role_class = "user" if message["role"] == "user" else "bot"
+        st.markdown(f"""
+        <div class="chat-message {role_class}">
+            <div><strong>{message['role'].capitalize()}:</strong> <br> {message['content']}</div>
+        </div>
+        """, unsafe_allow_html=True)
 
-    # Input Chat
-    if prompt := st.chat_input("Ketik pertanyaanmu di sini..."):
-        st.session_state["chat_history"].append(("user", prompt))
+    # Input User
+    if prompt := st.chat_input("Tanya sesuatu tentang akademik..."):
+        # Simpan pesan user
+        st.session_state.messages.append({"role": "user", "content": prompt})
         with st.chat_message("user"):
-            st.write(prompt)
+            st.markdown(prompt)
 
-        # Logika Balasan Bot
+        # Logika Bot Sederhana (Bisa diganti Gemini nanti)
+        response = "Maaf, saat ini aku baru belajar merespon. Coba tanyakan ke Admin ya!"
+        
+        # Jawaban Pintar Sederhana
+        p = prompt.lower()
+        if "lapor" in p:
+            response = "Untuk melapor, silakan buka menu **Lapor Masalah** di bagian atas ya."
+        elif "status" in p:
+            response = "Kamu bisa cek status laporanmu di menu **Cek Status** dengan memasukkan NPM."
+        elif "admin" in p:
+            response = "Admin bisa diakses lewat menu **Admin** di pojok kanan atas."
+        elif "halo" in p or "hi" in p:
+            response = "Halo! Ada yang bisa Sadas Bot bantu?"
+
+        # Simpan respon bot
+        st.session_state.messages.append({"role": "assistant", "content": response})
         with st.chat_message("assistant"):
-            if not API_KEY_GEMINI:
-                 response_text = "Maaf, API Key Gemini belum dipasang oleh Admin. Bot belum bisa berpikir. 🤯"
-                 st.write(response_text)
-                 st.session_state["chat_history"].append(("assistant", response_text))
-            else:
-                try:
-                    genai.configure(api_key=API_KEY_GEMINI)
-                    model = genai.GenerativeModel('gemini-pro')
-                    response = model.generate_content(prompt)
-                    st.write(response.text)
-                    st.session_state["chat_history"].append(("assistant", response.text))
-                except Exception as e:
-                    st.error(f"Bot Error: {e}")
+            st.markdown(response)
+    
+    st.markdown("</div>", unsafe_allow_html=True)
 
 # =========================================================
-# 10. HALAMAN: ADMIN
+# 10. HALAMAN: ADMIN (URUTAN TERAKHIR)
 # =========================================================
 elif selected == "Admin":
     st.markdown("<h2 style='text-align:center;'>🔐 Admin Area</h2>", unsafe_allow_html=True)
