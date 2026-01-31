@@ -23,15 +23,12 @@ st.set_page_config(
 )
 
 # =========================================================
-# 2. GLOBAL CSS (GRADIENT BLUE + MOBILE FIX) 🛠️
+# 2. GLOBAL CSS
 # =========================================================
 st.markdown("""
 <style>
-/* --- SETUP DASAR --- */
-.stApp { 
-    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%); 
-    color: #0f172a; 
-}
+/* SETUP DASAR */
+.stApp { background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%); color: #0f172a; }
 #MainMenu, footer, header, [data-testid="stSidebar"] { display: none !important; }
 .stApp > header { display: none !important; }
 
@@ -40,55 +37,29 @@ st.markdown("""
 html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
 
 .stTextInput input, .stTextArea textarea, .stSelectbox div[data-baseweb="select"] {
-    background-color: #ffffff !important; 
-    border: 1px solid #94a3b8 !important; 
-    color: #334155 !important; 
-    border-radius: 8px;
+    background-color: #ffffff !important; border: 1px solid #94a3b8 !important; 
+    color: #334155 !important; border-radius: 8px;
 }
-label, div[data-testid="stWidgetLabel"] p { 
-    color: #0f172a !important; 
-    font-weight: 700 !important; 
-}
+label, div[data-testid="stWidgetLabel"] p { color: #0f172a !important; font-weight: 700 !important; }
 
-/* --- MENU STICKY --- */
+/* MENU STICKY */
 iframe[title="streamlit_option_menu.option_menu"] {
     position: fixed; top: 0; left: 0; right: 0; z-index: 999999;
-    width: 100%; background: #f8fafc;
-    padding: 5px 0; box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    width: 100%; background: #f8fafc; padding: 5px 0; box-shadow: 0 2px 5px rgba(0,0,0,0.05);
 }
 
-/* --- JARAK KONTEN (BIAR GAK KEPOTONG DI HP) --- */
-/* Laptop */
-.block-container {
-    padding-top: 100px !important; 
-    padding-bottom: 50px !important;
-    margin-top: 0 !important;
-    max-width: 1200px;
-}
-/* HP (Jarak Ekstra) */
+/* JARAK KONTEN (Responsive) */
+.block-container { padding-top: 100px !important; padding-bottom: 50px !important; margin-top: 0 !important; max-width: 1200px; }
 @media (max-width: 600px) {
-    .block-container {
-        padding-top: 180px !important; 
-        padding-left: 1rem !important;
-        padding-right: 1rem !important;
-    }
+    .block-container { padding-top: 180px !important; padding-left: 1rem !important; padding-right: 1rem !important; }
 }
 
-/* --- HEADER CUSTOM (ANTI TUMPUK) --- */
-.header-container {
-    display: flex; flex-direction: row; align-items: center; 
-    justify-content: space-between; gap: 10px; margin-bottom: 30px; width: 100%;
-}
+/* HEADER */
+.header-container { display: flex; flex-direction: row; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 30px; width: 100%; }
 .logo-img { width: 90px; height: auto; object-fit: contain; }
 .title-text { flex: 1; text-align: center; }
-.title-text h1 {
-    font-size: 32px; margin: 0; font-weight: 800; line-height: 1.2;
-    background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
-    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-}
+.title-text h1 { font-size: 32px; margin: 0; font-weight: 800; line-height: 1.2; background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
 .title-text p { font-size: 14px; margin: 5px 0 0 0; color: #64748b; }
-
-/* Header HP */
 @media (max-width: 600px) {
     .header-container { margin-bottom: 15px; }
     .logo-img { width: 45px !important; }
@@ -96,29 +67,11 @@ iframe[title="streamlit_option_menu.option_menu"] {
     .title-text p { font-size: 10px !important; margin-top: 2px; }
 }
 
-/* --- CARDS --- */
-.glass-card {
-    background: #ffffff; border-radius: 16px; padding: 20px;
-    border: 1px solid #cbd5e1; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); 
-    margin-bottom: 15px; text-align: center; height: 100%;
-}
-.announce-card {
-    background: #ffffff; border-radius: 12px; padding: 15px; margin-bottom: 10px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05); border: 1px solid #e2e8f0;
-}
-
-/* TOMBOL */
-div.stButton > button {
-    background: linear-gradient(90deg, #2563eb, #1d4ed8); 
-    color: white; border: none; padding: 12px 20px; 
-    border-radius: 8px; font-weight: bold; width: 100%;
-}
-
-/* CHAT */
-.hapus-chat-btn button {
-    background: #ef4444 !important; font-size: 12px !important; 
-    padding: 5px 10px !important; width: auto !important; float: right;
-}
+/* COMPONENTS */
+.glass-card { background: #ffffff; border-radius: 16px; padding: 20px; border: 1px solid #cbd5e1; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); margin-bottom: 15px; text-align: center; height: 100%; }
+.announce-card { background: #ffffff; border-radius: 12px; padding: 15px; margin-bottom: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; }
+div.stButton > button { background: linear-gradient(90deg, #2563eb, #1d4ed8); color: white; border: none; padding: 12px 20px; border-radius: 8px; font-weight: bold; width: 100%; }
+.hapus-chat-btn button { background: #ef4444 !important; font-size: 12px !important; padding: 5px 10px !important; width: auto !important; float: right; }
 .chat-message { padding: 1rem; border-radius: 8px; margin-bottom: 10px; display: flex; font-size: 14px;}
 .chat-message.user { background-color: #e0f2fe; border-left: 4px solid #0284c7; }
 .chat-message.bot { background-color: #f1f5f9; border-left: 4px solid #475569; }
@@ -126,7 +79,7 @@ div.stButton > button {
 """, unsafe_allow_html=True)
 
 # =========================================================
-# 3. KONEKSI GOOGLE SHEETS & GEMINI
+# 3. KONEKSI GOOGLE SHEETS (MODE "JURUS BODO AMAT") 🛡️
 # =========================================================
 ID_SPREADSHEET = "1crJl0DsswyMGmq0ej_niIMfhSLdUIUx8u42HEu-sc3g" 
 API_KEY_IMGBB  = "827ccb0eea8a706c4c34a16891f84e7b" 
@@ -147,12 +100,30 @@ def get_spreadsheet():
     except: return None
 
 sh = get_spreadsheet()
-# Kita pakai try-except saat ambil worksheet biar gak crash di awal kalau nama salah
-try: sheet = sh.worksheet("Laporan") if sh else None
-except: sheet = None
-try: sheet_pengumuman = sh.worksheet("Pengumuman") if sh else None
-except: sheet_pengumuman = None
 
+# --- JURUS ANTI ERROR: AMBIL SHEET PERTAMA ---
+sheet = None
+sheet_pengumuman = None
+
+if sh:
+    try:
+        # Coba ambil tab "Laporan"
+        sheet = sh.worksheet("Laporan")
+    except:
+        try:
+            # KALAU GAGAL, AMBIL TAB PERTAMA (INDEX 0)
+            sheet = sh.get_worksheet(0)
+        except: 
+            sheet = None
+
+    try:
+        sheet_pengumuman = sh.worksheet("Pengumuman")
+    except:
+        # Kalau gak nemu pengumuman, ambil sheet kedua (Index 1) kalau ada
+        try: sheet_pengumuman = sh.get_worksheet(1)
+        except: sheet_pengumuman = None
+
+# --- KONFIGURASI AI ---
 if "GEMINI_API_KEY" in st.secrets:
     try: genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
     except: pass
@@ -226,7 +197,7 @@ if selected == "Home":
     else: st.warning("Tab 'Pengumuman' tidak ditemukan.")
 
 # =========================================================
-# 6. HALAMAN: LAPOR MASALAH (FIXED LOGIC)
+# 6. HALAMAN: LAPOR MASALAH
 # =========================================================
 elif selected == "Lapor Masalah":
     st.markdown("<div style='max-width: 700px; margin: auto;'>", unsafe_allow_html=True)
@@ -243,10 +214,10 @@ elif selected == "Lapor Masalah":
             bukti_file = st.file_uploader("Upload Bukti (JPG/PNG)", type=["png", "jpg", "jpeg"])
             st.markdown("<br>", unsafe_allow_html=True)
             
-            # --- TOMBOL DIDEFINISIKAN DI DALAM FORM ---
+            # --- TOMBOL ---
             submitted = st.form_submit_button("🚀 Kirim Laporan")
             
-            # --- LOGIKA EKSEKUSI ---
+            # --- LOGIKA ---
             if submitted:
                 if not keluhan: st.warning("Mohon isi deskripsi laporan.")
                 else:
@@ -262,19 +233,15 @@ elif selected == "Lapor Masalah":
                                 if data_res.get("success"): link_bukti = data_res["data"]["url"]
                             except: pass
                         
-                        # --- MODIFIKASI: MENAMPILKAN ERROR ASLI ---
                         try:
-                            # 1. Cek Koneksi Sheet
+                            # CEK KONEKSI SHEET TERAKHIR KALI
                             if sheet is None:
-                                st.error("⚠️ GAGAL KONEKSI AWAL. Penyebab: Nama Tab di Google Sheet mungkin bukan 'Laporan' atau Spreadsheet ID salah.")
+                                st.error("❌ Gagal Konek Database. Pastikan 'credentials.json' benar dan Email Robot sudah diinvite ke Sheet.")
                             else:
-                                # 2. Coba Simpan
                                 sheet.append_row([waktu, nama, npm, jurusan, kategori, keluhan, "Pending", link_bukti])
-                                st.success("✅ BERHASIL! Data tersimpan.")
+                                st.success("✅ Terkirim! Laporanmu berhasil disimpan.")
                         except Exception as e:
-                            # 3. TAMPILKAN ERROR ASLINYA
-                            st.error(f"❌ ERROR DARI GOOGLE: {e}")
-                            st.info("Tolong screenshot pesan error merah di atas dan kirim ke kakak.")
+                            st.error(f"Error Teknis: {str(e)}")
 
         st.markdown('</div>', unsafe_allow_html=True)
     st.markdown("</div>", unsafe_allow_html=True)
@@ -366,7 +333,7 @@ elif selected == "Sadas Bot":
         with st.chat_message("user"): st.markdown(prompt)
 
         response = ""
-        # --- LOGIKA DETEKTIF MODEL (AMAN DARI CRASH) ---
+        # --- LOGIKA BOT (ERROR HANDLING RAPI) ---
         if "GEMINI_API_KEY" in st.secrets:
             try:
                 available_models = []
@@ -392,7 +359,11 @@ elif selected == "Sadas Bot":
                     response = ai_response.text
 
             except Exception as e:
-                response = f"⚠️ Masih error kak. Detail Error: {str(e)}"
+                err_msg = str(e)
+                if "403" in err_msg or "suspended" in err_msg:
+                    response = "⚠️ **API Key Bermasalah.** Tolong ganti API Key Gemini di pengaturan Secrets ya."
+                else:
+                    response = f"⚠️ Maaf ada error: {err_msg}"
         else:
             response = "⚠️ API Key Gemini belum dipasang di Secrets."
 
