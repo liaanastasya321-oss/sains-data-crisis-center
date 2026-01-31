@@ -9,7 +9,6 @@ import os
 import requests
 import datetime
 import time
-import base64
 import google.generativeai as genai 
 
 # =========================================================
@@ -23,157 +22,91 @@ st.set_page_config(
 )
 
 # =========================================================
-# 2. GLOBAL CSS (DESIGN GRADIENT + MOBILE FIX) 🛠️
+# 2. GLOBAL CSS (STICKY NAVBAR + LIGHT MODE) 🌟
 # =========================================================
 st.markdown("""
 <style>
-/* --- 1. SETUP DASAR & BACKGROUND --- */
-.stApp { 
-    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%); 
-    color: #0f172a; 
-}
-#MainMenu, footer, header, [data-testid="stSidebar"] { display: none !important; }
-.stApp > header { display: none !important; }
+/* BACKGROUND */
+.stApp { background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%); color: #0f172a; }
 
-/* Font */
+/* HIDE UI BAWAAN */
+#MainMenu {visibility: hidden;} footer {visibility: hidden;} header {visibility: hidden;} [data-testid="stSidebar"] {display: none;}
+
+/* FONT & INPUT */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
 html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
 
-/* Input Fields */
 .stTextInput input, .stTextArea textarea, .stSelectbox div[data-baseweb="select"] {
-    background-color: #ffffff !important; 
-    border: 1px solid #94a3b8 !important; 
-    color: #334155 !important; 
-    border-radius: 8px;
-}
-label, div[data-testid="stWidgetLabel"] p { 
-    color: #0f172a !important; 
-    font-weight: 700 !important; 
+    color: #334155 !important; background-color: #ffffff !important;
+    border: 1px solid #94a3b8 !important; border-radius: 8px !important;
 }
 
-/* --- 2. MENU STICKY (NEMPEL DI ATAS) --- */
+/* LABEL */
+label, .stTextInput label, .stSelectbox label, .stTextArea label, .stFileUploader label, div[data-testid="stWidgetLabel"] p {
+    color: #0f172a !important; font-size: 15px !important; font-weight: 700 !important;
+}
+
+/* --- FITUR: STICKY MENU (MENU NEMPEL DI ATAS) --- */
+/* Ini trik CSS biar menunya diem di atas pas di-scroll */
 iframe[title="streamlit_option_menu.option_menu"] {
-    position: fixed; top: 0; left: 0; right: 0; z-index: 999999;
-    width: 100%; background: #f8fafc;
-    padding: 5px 0; box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 9999;
+    width: 100%;
+    background: #f8fafc; /* Warna background menu biar teks chat gak tembus */
+    padding-top: 10px;
+    padding-bottom: 5px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 
-/* --- 3. PADDING KONTEN (SOLUSI MENU KEPOTONG) --- */
-
-/* TAMPILAN LAPTOP (Jarak Normal) */
+/* Geser konten ke bawah biar gak ketutupan menu yang nempel */
 .block-container {
-    padding-top: 100px !important; 
-    padding-bottom: 50px !important;
-    margin-top: 0 !important;
-    max-width: 1200px;
+    padding-top: 80px !important;
 }
 
-/* TAMPILAN HP (Jarak Jauh) */
-/* Kita paksa turun 180px biar aman dari menu tebal di HP */
-@media (max-width: 600px) {
-    .block-container {
-        padding-top: 180px !important; 
-        padding-left: 1rem !important;
-        padding-right: 1rem !important;
-    }
-}
-
-/* --- 4. HEADER CUSTOM (SOLUSI LOGO TUMPUK) --- */
-/* Kita pakai Flexbox HTML biar logo & teks tetap sebaris */
-.header-container {
-    display: flex; 
-    flex-direction: row; 
-    align-items: center; 
-    justify-content: space-between; /* Jarak antar elemen */
-    gap: 10px; 
-    margin-bottom: 30px; 
-    width: 100%;
-}
-
-.logo-img { 
-    width: 90px; /* Ukuran Laptop */
-    height: auto; 
-    object-fit: contain; 
-}
-
-.title-text { 
-    flex: 1; 
-    text-align: center; 
-}
-
-.title-text h1 {
-    font-size: 32px; 
-    margin: 0; 
-    font-weight: 800; 
-    line-height: 1.2;
-    background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
-    -webkit-background-clip: text; 
-    -webkit-text-fill-color: transparent;
-}
-
-.title-text p { 
-    font-size: 14px; 
-    margin: 5px 0 0 0; 
-    color: #64748b; 
-}
-
-/* HEADER DI HP (Ukuran disesuaikan) */
-@media (max-width: 600px) {
-    .header-container { margin-bottom: 15px; }
-    .logo-img { width: 45px !important; } /* Logo kecil */
-    .title-text h1 { font-size: 18px !important; } /* Judul sedang */
-    .title-text p { font-size: 10px !important; margin-top: 2px; }
-}
-
-/* --- 5. KARTU & TOMBOL --- */
+/* CARDS */
 .glass-card {
-    background: #ffffff; 
-    border-radius: 16px; 
-    padding: 20px;
-    border: 1px solid #cbd5e1; 
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); 
-    margin-bottom: 15px;
-    text-align: center;
-    height: 100%;
+    background: #ffffff; border-radius: 16px; padding: 24px;
+    border: 1px solid #cbd5e1; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); margin-bottom: 20px;
 }
-.glass-card h3 { color: #2563eb; margin-bottom: 10px; font-size: 20px; }
-.glass-card p { font-size: 14px; color: #475569; }
+.glass-card:hover { transform: translateY(-3px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); border-color: #3b82f6; }
 
-/* Kartu di HP */
-@media (max-width: 600px) {
-    .glass-card { padding: 15px; }
-    .glass-card h3 { font-size: 16px; }
-    .glass-card p { font-size: 12px; }
-}
-
+/* ANNOUNCE CARD */
 .announce-card {
-    background: #ffffff; border-radius: 12px; padding: 15px; margin-bottom: 10px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05); border: 1px solid #e2e8f0;
+    background: #ffffff; border-radius: 12px; padding: 20px; margin-bottom: 15px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; transition: transform 0.2s;
+}
+.announce-card:hover { transform: scale(1.01); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+
+/* TYPOGRAPHY */
+h1, h2, h3, h4, h5, h6 { color: #0f172a !important; font-weight: 800 !important; }
+p { color: #334155 !important; }
+.hero h1 {
+    font-size: 42px; background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 5px;
 }
 
+/* BUTTON */
 div.stButton > button {
-    background: linear-gradient(90deg, #2563eb, #1d4ed8); 
-    color: white; border: none;
-    padding: 12px 20px; 
-    border-radius: 8px; 
-    font-weight: bold; 
-    width: 100%;
+    background: linear-gradient(90deg, #2563eb, #1d4ed8); color: white; border: none;
+    padding: 10px 24px; border-radius: 8px; font-weight: bold; width: 100%;
 }
+div.stButton > button:hover { transform: scale(1.02); box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3); }
 
-/* Tombol Hapus Chat Merah */
+/* TOMBOL HAPUS CHAT (MERAH) */
 .hapus-chat-btn button {
-    background: #ef4444 !important; 
-    font-size: 12px !important; 
+    background: #ef4444 !important;
+    font-size: 12px !important;
     padding: 5px 10px !important;
-    width: auto !important; 
-    float: right;
+    width: auto !important;
 }
 
-/* Chat Bubble */
-.chat-message { padding: 1rem; border-radius: 8px; margin-bottom: 10px; display: flex; font-size: 14px;}
-.chat-message.user { background-color: #e0f2fe; border-left: 4px solid #0284c7; }
-.chat-message.bot { background-color: #f1f5f9; border-left: 4px solid #475569; }
-
+div[data-testid="stImage"] { display: flex; justify-content: center; align-items: center; }
+.chat-message { padding: 1.5rem; border-radius: 0.5rem; margin-bottom: 1rem; display: flex; }
+.chat-message.user { background-color: #e0f2fe; border-left: 5px solid #0284c7; }
+.chat-message.bot { background-color: #f1f5f9; border-left: 5px solid #475569; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -206,64 +139,45 @@ except: sheet_pengumuman = None
 
 # --- KONFIGURASI AI ---
 if "GEMINI_API_KEY" in st.secrets:
-    try: genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
+    try:
+        genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
     except: pass
 
-# --- FUNGSI BACA GAMBAR KE HTML ---
-def get_img_as_base64(file_path):
-    try:
-        with open(file_path, "rb") as f: data = f.read()
-        return base64.b64encode(data).decode()
-    except: return ""
-
 # =========================================================
-# 4. MENU NAVIGASI (FIXED)
+# 4. MENU NAVIGASI (STICKY)
 # =========================================================
-if 'selected_menu' not in st.session_state: st.session_state.selected_menu = "Home"
-
+# Menu ini akan otomatis nempel di atas karena CSS "position: fixed" tadi
 selected = option_menu(
     menu_title=None,
     options=["Home", "Lapor Masalah", "Cek Status", "Dashboard", "Sadas Bot", "Admin"],
     icons=["house", "exclamation-triangle-fill", "search", "bar-chart-fill", "robot", "lock-fill"],
     default_index=0,
     orientation="horizontal",
-    key="nav_menu",
     styles={
         "container": {"padding": "5px", "background-color": "#ffffff", "border-radius": "12px", "border": "1px solid #e2e8f0"},
-        "nav-link": {"font-size": "12px", "color": "#64748b", "margin": "0px", "padding": "5px"}, 
+        "nav-link": {"font-size": "14px", "color": "#64748b", "margin": "0px"},
         "nav-link-selected": {"background-color": "#2563eb", "color": "white"},
     }
 )
 
 # =========================================================
-# 5. HALAMAN: HOME (HEADER HTML KHUSUS)
+# 5. HALAMAN: HOME
 # =========================================================
 if selected == "Home":
-    # --- HEADER DENGAN HTML (SOLUSI LOGO GAK TUMPUK) ---
-    img_uin = get_img_as_base64("logo_uin.png")
-    img_him = get_img_as_base64("logo_him.png")
-    
-    header_html = f"""
-    <div class="header-container">
-        <img src="data:image/png;base64,{img_uin}" class="logo-img">
-        <div class="title-text">
-            <h1>SAINS DATA CRISIS CENTER</h1>
-            <p>Pusat Analisis, Respon Cepat, dan Mitigasi Krisis Mahasiswa</p>
-        </div>
-        <img src="data:image/png;base64,{img_him}" class="logo-img">
-    </div>
-    """
-    st.markdown(header_html, unsafe_allow_html=True)
+    st.write("") 
+    col_logo1, col_text, col_logo2 = st.columns([1.5, 6, 1.5])
+    with col_logo1:
+        if os.path.exists("logo_uin.png"): st.image("logo_uin.png", width=120)
+    with col_text:
+        st.markdown("""<div class="hero" style="text-align:center; padding: 10px 0;"><h1>SAINS DATA CRISIS CENTER</h1><p style="font-size:16px; margin-top:-10px;">Pusat Analisis, Respon Cepat, dan Mitigasi Krisis Mahasiswa</p></div>""", unsafe_allow_html=True)
+    with col_logo2:
+        if os.path.exists("logo_him.png"): st.image("logo_him.png", width=120)
     st.write("---") 
 
-    # --- MENU KARTU ---
     c1, c2, c3 = st.columns(3)
-    with c1: 
-        st.markdown("""<div class="glass-card"><h3 style="color:#2563eb;">📢 Pelaporan</h3><p>Saluran resmi pengaduan masalah.</p></div>""", unsafe_allow_html=True)
-    with c2: 
-        st.markdown("""<div class="glass-card"><h3 style="color:#0891b2;">📊 Transparansi</h3><p>Pantau data statistik real-time.</p></div>""", unsafe_allow_html=True)
-    with c3: 
-        st.markdown("""<div class="glass-card"><h3 style="color:#7c3aed;">🤖 Sadas Bot</h3><p>Asisten AI cerdas 24/7.</p></div>""", unsafe_allow_html=True)
+    with c1: st.markdown("""<div class="glass-card"><h2 style="color:#2563eb !important;">📢 Pelaporan</h2><p>Saluran resmi pengaduan masalah akademik & fasilitas.</p></div>""", unsafe_allow_html=True)
+    with c2: st.markdown("""<div class="glass-card"><h2 style="color:#0891b2 !important;">📊 Transparansi</h2><p>Pantau data statistik keluhan mahasiswa secara real-time.</p></div>""", unsafe_allow_html=True)
+    with c3: st.markdown("""<div class="glass-card"><h2 style="color:#7c3aed !important;">🤖 Sadas Bot</h2><p>Asisten AI cerdas siap menjawab pertanyaanmu 24/7.</p></div>""", unsafe_allow_html=True)
 
     st.write("")
     st.subheader("📰 Informasi Terbaru")
@@ -276,8 +190,8 @@ if selected == "Home":
                     border_color = "#ef4444" if tipe == "Urgent" else ("#f59e0b" if tipe == "Penting" else "#3b82f6")
                     st.markdown(f"""
                     <div class="announce-card" style="border-left: 5px solid {border_color};">
-                        <div style="display:flex; justify-content:space-between;"><span style="font-weight:bold; color:{border_color}; font-size:12px;">{tipe}</span><span style="color:#94a3b8; font-size:12px;">{item.get('Tanggal', '-')}</span></div>
-                        <h4 style="margin: 5px 0; color:#1e293b;">{item.get('Judul', '-')}</h4><p style="margin:0; font-size:13px; color:#475569;">{item.get('Isi', '-')}</p>
+                        <div style="display:flex; justify-content:space-between;"><span style="font-weight:bold; color:{border_color}; text-transform:uppercase; font-size:12px; background:{border_color}15; padding:2px 8px; border-radius:4px;">{tipe}</span><span style="color:#94a3b8; font-size:12px;">{item.get('Tanggal', '-')}</span></div>
+                        <h4 style="margin: 5px 0; color:#1e293b !important;">{item.get('Judul', '-')}</h4><p style="margin:0; font-size:14px; color:#475569 !important;">{item.get('Isi', '-')}</p>
                     </div>""", unsafe_allow_html=True)
             else: st.info("Belum ada pengumuman.")
         except: st.warning("Gagal memuat pengumuman.")
@@ -287,6 +201,7 @@ if selected == "Home":
 # 6. HALAMAN: LAPOR MASALAH
 # =========================================================
 elif selected == "Lapor Masalah":
+    st.markdown("<div style='max-width: 700px; margin: auto;'>", unsafe_allow_html=True)
     st.markdown("<h2 style='text-align:center;'>📝 Form Pengaduan</h2>", unsafe_allow_html=True)
     with st.container():
         st.markdown('<div class="glass-card">', unsafe_allow_html=True)
@@ -320,6 +235,7 @@ elif selected == "Lapor Masalah":
                             st.success("✅ Terkirim!")
                         except: st.error("Database Error")
         st.markdown('</div>', unsafe_allow_html=True)
+    st.markdown("</div>", unsafe_allow_html=True)
 
 # =========================================================
 # 7. HALAMAN: CEK STATUS
@@ -342,11 +258,7 @@ elif selected == "Cek Status":
                         for idx, row in hasil.iterrows():
                             status = row['Status']
                             color = "#d97706" if status == "Pending" else ("#059669" if status == "Selesai" else "#2563eb")
-                            st.markdown(f"""<div class="glass-card" style="border-left:5px solid {color}; text-align:left;">
-                            <h4 style="margin:0;">{row['Kategori Masalah']}</h4>
-                            <small style="color:#64748b;">{row['Waktu Lapor']}</small>
-                            <p style="margin-top:10px;">"{row['Detail Keluhan']}"</p>
-                            <div style="background:{color}22; color:{color}; padding: 5px 10px; border-radius:8px; display:inline-block; font-weight:bold; margin-top:5px;">{status}</div></div>""", unsafe_allow_html=True)
+                            st.markdown(f"""<div class="glass-card" style="border-left:5px solid {color}; text-align:left;"><h4 style="margin:0;">{row['Kategori Masalah']}</h4><small style="color:#64748b;">{row['Waktu Lapor']}</small><p style="margin-top:10px;">"{row['Detail Keluhan']}"</p><div style="background:{color}22; color:{color}; padding: 5px 10px; border-radius:8px; display:inline-block; font-weight:bold; margin-top:5px;">{status}</div></div>""", unsafe_allow_html=True)
                     else: st.warning("Belum ada laporan.")
                 except: st.error("Gagal mengambil data.")
 
@@ -363,32 +275,35 @@ elif selected == "Dashboard":
             
             if not df.empty:
                 col1, col2, col3 = st.columns(3)
-                with col1: st.markdown(f"""<div class="glass-card"><div class="metric-value" style="font-size:24px; font-weight:bold; color:#2563eb;">{len(df)}</div><div class="metric-label">Total</div></div>""", unsafe_allow_html=True)
-                with col2: st.markdown(f"""<div class="glass-card"><div class="metric-value" style="font-size:24px; font-weight:bold; color:#d97706;">{len(df[df['Status'] == 'Pending'])}</div><div class="metric-label">Menunggu</div></div>""", unsafe_allow_html=True)
-                with col3: st.markdown(f"""<div class="glass-card"><div class="metric-value" style="font-size:24px; font-weight:bold; color:#059669;">{len(df[df['Status'] == 'Selesai'])}</div><div class="metric-label">Selesai</div></div>""", unsafe_allow_html=True)
+                with col1: st.markdown(f"""<div class="glass-card"><div class="metric-value">{len(df)}</div><div class="metric-label">Total</div></div>""", unsafe_allow_html=True)
+                with col2: st.markdown(f"""<div class="glass-card"><div class="metric-value" style="color:#d97706;">{len(df[df['Status'] == 'Pending'])}</div><div class="metric-label">Menunggu</div></div>""", unsafe_allow_html=True)
+                with col3: st.markdown(f"""<div class="glass-card"><div class="metric-value" style="color:#059669;">{len(df[df['Status'] == 'Selesai'])}</div><div class="metric-label">Selesai</div></div>""", unsafe_allow_html=True)
                 
                 c_a, c_b = st.columns(2)
                 with c_a:
                     if 'Kategori Masalah' in df.columns:
                         pie = df['Kategori Masalah'].value_counts()
                         fig = go.Figure(data=[go.Pie(labels=pie.index, values=pie.values, hole=.5)])
-                        fig.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)", font_color="#1e293b", height=300, margin=dict(l=20, r=20, t=20, b=20))
+                        fig.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)", font_color="#1e293b")
                         st.plotly_chart(fig, use_container_width=True)
-                with c_b:
+                with c_b: # Dummy trend
                     fig2 = go.Figure(go.Scatter(x=["Senin","Selasa","Rabu"], y=[3,7,2], line=dict(color="#2563eb", width=4)))
-                    fig2.update_layout(paper_bgcolor="rgba(0,0,0,0)", font_color="#1e293b", height=300, margin=dict(l=20, r=20, t=20, b=20))
+                    fig2.update_layout(paper_bgcolor="rgba(0,0,0,0)", font_color="#1e293b", height=300)
                     st.plotly_chart(fig2, use_container_width=True)
             else: st.info("Belum ada data.")
         except: st.error("Error memuat dashboard.")
 
 # =========================================================
-# 9. HALAMAN: SADAS BOT
+# 9. HALAMAN: SADAS BOT (FITUR HAPUS CHAT + STICKY)
 # =========================================================
 elif selected == "Sadas Bot":
-    col_header, col_btn = st.columns([3, 1])
+    st.markdown("<div style='max-width: 700px; margin: auto;'>", unsafe_allow_html=True)
+    
+    # --- HEADER & TOMBOL HAPUS ---
+    col_header, col_btn = st.columns([8, 2])
     with col_header:
-        st.markdown(f"<h2 style='text-align:left; margin:0;'>🤖 Sadas Bot</h2>", unsafe_allow_html=True)
-        st.markdown("<p style='text-align:left; color:#64748b; margin-top:0px;'>Asisten Akademik Virtual</p>", unsafe_allow_html=True)
+        st.markdown(f"<h2 style='text-align:left; margin-top:0;'>🤖 Sadas Bot</h2>", unsafe_allow_html=True)
+        st.markdown("<p style='text-align:left; color:#64748b; margin-top:-10px;'>Asisten Akademik Virtual</p>", unsafe_allow_html=True)
     
     with col_btn:
         st.markdown('<div class="hapus-chat-btn">', unsafe_allow_html=True)
@@ -399,6 +314,7 @@ elif selected == "Sadas Bot":
 
     st.write("---")
     
+    # --- AREA CHAT ---
     if "messages" not in st.session_state: st.session_state.messages = []
 
     for message in st.session_state.messages:
@@ -410,15 +326,18 @@ elif selected == "Sadas Bot":
         with st.chat_message("user"): st.markdown(prompt)
 
         response = ""
-        # --- LOGIKA DETEKTIF MODEL ---
+        # --- LOGIKA DETEKTIF MODEL (POLOS TANPA TULISAN LOADING TEKNIS) ---
         if "GEMINI_API_KEY" in st.secrets:
             try:
+                # 1. Cari model yang tersedia
                 available_models = []
                 for m in genai.list_models():
                     if 'generateContent' in m.supported_generation_methods:
                         available_models.append(m.name)
                 
-                target_model = 'gemini-1.5-flash' 
+                # 2. Prioritas Model
+                target_model = 'gemini-1.5-flash' # Default
+                
                 found_flash = False
                 for m in available_models:
                     if 'flash' in m: target_model = m; found_flash = True; break
@@ -427,10 +346,12 @@ elif selected == "Sadas Bot":
                     for m in available_models:
                         if 'pro' in m: target_model = m; break
                 
+                # 3. Jalankan Model
                 model = genai.GenerativeModel(target_model)
                 system_prompt = "Kamu adalah Sadas Bot, asisten virtual dari Sains Data UIN Raden Intan Lampung. Jawab sopan dan santai."
                 full_prompt = f"{system_prompt}\nUser: {prompt}"
                 
+                # LOADING YANG SIMPEL AJA
                 with st.spinner("Sadas Bot sedang mengetik..."):
                     ai_response = model.generate_content(full_prompt)
                     response = ai_response.text
@@ -442,6 +363,7 @@ elif selected == "Sadas Bot":
 
         st.session_state.messages.append({"role": "assistant", "content": response})
         with st.chat_message("assistant"): st.markdown(response)
+    st.markdown("</div>", unsafe_allow_html=True)
 
 # =========================================================
 # 10. HALAMAN: ADMIN
