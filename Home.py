@@ -262,15 +262,19 @@ elif selected == "Lapor Masalah":
                                 if data_res.get("success"): link_bukti = data_res["data"]["url"]
                             except: pass
                         
-                        # TRY EXCEPT LENGKAP UTK DATABASE
+                        # --- MODIFIKASI: MENAMPILKAN ERROR ASLI ---
                         try:
+                            # 1. Cek Koneksi Sheet
                             if sheet is None:
-                                st.error("❌ Gagal Konek Database! Cek: 1. Nama Tab 'Laporan'. 2. Invite Email Service Account jadi Editor.")
+                                st.error("⚠️ GAGAL KONEKSI AWAL. Penyebab: Nama Tab di Google Sheet mungkin bukan 'Laporan' atau Spreadsheet ID salah.")
                             else:
+                                # 2. Coba Simpan
                                 sheet.append_row([waktu, nama, npm, jurusan, kategori, keluhan, "Pending", link_bukti])
-                                st.success("✅ Terkirim! Data sudah masuk.")
+                                st.success("✅ BERHASIL! Data tersimpan.")
                         except Exception as e:
-                            st.error(f"⚠️ Terjadi Error Database: {str(e)}")
+                            # 3. TAMPILKAN ERROR ASLINYA
+                            st.error(f"❌ ERROR DARI GOOGLE: {e}")
+                            st.info("Tolong screenshot pesan error merah di atas dan kirim ke kakak.")
 
         st.markdown('</div>', unsafe_allow_html=True)
     st.markdown("</div>", unsafe_allow_html=True)
