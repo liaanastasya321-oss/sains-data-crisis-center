@@ -23,7 +23,7 @@ st.set_page_config(
 )
 
 # =========================================================
-# 2. GLOBAL CSS (MENU NORMAL + DASHBOARD RAPI)
+# 2. GLOBAL CSS
 # =========================================================
 st.markdown("""
 <style>
@@ -42,7 +42,7 @@ html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
 }
 label, div[data-testid="stWidgetLabel"] p { color: #0f172a !important; font-weight: 700 !important; }
 
-/* MENU BIASA (TIDAK STICKY BIAR AMAN DI HP) */
+/* MENU */
 iframe[title="streamlit_option_menu.option_menu"] { width: 100%; background: transparent; }
 
 /* JARAK KONTEN */
@@ -240,6 +240,10 @@ elif selected == "Cek Status":
                     raw_data = sheet.get_all_values()
                     if len(raw_data) > 1:
                         df = pd.DataFrame(raw_data[1:], columns=raw_data[0])
+                        # Filter baris kosong
+                        if 'Waktu Lapor' in df.columns:
+                             df = df[df['Waktu Lapor'].astype(str).str.strip() != ""]
+                        
                         hasil = df[df['NPM'] == npm_input]
                         
                         if not hasil.empty:
@@ -256,7 +260,7 @@ elif selected == "Cek Status":
                 except Exception as e: st.error(f"Gagal mengambil data: {e}")
 
 # =========================================================
-# 8. HALAMAN: DASHBOARD
+# 8. HALAMAN: DASHBOARD (PRIVAT + FILTER KOSONG)
 # =========================================================
 elif selected == "Dashboard":
     st.markdown("<h2 style='text-align:center;'>📊 Dashboard Analisis</h2>", unsafe_allow_html=True)
@@ -268,6 +272,8 @@ elif selected == "Dashboard":
             if len(raw_data) > 1:
                 # 2. BERSIHKAN DATA (HAPUS BARIS KOSONG)
                 df = pd.DataFrame(raw_data[1:], columns=raw_data[0])
+                
+                # JURUS PEMBERSIH: Hanya ambil baris yang 'Waktu Lapor' nya TIDAK KOSONG
                 if 'Waktu Lapor' in df.columns:
                     df = df[df['Waktu Lapor'].astype(str).str.strip() != ""]
                 
@@ -375,7 +381,7 @@ elif selected == "Sadas Bot":
     st.markdown("</div>", unsafe_allow_html=True)
 
 # =========================================================
-# 10. HALAMAN: ADMIN (DENGAN FITUR UPDATE STATUS)
+# 10. HALAMAN: ADMIN (PINTAR: SKIP BARIS KOSONG)
 # =========================================================
 elif selected == "Admin":
     st.markdown("<h2 style='text-align:center;'>🔐 Admin Area</h2>", unsafe_allow_html=True)
@@ -401,50 +407,70 @@ elif selected == "Admin":
         
         if sheet:
             try:
-                # 1. AMBIL DATA RAW (UNTUK EDIT)
+                # 1. AMBIL DATA RAW
                 raw_data = sheet.get_all_values()
                 
                 if len(raw_data) > 1:
-                    # --- FITUR 1: DATA TABEL LENGKAP ---
+                    # --- FITUR 1: DATA TABEL LENGKAP (BERSIH DARI BARIS KOSONG) ---
                     st.subheader("📋 Database Lengkap")
                     df = pd.DataFrame(raw_data[1:], columns=raw_data[0])
-                    st.dataframe(df, use_container_width=True)
+                    
+                    # FILTER TAMPILAN: Hapus baris yang kosong Waktu Lapor-nya
+                    if 'Waktu Lapor' in df.columns:
+                        df_display = df[df['Waktu Lapor'].astype(str).str.strip() != ""]
+                        st.dataframe(df_display, use_container_width=True)
                     
                     st.write("---")
                     
-                    # --- FITUR 2: UPDATE STATUS ---
+                    # --- FITUR 2: UPDATE STATUS (PINTAR) ---
                     st.subheader("⚙️ Update Status Laporan")
                     
-                    # Buat Pilihan Dropdown: "Baris | Nama - Masalah"
-                    # Kita mulai dari index 2 (karena baris 1 header, baris 2 adalah data pertama di sheet row 2)
+                    # LOGIKA DROPDOWN PINTAR:
+                    # Kita loop data asli, TAPI kita skip yang kosong.
+                    # Kita tetap simpan NOMOR BARIS ASLI (index i) biar update-nya gak salah alamat.
                     pilihan_laporan = []
+                    
+                    # Mulai dari index 2 (karena di Sheet: Baris 1 Header, Baris 2 Data Pertama)
                     for i, row in enumerate(raw_data[1:], start=2):
-                        # Format: "Row 2 | Nama - Masalah"
-                        label = f"{i} | {row[1]} - {row[4]} ({row[5][:20]}...)" 
+                        # Cek apakah kolom pertama (Waktu) ada isinya?
+                        # Kalau kosong atau cuma spasi, SKIP.
+                        if not row[0].strip():
+                            continue
+                            
+                        # Ambil data secukupnya buat label dropdown
+                        # Pastikan list row cukup panjang biar gak error index
+                        nama_pelapor = row[1] if len(row) > 1 else "Tanpa Nama"
+                        kategori_lapor = row[4] if len(row) > 4 else "-"
+                        isi_keluhan = row[5][:20] if len(row) > 5 else "-"
+                        
+                        # Format Label: "Baris 2 | Nama - Masalah"
+                        label = f"{i} | {nama_pelapor} - {kategori_lapor} ({isi_keluhan}...)" 
                         pilihan_laporan.append(label)
                     
-                    col_edit1, col_edit2 = st.columns([3, 1])
-                    with col_edit1:
-                        laporan_terpilih = st.selectbox("Pilih Laporan yang mau diproses:", pilihan_laporan)
-                    
-                    with col_edit2:
-                        status_baru = st.selectbox("Ubah Status Jadi:", ["Pending", "Sedang Diproses", "Selesai"])
-                    
-                    if st.button("💾 Simpan Perubahan Status"):
-                        if laporan_terpilih:
-                            # Ambil nomor baris dari string "2 | Nama..."
-                            nomor_baris = int(laporan_terpilih.split(" | ")[0])
-                            
-                            with st.spinner("Mengupdate Database..."):
-                                # Kolom Status ada di urutan ke-7 (Kolom G)
-                                # [Waktu, Nama, NPM, Jurusan, Kategori, Keluhan, STATUS, Link]
-                                try:
-                                    sheet.update_cell(nomor_baris, 7, status_baru)
-                                    st.success(f"✅ Sukses! Laporan baris {nomor_baris} berubah jadi '{status_baru}'")
-                                    time.sleep(1)
-                                    st.rerun() # Refresh halaman biar tabel update
-                                except Exception as e:
-                                    st.error(f"Gagal update: {e}")
+                    if pilihan_laporan:
+                        col_edit1, col_edit2 = st.columns([3, 1])
+                        with col_edit1:
+                            laporan_terpilih = st.selectbox("Pilih Laporan:", pilihan_laporan)
+                        
+                        with col_edit2:
+                            status_baru = st.selectbox("Ubah Jadi:", ["Pending", "Sedang Diproses", "Selesai"])
+                        
+                        if st.button("💾 Simpan Status"):
+                            if laporan_terpilih:
+                                # Ambil nomor baris dari string "2 | Nama..."
+                                nomor_baris = int(laporan_terpilih.split(" | ")[0])
+                                
+                                with st.spinner("Mengupdate Database..."):
+                                    # Kolom Status ada di urutan ke-7 (Kolom G)
+                                    try:
+                                        sheet.update_cell(nomor_baris, 7, status_baru)
+                                        st.success(f"✅ Berhasil! Baris {nomor_baris} jadi '{status_baru}'")
+                                        time.sleep(1)
+                                        st.rerun() 
+                                    except Exception as e:
+                                        st.error(f"Gagal update: {e}")
+                    else:
+                        st.info("Tidak ada laporan yang valid untuk diedit.")
                 else:
                     st.info("Belum ada data laporan masuk.")
             except Exception as e:
