@@ -42,20 +42,11 @@ html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
 }
 label, div[data-testid="stWidgetLabel"] p { color: #0f172a !important; font-weight: 700 !important; }
 
-/* --- MENU TIDAK STICKY (SOLUSI ANTI KEPOTONG) --- */
-iframe[title="streamlit_option_menu.option_menu"] {
-    /* Kita hapus position: fixed biar dia ngalir normal kayak elemen biasa */
-    width: 100%; 
-    background: transparent;
-}
+/* MENU BIASA (TIDAK STICKY BIAR AMAN DI HP) */
+iframe[title="streamlit_option_menu.option_menu"] { width: 100%; background: transparent; }
 
-/* JARAK KONTEN (NORMAL) */
-/* Karena menu gak nempel, jarak atas gak perlu jauh-jauh */
-.block-container { 
-    padding-top: 2rem !important; 
-    padding-bottom: 5rem !important; 
-    max-width: 1200px; 
-}
+/* JARAK KONTEN */
+.block-container { padding-top: 2rem !important; padding-bottom: 5rem !important; max-width: 1200px; }
 
 /* HEADER */
 .header-container { display: flex; flex-direction: row; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 30px; width: 100%; }
@@ -265,7 +256,7 @@ elif selected == "Cek Status":
                 except Exception as e: st.error(f"Gagal mengambil data: {e}")
 
 # =========================================================
-# 8. HALAMAN: DASHBOARD (SUPER PRIVASI & BERSIH)
+# 8. HALAMAN: DASHBOARD
 # =========================================================
 elif selected == "Dashboard":
     st.markdown("<h2 style='text-align:center;'>📊 Dashboard Analisis</h2>", unsafe_allow_html=True)
@@ -277,12 +268,10 @@ elif selected == "Dashboard":
             if len(raw_data) > 1:
                 # 2. BERSIHKAN DATA (HAPUS BARIS KOSONG)
                 df = pd.DataFrame(raw_data[1:], columns=raw_data[0])
-                
-                # JURUS PEMBERSIH: Hanya ambil baris yang 'Waktu Lapor' nya TIDAK KOSONG
                 if 'Waktu Lapor' in df.columns:
                     df = df[df['Waktu Lapor'].astype(str).str.strip() != ""]
                 
-                # --- BAGIAN 1: VISUALISASI (DI ATAS) ---
+                # --- VISUALISASI ---
                 col1, col2, col3 = st.columns(3)
                 with col1: st.markdown(f"""<div class="glass-card"><div class="metric-value">{len(df)}</div><div class="metric-label">Total</div></div>""", unsafe_allow_html=True)
                 with col2: st.markdown(f"""<div class="glass-card"><div class="metric-value" style="color:#d97706;">{len(df[df['Status'] == 'Pending'])}</div><div class="metric-label">Menunggu</div></div>""", unsafe_allow_html=True)
@@ -304,15 +293,11 @@ elif selected == "Dashboard":
 
                 st.write("---")
                 
-                # --- BAGIAN 2: TABEL DATA (SUPER PRIVASI) ---
+                # --- TABEL PRIVASI ---
                 st.write("### 📝 Riwayat Laporan (Publik)")
-                
-                # FILTER KOLOM RAHASIA (Nama, NPM, Bukti, Detail Keluhan, dll dibuang)
-                # Sesuaikan nama kolom ini dengan header di Google Sheet kamu
                 kolom_rahasia = ['Nama Mahasiswa', 'NPM', 'Jurusan', 'Detail Keluhan', 'Bukti', 'Link Bukti', 'Foto']
                 kolom_tampil = [col for col in df.columns if col not in kolom_rahasia]
                 
-                # Tampilkan tabel yang sudah disensor
                 if not df.empty:
                     st.dataframe(df[kolom_tampil], use_container_width=True, hide_index=True)
                 else:
@@ -390,7 +375,7 @@ elif selected == "Sadas Bot":
     st.markdown("</div>", unsafe_allow_html=True)
 
 # =========================================================
-# 10. HALAMAN: ADMIN
+# 10. HALAMAN: ADMIN (DENGAN FITUR UPDATE STATUS)
 # =========================================================
 elif selected == "Admin":
     st.markdown("<h2 style='text-align:center;'>🔐 Admin Area</h2>", unsafe_allow_html=True)
@@ -407,16 +392,60 @@ elif selected == "Admin":
                 else: st.error("Password Salah")
         st.markdown("</div>", unsafe_allow_html=True)
     else:
-        if st.button("Logout"):
+        # TOMBOL LOGOUT
+        if st.button("Logout", key="logout_btn"):
             st.session_state['is_logged_in'] = False
             st.rerun()
+            
+        st.write("---")
+        
         if sheet:
             try:
-                data = sheet.get_all_records()
-                df = pd.DataFrame(data)
-                # Di Admin kita tampilkan SEMUA data (termasuk Nama & NPM)
-                if not df.empty and 'Waktu Lapor' in df.columns:
-                     df = df[df['Waktu Lapor'].astype(str).str.strip() != ""]
-                     df.reset_index(drop=True, inplace=True)
-                st.dataframe(df, use_container_width=True)
-            except: st.error("Data kosong")
+                # 1. AMBIL DATA RAW (UNTUK EDIT)
+                raw_data = sheet.get_all_values()
+                
+                if len(raw_data) > 1:
+                    # --- FITUR 1: DATA TABEL LENGKAP ---
+                    st.subheader("📋 Database Lengkap")
+                    df = pd.DataFrame(raw_data[1:], columns=raw_data[0])
+                    st.dataframe(df, use_container_width=True)
+                    
+                    st.write("---")
+                    
+                    # --- FITUR 2: UPDATE STATUS ---
+                    st.subheader("⚙️ Update Status Laporan")
+                    
+                    # Buat Pilihan Dropdown: "Baris | Nama - Masalah"
+                    # Kita mulai dari index 2 (karena baris 1 header, baris 2 adalah data pertama di sheet row 2)
+                    pilihan_laporan = []
+                    for i, row in enumerate(raw_data[1:], start=2):
+                        # Format: "Row 2 | Nama - Masalah"
+                        label = f"{i} | {row[1]} - {row[4]} ({row[5][:20]}...)" 
+                        pilihan_laporan.append(label)
+                    
+                    col_edit1, col_edit2 = st.columns([3, 1])
+                    with col_edit1:
+                        laporan_terpilih = st.selectbox("Pilih Laporan yang mau diproses:", pilihan_laporan)
+                    
+                    with col_edit2:
+                        status_baru = st.selectbox("Ubah Status Jadi:", ["Pending", "Sedang Diproses", "Selesai"])
+                    
+                    if st.button("💾 Simpan Perubahan Status"):
+                        if laporan_terpilih:
+                            # Ambil nomor baris dari string "2 | Nama..."
+                            nomor_baris = int(laporan_terpilih.split(" | ")[0])
+                            
+                            with st.spinner("Mengupdate Database..."):
+                                # Kolom Status ada di urutan ke-7 (Kolom G)
+                                # [Waktu, Nama, NPM, Jurusan, Kategori, Keluhan, STATUS, Link]
+                                try:
+                                    sheet.update_cell(nomor_baris, 7, status_baru)
+                                    st.success(f"✅ Sukses! Laporan baris {nomor_baris} berubah jadi '{status_baru}'")
+                                    time.sleep(1)
+                                    st.rerun() # Refresh halaman biar tabel update
+                                except Exception as e:
+                                    st.error(f"Gagal update: {e}")
+                else:
+                    st.info("Belum ada data laporan masuk.")
+            except Exception as e:
+                st.error(f"Error Database: {str(e)}")
