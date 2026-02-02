@@ -9,6 +9,7 @@ import os
 import requests
 import datetime
 import time
+import base64
 import google.generativeai as genai 
 
 # =========================================================
@@ -22,7 +23,7 @@ st.set_page_config(
 )
 
 # =========================================================
-# 2. GLOBAL CSS (TAMPILAN RAPI & BERSIH) 
+# 2. GLOBAL CSS
 # =========================================================
 st.markdown("""
 <style>
@@ -84,7 +85,6 @@ ID_SPREADSHEET = "1crJl0DsswyMGmq0ej_niIMfhSLdUIUx8u42HEu-sc3g"
 API_KEY_IMGBB  = "827ccb0eea8a706c4c34a16891f84e7b" 
 scopes = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
 
-# KITA HAPUS @st.cache_resource BIAR DIA SELALU KONEK FRESH
 def get_spreadsheet():
     try:
         if "google_credentials" in st.secrets:
@@ -100,20 +100,16 @@ def get_spreadsheet():
 
 sh = get_spreadsheet()
 
-# AMBIL TAB LAPORAN & PENGUMUMAN
 sheet = None
 sheet_pengumuman = None
 
 if sh:
-    try:
-        sheet = sh.worksheet("Laporan")
+    try: sheet = sh.worksheet("Laporan")
     except: 
-        # Fallback kalau nama tab salah, ambil index 0
         try: sheet = sh.get_worksheet(0)
         except: pass
 
-    try:
-        sheet_pengumuman = sh.worksheet("Pengumuman")
+    try: sheet_pengumuman = sh.worksheet("Pengumuman")
     except: pass
 
 # --- KONFIGURASI AI ---
@@ -225,7 +221,7 @@ elif selected == "Lapor Masalah":
                         
                         try:
                             if sheet is None:
-                                st.error("❌ Database belum konek. Refresh halaman.")
+                                st.error("❌ Gagal Konek Database. Pastikan 'credentials.json' benar dan Email Robot sudah diinvite ke Sheet.")
                             else:
                                 sheet.append_row([waktu, nama, npm, jurusan, kategori, keluhan, "Pending", link_bukti])
                                 st.success("✅ Terkirim! Laporanmu berhasil disimpan.")
@@ -247,13 +243,9 @@ elif selected == "Cek Status":
         if cek_btn and npm_input:
             if sheet:
                 try:
-                    # AMBIL SEMUA DATA (LEBIH AMAN PAKE GET_ALL_VALUES)
                     raw_data = sheet.get_all_values()
                     if len(raw_data) > 1:
-                        # Baris 1 adalah Header
                         df = pd.DataFrame(raw_data[1:], columns=raw_data[0])
-                        
-                        # Filter NPM
                         hasil = df[df['NPM'] == npm_input]
                         
                         if not hasil.empty:
@@ -270,29 +262,24 @@ elif selected == "Cek Status":
                 except Exception as e: st.error(f"Gagal mengambil data: {e}")
 
 # =========================================================
-# 8. HALAMAN: DASHBOARD (SUDAH DIPERBAIKI BIAR MUNCUL)
+# 8. HALAMAN: DASHBOARD (REVISI: VISUALISASI DULU, BARU TABEL BERSIH)
 # =========================================================
 elif selected == "Dashboard":
     st.markdown("<h2 style='text-align:center;'>📊 Dashboard Analisis</h2>", unsafe_allow_html=True)
     if sheet:
         try:
-            # PAKE METODE KUAT: GET ALL VALUES (RAW)
+            # 1. AMBIL SEMUA DATA
             raw_data = sheet.get_all_values()
             
             if len(raw_data) > 1:
-                # Konversi ke DataFrame
+                # 2. BERSIHKAN DATA (HAPUS BARIS KOSONG)
                 df = pd.DataFrame(raw_data[1:], columns=raw_data[0])
                 
-                # Bersihkan spasi di nama kolom (Jaga-jaga kalo ada spasi aneh)
-                df.columns = df.columns.str.strip()
+                # JURUS PEMBERSIH: Hanya ambil baris yang 'Waktu Lapor' nya TIDAK KOSONG
+                if 'Waktu Lapor' in df.columns:
+                    df = df[df['Waktu Lapor'].astype(str).str.strip() != ""]
                 
-                # TAMPILKAN TABEL DATA
-                st.write("### Data Laporan Masuk")
-                st.dataframe(df, use_container_width=True)
-                
-                st.write("---")
-                
-                # VISUALISASI
+                # --- BAGIAN 1: VISUALISASI (DI ATAS) ---
                 col1, col2, col3 = st.columns(3)
                 with col1: st.markdown(f"""<div class="glass-card"><div class="metric-value">{len(df)}</div><div class="metric-label">Total</div></div>""", unsafe_allow_html=True)
                 with col2: st.markdown(f"""<div class="glass-card"><div class="metric-value" style="color:#d97706;">{len(df[df['Status'] == 'Pending'])}</div><div class="metric-label">Menunggu</div></div>""", unsafe_allow_html=True)
@@ -303,20 +290,31 @@ elif selected == "Dashboard":
                     if 'Kategori Masalah' in df.columns:
                         pie = df['Kategori Masalah'].value_counts()
                         fig = go.Figure(data=[go.Pie(labels=pie.index, values=pie.values, hole=.5)])
-                        fig.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)", font_color="#1e293b", title="Kategori Laporan")
+                        fig.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)", font_color="#1e293b", title="Kategori")
                         st.plotly_chart(fig, use_container_width=True)
                 with c_b: 
-                    # Grafik Batang Status
                     if 'Status' in df.columns:
                         bar = df['Status'].value_counts()
                         fig2 = go.Figure([go.Bar(x=bar.index, y=bar.values, marker_color=['#d97706', '#059669'])])
-                        fig2.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)", font_color="#1e293b", title="Status Penyelesaian")
+                        fig2.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)", font_color="#1e293b", title="Status")
                         st.plotly_chart(fig2, use_container_width=True)
+
+                st.write("---")
+                
+                # --- BAGIAN 2: TABEL DATA (DI BAWAH & SENSOR PRIVASI) ---
+                st.write("### 📝 Riwayat Laporan (Publik)")
+                
+                # Pilih kolom yang AMAN saja untuk ditampilkan
+                # Kita buang 'Nama Mahasiswa' dan 'NPM'
+                kolom_aman = [col for col in df.columns if col not in ['Nama Mahasiswa', 'NPM', 'Bukti', 'Jurusan']]
+                
+                # Tampilkan tabel yang sudah disensor
+                st.dataframe(df[kolom_aman], use_container_width=True, hide_index=True)
+                
             else: 
-                st.info("⚠️ Data di Google Sheet masih kosong (selain Header).")
+                st.info("⚠️ Data masih kosong.")
         except Exception as e: 
             st.error(f"Error memuat dashboard: {str(e)}")
-            st.write("Cek apakah nama kolom di Google Sheet sudah sesuai: Waktu Lapor, Kategori Masalah, Status.")
 
 # =========================================================
 # 9. HALAMAN: SADAS BOT
@@ -409,6 +407,7 @@ elif selected == "Admin":
             try:
                 data = sheet.get_all_records()
                 df = pd.DataFrame(data)
+                # Di Admin kita tampilkan SEMUA data (termasuk Nama & NPM)
                 if not df.empty and 'Waktu Lapor' in df.columns:
                      df = df[df['Waktu Lapor'].astype(str).str.strip() != ""]
                      df.reset_index(drop=True, inplace=True)
