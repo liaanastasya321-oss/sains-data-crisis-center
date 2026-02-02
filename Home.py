@@ -23,7 +23,7 @@ st.set_page_config(
 )
 
 # =========================================================
-# 2. GLOBAL CSS
+# 2. GLOBAL CSS (MENU NORMAL + DASHBOARD RAPI)
 # =========================================================
 st.markdown("""
 <style>
@@ -42,16 +42,19 @@ html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
 }
 label, div[data-testid="stWidgetLabel"] p { color: #0f172a !important; font-weight: 700 !important; }
 
-/* MENU STICKY */
+/* --- MENU TIDAK STICKY (SOLUSI ANTI KEPOTONG) --- */
 iframe[title="streamlit_option_menu.option_menu"] {
-    position: fixed; top: 0; left: 0; right: 0; z-index: 999999;
-    width: 100%; background: #f8fafc; padding: 5px 0; box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    /* Kita hapus position: fixed biar dia ngalir normal kayak elemen biasa */
+    width: 100%; 
+    background: transparent;
 }
 
-/* JARAK KONTEN (Responsive) */
-.block-container { padding-top: 100px !important; padding-bottom: 50px !important; margin-top: 0 !important; max-width: 1200px; }
-@media (max-width: 600px) {
-    .block-container { padding-top: 180px !important; padding-left: 1rem !important; padding-right: 1rem !important; }
+/* JARAK KONTEN (NORMAL) */
+/* Karena menu gak nempel, jarak atas gak perlu jauh-jauh */
+.block-container { 
+    padding-top: 2rem !important; 
+    padding-bottom: 5rem !important; 
+    max-width: 1200px; 
 }
 
 /* HEADER */
@@ -262,7 +265,7 @@ elif selected == "Cek Status":
                 except Exception as e: st.error(f"Gagal mengambil data: {e}")
 
 # =========================================================
-# 8. HALAMAN: DASHBOARD (REVISI: VISUALISASI DULU, BARU TABEL BERSIH)
+# 8. HALAMAN: DASHBOARD (SUPER PRIVASI & BERSIH)
 # =========================================================
 elif selected == "Dashboard":
     st.markdown("<h2 style='text-align:center;'>📊 Dashboard Analisis</h2>", unsafe_allow_html=True)
@@ -301,15 +304,19 @@ elif selected == "Dashboard":
 
                 st.write("---")
                 
-                # --- BAGIAN 2: TABEL DATA (DI BAWAH & SENSOR PRIVASI) ---
+                # --- BAGIAN 2: TABEL DATA (SUPER PRIVASI) ---
                 st.write("### 📝 Riwayat Laporan (Publik)")
                 
-                # Pilih kolom yang AMAN saja untuk ditampilkan
-                # Kita buang 'Nama Mahasiswa' dan 'NPM'
-                kolom_aman = [col for col in df.columns if col not in ['Nama Mahasiswa', 'NPM', 'Bukti', 'Jurusan']]
+                # FILTER KOLOM RAHASIA (Nama, NPM, Bukti, Detail Keluhan, dll dibuang)
+                # Sesuaikan nama kolom ini dengan header di Google Sheet kamu
+                kolom_rahasia = ['Nama Mahasiswa', 'NPM', 'Jurusan', 'Detail Keluhan', 'Bukti', 'Link Bukti', 'Foto']
+                kolom_tampil = [col for col in df.columns if col not in kolom_rahasia]
                 
                 # Tampilkan tabel yang sudah disensor
-                st.dataframe(df[kolom_aman], use_container_width=True, hide_index=True)
+                if not df.empty:
+                    st.dataframe(df[kolom_tampil], use_container_width=True, hide_index=True)
+                else:
+                    st.info("Belum ada data.")
                 
             else: 
                 st.info("⚠️ Data masih kosong.")
