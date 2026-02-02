@@ -9,7 +9,6 @@ import os
 import requests
 import datetime
 import time
-import base64
 import google.generativeai as genai 
 
 # =========================================================
@@ -23,7 +22,7 @@ st.set_page_config(
 )
 
 # =========================================================
-# 2. GLOBAL CSS
+# 2. GLOBAL CSS (TAMPILAN RAPI & BERSIH) 
 # =========================================================
 st.markdown("""
 <style>
@@ -79,13 +78,13 @@ div.stButton > button { background: linear-gradient(90deg, #2563eb, #1d4ed8); co
 """, unsafe_allow_html=True)
 
 # =========================================================
-# 3. KONEKSI GOOGLE SHEETS (MODE "JURUS BODO AMAT") 🛡️
+# 3. KONEKSI GOOGLE SHEETS
 # =========================================================
 ID_SPREADSHEET = "1crJl0DsswyMGmq0ej_niIMfhSLdUIUx8u42HEu-sc3g" 
 API_KEY_IMGBB  = "827ccb0eea8a706c4c34a16891f84e7b" 
 scopes = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
 
-@st.cache_resource
+# KITA HAPUS @st.cache_resource BIAR DIA SELALU KONEK FRESH
 def get_spreadsheet():
     try:
         if "google_credentials" in st.secrets:
@@ -101,27 +100,21 @@ def get_spreadsheet():
 
 sh = get_spreadsheet()
 
-# --- JURUS ANTI ERROR: AMBIL SHEET PERTAMA ---
+# AMBIL TAB LAPORAN & PENGUMUMAN
 sheet = None
 sheet_pengumuman = None
 
 if sh:
     try:
-        # Coba ambil tab "Laporan"
         sheet = sh.worksheet("Laporan")
-    except:
-        try:
-            # KALAU GAGAL, AMBIL TAB PERTAMA (INDEX 0)
-            sheet = sh.get_worksheet(0)
-        except: 
-            sheet = None
+    except: 
+        # Fallback kalau nama tab salah, ambil index 0
+        try: sheet = sh.get_worksheet(0)
+        except: pass
 
     try:
         sheet_pengumuman = sh.worksheet("Pengumuman")
-    except:
-        # Kalau gak nemu pengumuman, ambil sheet kedua (Index 1) kalau ada
-        try: sheet_pengumuman = sh.get_worksheet(1)
-        except: sheet_pengumuman = None
+    except: pass
 
 # --- KONFIGURASI AI ---
 if "GEMINI_API_KEY" in st.secrets:
@@ -214,10 +207,8 @@ elif selected == "Lapor Masalah":
             bukti_file = st.file_uploader("Upload Bukti (JPG/PNG)", type=["png", "jpg", "jpeg"])
             st.markdown("<br>", unsafe_allow_html=True)
             
-            # --- TOMBOL ---
             submitted = st.form_submit_button("🚀 Kirim Laporan")
             
-            # --- LOGIKA ---
             if submitted:
                 if not keluhan: st.warning("Mohon isi deskripsi laporan.")
                 else:
@@ -229,14 +220,12 @@ elif selected == "Lapor Masalah":
                                 files = {"image": bukti_file.getvalue()}
                                 params = {"key": API_KEY_IMGBB}
                                 res = requests.post("https://api.imgbb.com/1/upload", params=params, files=files)
-                                data_res = res.json()
-                                if data_res.get("success"): link_bukti = data_res["data"]["url"]
+                                if res.json().get("success"): link_bukti = res.json()["data"]["url"]
                             except: pass
                         
                         try:
-                            # CEK KONEKSI SHEET TERAKHIR KALI
                             if sheet is None:
-                                st.error("❌ Gagal Konek Database. Pastikan 'credentials.json' benar dan Email Robot sudah diinvite ke Sheet.")
+                                st.error("❌ Database belum konek. Refresh halaman.")
                             else:
                                 sheet.append_row([waktu, nama, npm, jurusan, kategori, keluhan, "Pending", link_bukti])
                                 st.success("✅ Terkirim! Laporanmu berhasil disimpan.")
@@ -258,31 +247,52 @@ elif selected == "Cek Status":
         if cek_btn and npm_input:
             if sheet:
                 try:
-                    data = sheet.get_all_records()
-                    df = pd.DataFrame(data)
-                    if 'Waktu Lapor' in df.columns: df = df[df['Waktu Lapor'].astype(str).str.strip() != ""]
-                    df['NPM'] = df['NPM'].astype(str)
-                    hasil = df[df['NPM'] == npm_input]
-                    if not hasil.empty:
-                        for idx, row in hasil.iterrows():
-                            status = row['Status']
-                            color = "#d97706" if status == "Pending" else ("#059669" if status == "Selesai" else "#2563eb")
-                            st.markdown(f"""<div class="glass-card" style="border-left:5px solid {color}; text-align:left;"><h4 style="margin:0;">{row['Kategori Masalah']}</h4><small style="color:#64748b;">{row['Waktu Lapor']}</small><p style="margin-top:10px;">"{row['Detail Keluhan']}"</p><div style="background:{color}22; color:{color}; padding: 5px 10px; border-radius:8px; display:inline-block; font-weight:bold; margin-top:5px;">{status}</div></div>""", unsafe_allow_html=True)
-                    else: st.warning("Belum ada laporan.")
-                except: st.error("Gagal mengambil data.")
+                    # AMBIL SEMUA DATA (LEBIH AMAN PAKE GET_ALL_VALUES)
+                    raw_data = sheet.get_all_values()
+                    if len(raw_data) > 1:
+                        # Baris 1 adalah Header
+                        df = pd.DataFrame(raw_data[1:], columns=raw_data[0])
+                        
+                        # Filter NPM
+                        hasil = df[df['NPM'] == npm_input]
+                        
+                        if not hasil.empty:
+                            for idx, row in hasil.iterrows():
+                                status = row['Status']
+                                color = "#d97706" if status == "Pending" else ("#059669" if status == "Selesai" else "#2563eb")
+                                st.markdown(f"""<div class="glass-card" style="border-left:5px solid {color}; text-align:left;">
+                                <h4 style="margin:0;">{row['Kategori Masalah']}</h4>
+                                <small style="color:#64748b;">{row['Waktu Lapor']}</small>
+                                <p style="margin-top:10px;">"{row['Detail Keluhan']}"</p>
+                                <div style="background:{color}22; color:{color}; padding: 5px 10px; border-radius:8px; display:inline-block; font-weight:bold; margin-top:5px;">{status}</div></div>""", unsafe_allow_html=True)
+                        else: st.warning("NPM tidak ditemukan.")
+                    else: st.info("Belum ada data di database.")
+                except Exception as e: st.error(f"Gagal mengambil data: {e}")
 
 # =========================================================
-# 8. HALAMAN: DASHBOARD
+# 8. HALAMAN: DASHBOARD (SUDAH DIPERBAIKI BIAR MUNCUL)
 # =========================================================
 elif selected == "Dashboard":
     st.markdown("<h2 style='text-align:center;'>📊 Dashboard Analisis</h2>", unsafe_allow_html=True)
     if sheet:
         try:
-            data = sheet.get_all_records()
-            df = pd.DataFrame(data)
-            if not df.empty and 'Waktu Lapor' in df.columns: df = df[df['Waktu Lapor'].astype(str).str.strip() != ""]
+            # PAKE METODE KUAT: GET ALL VALUES (RAW)
+            raw_data = sheet.get_all_values()
             
-            if not df.empty:
+            if len(raw_data) > 1:
+                # Konversi ke DataFrame
+                df = pd.DataFrame(raw_data[1:], columns=raw_data[0])
+                
+                # Bersihkan spasi di nama kolom (Jaga-jaga kalo ada spasi aneh)
+                df.columns = df.columns.str.strip()
+                
+                # TAMPILKAN TABEL DATA
+                st.write("### Data Laporan Masuk")
+                st.dataframe(df, use_container_width=True)
+                
+                st.write("---")
+                
+                # VISUALISASI
                 col1, col2, col3 = st.columns(3)
                 with col1: st.markdown(f"""<div class="glass-card"><div class="metric-value">{len(df)}</div><div class="metric-label">Total</div></div>""", unsafe_allow_html=True)
                 with col2: st.markdown(f"""<div class="glass-card"><div class="metric-value" style="color:#d97706;">{len(df[df['Status'] == 'Pending'])}</div><div class="metric-label">Menunggu</div></div>""", unsafe_allow_html=True)
@@ -293,14 +303,20 @@ elif selected == "Dashboard":
                     if 'Kategori Masalah' in df.columns:
                         pie = df['Kategori Masalah'].value_counts()
                         fig = go.Figure(data=[go.Pie(labels=pie.index, values=pie.values, hole=.5)])
-                        fig.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)", font_color="#1e293b")
+                        fig.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)", font_color="#1e293b", title="Kategori Laporan")
                         st.plotly_chart(fig, use_container_width=True)
                 with c_b: 
-                    fig2 = go.Figure(go.Scatter(x=["Senin","Selasa","Rabu"], y=[3,7,2], line=dict(color="#2563eb", width=4)))
-                    fig2.update_layout(paper_bgcolor="rgba(0,0,0,0)", font_color="#1e293b", height=300)
-                    st.plotly_chart(fig2, use_container_width=True)
-            else: st.info("Belum ada data.")
-        except: st.error("Error memuat dashboard.")
+                    # Grafik Batang Status
+                    if 'Status' in df.columns:
+                        bar = df['Status'].value_counts()
+                        fig2 = go.Figure([go.Bar(x=bar.index, y=bar.values, marker_color=['#d97706', '#059669'])])
+                        fig2.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)", font_color="#1e293b", title="Status Penyelesaian")
+                        st.plotly_chart(fig2, use_container_width=True)
+            else: 
+                st.info("⚠️ Data di Google Sheet masih kosong (selain Header).")
+        except Exception as e: 
+            st.error(f"Error memuat dashboard: {str(e)}")
+            st.write("Cek apakah nama kolom di Google Sheet sudah sesuai: Waktu Lapor, Kategori Masalah, Status.")
 
 # =========================================================
 # 9. HALAMAN: SADAS BOT
@@ -333,19 +349,16 @@ elif selected == "Sadas Bot":
         with st.chat_message("user"): st.markdown(prompt)
 
         response = ""
-        # --- LOGIKA BOT (ERROR HANDLING RAPI) ---
         if "GEMINI_API_KEY" in st.secrets:
             try:
                 available_models = []
                 for m in genai.list_models():
-                    if 'generateContent' in m.supported_generation_methods:
-                        available_models.append(m.name)
+                    if 'generateContent' in m.supported_generation_methods: available_models.append(m.name)
                 
                 target_model = 'gemini-1.5-flash' 
                 found_flash = False
                 for m in available_models:
                     if 'flash' in m: target_model = m; found_flash = True; break
-                
                 if not found_flash:
                     for m in available_models:
                         if 'pro' in m: target_model = m; break
@@ -361,7 +374,7 @@ elif selected == "Sadas Bot":
             except Exception as e:
                 err_msg = str(e)
                 if "403" in err_msg or "suspended" in err_msg:
-                    response = "⚠️ **API Key Bermasalah.** Tolong ganti API Key Gemini di pengaturan Secrets ya."
+                    response = "⚠️ **API Key Bermasalah.** Tolong ganti API Key Gemini di pengaturan Secrets."
                 else:
                     response = f"⚠️ Maaf ada error: {err_msg}"
         else:
@@ -401,36 +414,3 @@ elif selected == "Admin":
                      df.reset_index(drop=True, inplace=True)
                 st.dataframe(df, use_container_width=True)
             except: st.error("Data kosong")
-
-# =========================================================
-# 👇 TEMPEL INI DI PALING BAWAH FILE Home.py 👇
-# =========================================================
-st.divider()
-st.subheader("🕵️‍♂️ DETEKTIF DATABASE")
-
-try:
-    # 1. Cek Email Robotnya Siapa?
-    if "google_credentials" in st.secrets:
-        creds_dict = json.loads(st.secrets["google_credentials"])
-    else:
-        creds_dict = json.load(open("credentials.json"))
-    
-    email_robot = creds_dict['client_email']
-    st.info(f"📧 **Email Robot Aplikasi Ini:**\n\n`{email_robot}`")
-    st.warning("👉 **TUGAS KAMU:** Copy email di atas, Buka Google Sheet > Share > Paste Email itu > Jadikan Editor.")
-
-    # 2. Cek Isi Google Sheetnya Apa?
-    client = gspread.authorize(Credentials.from_service_account_info(creds_dict, scopes=scopes))
-    sh_cek = client.open_by_key(ID_SPREADSHEET)
-    
-    daftar_tab = [ws.title for ws in sh_cek.worksheets()]
-    st.success(f"✅ **Koneksi Berhasil!** Nama Tab yang ditemukan: {daftar_tab}")
-    
-    if "Laporan" not in daftar_tab:
-        st.error("❌ **MASALAH DITEMUKAN:** Tab 'Laporan' tidak ada! Ganti nama tab di Google Sheet kamu sesuai nama di atas.")
-    else:
-        st.balloons()
-        st.success("🎉 SEMUA AMAN! Harusnya fitur Lapor sudah bisa dipakai.")
-
-except Exception as e:
-    st.error(f"💀 **MATI TOTAL:** Kodingan gak bisa nyentuh Google Sheet sama sekali.\n\nPesan Error Asli: {str(e)}")
