@@ -401,3 +401,36 @@ elif selected == "Admin":
                      df.reset_index(drop=True, inplace=True)
                 st.dataframe(df, use_container_width=True)
             except: st.error("Data kosong")
+
+# =========================================================
+# 👇 TEMPEL INI DI PALING BAWAH FILE Home.py 👇
+# =========================================================
+st.divider()
+st.subheader("🕵️‍♂️ DETEKTIF DATABASE")
+
+try:
+    # 1. Cek Email Robotnya Siapa?
+    if "google_credentials" in st.secrets:
+        creds_dict = json.loads(st.secrets["google_credentials"])
+    else:
+        creds_dict = json.load(open("credentials.json"))
+    
+    email_robot = creds_dict['client_email']
+    st.info(f"📧 **Email Robot Aplikasi Ini:**\n\n`{email_robot}`")
+    st.warning("👉 **TUGAS KAMU:** Copy email di atas, Buka Google Sheet > Share > Paste Email itu > Jadikan Editor.")
+
+    # 2. Cek Isi Google Sheetnya Apa?
+    client = gspread.authorize(Credentials.from_service_account_info(creds_dict, scopes=scopes))
+    sh_cek = client.open_by_key(ID_SPREADSHEET)
+    
+    daftar_tab = [ws.title for ws in sh_cek.worksheets()]
+    st.success(f"✅ **Koneksi Berhasil!** Nama Tab yang ditemukan: {daftar_tab}")
+    
+    if "Laporan" not in daftar_tab:
+        st.error("❌ **MASALAH DITEMUKAN:** Tab 'Laporan' tidak ada! Ganti nama tab di Google Sheet kamu sesuai nama di atas.")
+    else:
+        st.balloons()
+        st.success("🎉 SEMUA AMAN! Harusnya fitur Lapor sudah bisa dipakai.")
+
+except Exception as e:
+    st.error(f"💀 **MATI TOTAL:** Kodingan gak bisa nyentuh Google Sheet sama sekali.\n\nPesan Error Asli: {str(e)}")
