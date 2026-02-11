@@ -333,6 +333,8 @@ selected = option_menu(
 # =========================================================
 # 5. HALAMAN: HOME
 # =========================================================
+# 5. HALAMAN: HOME
+# =========================================================
 if selected == "Home":
     img_him = get_img_as_base64("logo_him.png")
     st.markdown(f"""
@@ -340,8 +342,8 @@ if selected == "Home":
         <div class="hero-text">
             <h1 class="hero-title">SAINS DATA <br> CRISIS CENTER</h1>
             <p class="hero-subtitle">Pusat Layanan Aspirasi, Analisis Data, dan Respon Cepat Mahasiswa PIKM.</p>
-            <p style="color: #475569; font-size: 13px; font-style: italic; margin-top: 10px; border-top: 1px solid #e2e8f0; pt-2; display: inline-block;">
-                *Admin PIKM melayani pukul 07.00 - 14.00 WIB
+            <p style="color: #475569; font-size: 13px; font-weight: 600; margin-top: 5px;">
+                🕒 Pelayanan Admin PIKM: 07.00 - 14.00 WIB
             </p>
         </div>
         <img src="data:image/png;base64,{img_him}" class="hero-logo">
@@ -652,3 +654,4 @@ elif selected == "Admin":
                 else: st.info("Belum ada data laporan.")
             except Exception as e:
                 st.error(f"Error Database: {str(e)}")
+
