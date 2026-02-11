@@ -90,9 +90,12 @@ div.stButton > button {
 }
 .hapus-chat-btn button { background: #ef4444 !important; width: auto !important; padding: 5px 15px !important; font-size: 12px !important; }
 
-/* CSS CHAT BIAR RAPI KE BAWAH (VERTIKAL) */
+/* CHAT AREA - JAWABAN DARI ATAS KE BAWAH */
 .chat-container { display: flex; flex-direction: column; gap: 15px; margin-bottom: 20px; width: 100%; }
-.message-box { padding: 12px 18px; border-radius: 15px; max-width: 85%; font-size: 15px; line-height: 1.5; word-wrap: break-word; }
+.message-box { 
+    padding: 12px 18px; border-radius: 15px; max-width: 85%; 
+    font-size: 15px; line-height: 1.5; word-wrap: break-word;
+}
 .user-msg { align-self: flex-end; background-color: #2563eb; color: white; border-bottom-right-radius: 2px; }
 .bot-msg { align-self: flex-start; background-color: #ffffff; color: #334155; border: 1px solid #e2e8f0; border-bottom-left-radius: 2px; }
 
@@ -102,7 +105,7 @@ iframe[title="streamlit_option_menu.option_menu"] { width: 100%; background: tra
 """, unsafe_allow_html=True)
 
 # =========================================================
-# 3. KONEKSI & FUNGSI BANTUAN (ASLI DATA SET LIA)
+# 3. KONEKSI & FUNGSI BANTUAN
 # =========================================================
 ID_SPREADSHEET = "1crJl0DsswyMGmq0ej_niIMfhSLdUIUx8u42HEu-sc3g" 
 API_KEY_IMGBB  = "827ccb0eea8a706c4c34a16891f84e7b" 
@@ -143,7 +146,6 @@ def get_img_as_base64(file_path):
         return base64.b64encode(data).decode()
     except: return ""
 
-# --- FUNGSI AI PINTAR (BENERIN AI TANPA ERROR 404) ---
 def panggil_ai_mesin(prompt_system, user_input):
     if "GEMINI_API_KEY" not in st.secrets:
         return "⚠️ API Key belum dipasang di Secrets."
@@ -156,7 +158,6 @@ def panggil_ai_mesin(prompt_system, user_input):
     except Exception as e:
         return f"🙏 Maaf, server AI sedang sibuk. (Error: {str(e)})"
 
-# --- FUNGSI DRAFT SURAT ---
 def draft_surat_with_ai(kategori, keluhan, nama):
     sys_prompt = "Kamu Sekretaris Himpunan. Buatkan isi surat formal berdasarkan keluhan mahasiswa. Output WAJIB format: PERIHAL|||TUJUAN|||ISI_LENGKAP. Gunakan Assalamu'alaikum dan bahasa baku."
     user_p = f"Nama: {nama}, Kategori: {kategori}, Keluhan: {keluhan}"
@@ -167,7 +168,6 @@ def draft_surat_with_ai(kategori, keluhan, nama):
     else:
         return "Tindak Lanjut Laporan", "Ketua Program Studi", hasil
 
-# --- FUNGSI PDF ---
 def create_pdf(no_surat, lampiran, perihal, tujuan, isi_surat):
     pdf = FPDF()
     pdf.set_margins(30, 25, 25); pdf.set_auto_page_break(auto=True, margin=25); pdf.add_page()
@@ -277,7 +277,7 @@ elif selected == "Cek Status":
             except: st.error("Gagal ambil data.")
 
 # =========================================================
-# 8. HALAMAN: DASHBOARD (TAMPILAN AWAL LIA)
+# 8. HALAMAN: DASHBOARD (VISUALISASI & TRANSPARANSI)
 # =========================================================
 elif selected == "Dashboard":
     st.markdown("<h2 style='text-align:center;'>📊 Dashboard Analisis</h2>", unsafe_allow_html=True)
@@ -294,57 +294,55 @@ elif selected == "Dashboard":
                 with c2: st.markdown(f'<div class="glass-card"><div class="metric-value" style="color:#d97706;">{len(df[df["Status"] == "Pending"])}</div><div class="metric-label">Menunggu</div></div>', unsafe_allow_html=True)
                 with c3: st.markdown(f'<div class="glass-card"><div class="metric-value" style="color:#059669;">{len(df[df["Status"] == "Selesai"])}</div><div class="metric-label">Selesai</div></div>', unsafe_allow_html=True)
                 
-                # Visualisasi
                 va, vb = st.columns(2)
-                with va:
+                with va: 
                     fig_pie = go.Figure(data=[go.Pie(labels=df['Kategori Masalah'].value_counts().index, values=df['Kategori Masalah'].value_counts().values, hole=.5)])
                     fig_pie.update_layout(title="Berdasarkan Kategori", height=350)
                     st.plotly_chart(fig_pie, use_container_width=True)
-                with vb:
+                with vb: 
                     fig_bar = go.Figure(data=[go.Bar(x=df['Status'].value_counts().index, y=df['Status'].value_counts().values, marker_color=['#d97706','#059669'])])
                     fig_bar.update_layout(title="Berdasarkan Status", height=350)
                     st.plotly_chart(fig_bar, use_container_width=True)
                 
                 st.write("### 📢 Transparansi Laporan Publik")
+                # Kolom yang ditampilkan: Waktu Lapor, Prodi, Kategori Masalah, Status (Sesuai request tanpa identitas)
                 st.dataframe(df[['Waktu Lapor', 'Prodi', 'Kategori Masalah', 'Status']], use_container_width=True, hide_index=True)
             else: st.info("Data kosong.")
         except Exception as e: st.error(f"Error Dashboard: {e}")
 
 # =========================================================
-# 9. HALAMAN: SADAS BOT (FIX: JAWABAN VERTIKAL & MEMORY)
+# 9. HALAMAN: SADAS BOT (VERTIKAL & HISTORY)
 # =========================================================
 elif selected == "Sadas Bot":
     st.markdown("<h2 style='text-align:center;'>🤖 Sadas Bot</h2>", unsafe_allow_html=True)
+    if "chat_history" not in st.session_state: st.session_state.chat_history = []
+    if "display_history" not in st.session_state: st.session_state.display_history = []
     
-    if "chat_memori" not in st.session_state: st.session_state.chat_memori = []
-    if "chat_tampilan" not in st.session_state: st.session_state.chat_tampilan = []
-    
-    col_btn1, col_btn2 = st.columns([5, 1])
-    with col_btn2:
-        if st.button("🗑️ Reset"):
-            st.session_state.chat_memori = []; st.session_state.chat_tampilan = []; st.rerun()
+    if st.button("🗑️ Reset Chat"):
+        st.session_state.chat_history = []; st.session_state.display_history = []; st.rerun()
 
     st.markdown('<div class="chat-container">', unsafe_allow_html=True)
-    for msg in st.session_state.chat_tampilan:
+    for msg in st.session_state.display_history:
         cls = "user-msg" if msg["role"] == "user" else "bot-msg"
         st.markdown(f'<div class="message-box {cls}">{msg["content"]}</div>', unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
 
     if prompt := st.chat_input("Ketik pesanmu..."):
-        st.session_state.chat_tampilan.append({"role": "user", "content": prompt})
+        st.session_state.display_history.append({"role": "user", "content": prompt})
         try:
             model = genai.GenerativeModel('gemini-pro')
-            chat = model.start_chat(history=st.session_state.chat_memori)
+            chat = model.start_chat(history=st.session_state.chat_history)
             response = chat.send_message(prompt)
-            
-            st.session_state.chat_memori.append({"role": "user", "parts": [prompt]})
-            st.session_state.chat_memori.append({"role": "model", "parts": [response.text]})
-            st.session_state.chat_tampilan.append({"role": "bot", "content": response.text})
+            # Update History
+            st.session_state.chat_history.append({"role": "user", "parts": [prompt]})
+            st.session_state.chat_history.append({"role": "model", "parts": [response.text]})
+            # Update Tampilan
+            st.session_state.display_history.append({"role": "bot", "content": response.text})
             st.rerun()
-        except: st.error("Maaf, AI sedang sibuk.")
+        except: st.error("AI Error.")
 
 # =========================================================
-# 10. HALAMAN: ADMIN (Tersambung ke Data Lia)
+# 10. HALAMAN: ADMIN (DATA SET CONNECTED)
 # =========================================================
 elif selected == "Admin":
     st.markdown("<h2 style='text-align:center;'>🔐 Admin Area</h2>", unsafe_allow_html=True)
@@ -362,9 +360,7 @@ elif selected == "Admin":
                 raw_data = sheet.get_all_values()
                 if len(raw_data) > 1:
                     df = pd.DataFrame(raw_data[1:], columns=raw_data[0])
-                    if 'Waktu Lapor' in df.columns:
-                        df_display = df[df['Waktu Lapor'].astype(str).str.strip() != ""]
-                        st.dataframe(df_display, use_container_width=True)
+                    st.dataframe(df, use_container_width=True)
                     st.write("---")
                     pilihan_laporan = []
                     for i, row in enumerate(raw_data[1:], start=2):
