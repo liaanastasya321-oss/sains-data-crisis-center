@@ -24,7 +24,7 @@ st.set_page_config(
 )
 
 # =========================================================
-# 2. GLOBAL CSS (TAMPILAN RAPI)
+# 2. GLOBAL CSS
 # =========================================================
 st.markdown("""
 <style>
@@ -102,14 +102,15 @@ def get_img_as_base64(file_path):
         return base64.b64encode(data).decode()
     except: return ""
 
-# --- FUNGSI AI DRAFTER (CERDAS & SESUAI TEMPLATE) ---
+# --- FUNGSI AI DRAFTER (MODEL DIGANTI KE 'GEMINI-PRO' BIAR STABIL) ---
 def draft_surat_with_ai(kategori, keluhan, nama):
     if "GEMINI_API_KEY" not in st.secrets:
         return "ERROR: API Key Hilang", "ERROR", "Kunci 'GEMINI_API_KEY' belum dipasang di Secrets. Cek pengaturan."
     
     try:
-        model = genai.GenerativeModel('gemini-1.5-flash')
-        # Prompt disesuaikan dengan gaya bahasa template [cite: 36-39]
+        # KITA GANTI KE MODEL YANG LEBIH UMUM BIAR GAK 404
+        model = genai.GenerativeModel('gemini-pro')
+        
         prompt = f"""
         Bertindaklah sebagai Sekretaris Himpunan Mahasiswa Sains Data (PIKM).
         Tugasmu adalah membuat DRAFT SURAT FORMAL untuk menindaklanjuti keluhan mahasiswa ke pihak kampus/fakultas.
@@ -139,19 +140,17 @@ def draft_surat_with_ai(kategori, keluhan, nama):
             return "Tindak Lanjut Keluhan Mahasiswa", "Ketua Program Studi Sains Data", text
             
     except Exception as e:
-        return "Error Generate", "Admin", f"Gagal membuat draft otomatis. Error: {str(e)}"
+        return "Error Generate", "Admin", f"Gagal membuat draft otomatis. Pesan Error: {str(e)}"
 
-# --- FUNGSI PDF GENERATOR (LAYOUT SESUAI TEMPLATE) ---
+# --- FUNGSI PDF GENERATOR (TIMES NEW ROMAN) ---
 def create_pdf(no_surat, lampiran, perihal, tujuan, isi_surat):
     pdf = FPDF()
     pdf.add_page()
     
-    # 1. KOP SURAT [cite: 5-25]
-    # Sistem akan otomatis mencari 'kop_surat.png' di folder.
-    # Jika tidak ada, dia akan membuat kop manual sederhana pakai logo himpunan.
+    # 1. KOP SURAT
     if os.path.exists("kop_surat.png"):
         pdf.image("kop_surat.png", x=0, y=0, w=210) 
-        pdf.ln(40) # Geser kursor ke bawah kop
+        pdf.ln(40) 
     elif os.path.exists("logo_him.png"):
         pdf.image("logo_him.png", x=10, y=10, w=25)
         pdf.set_font("Times", 'B', 14)
@@ -163,14 +162,14 @@ def create_pdf(no_surat, lampiran, perihal, tujuan, isi_surat):
     else:
         pdf.ln(20)
 
-    # 2. HEADER SURAT [cite: 31-33]
-    pdf.set_font("Times", '', 12)
+    # 2. HEADER SURAT
+    pdf.set_font("Times", '', 12) 
     pdf.cell(25, 6, "Nomor", 0, 0); pdf.cell(5, 6, ":", 0, 0); pdf.cell(0, 6, no_surat, 0, 1)
     pdf.cell(25, 6, "Lampiran", 0, 0); pdf.cell(5, 6, ":", 0, 0); pdf.cell(0, 6, lampiran, 0, 1)
     pdf.cell(25, 6, "Perihal", 0, 0); pdf.cell(5, 6, ":", 0, 0); pdf.cell(0, 6, perihal, 0, 1)
     pdf.ln(5)
 
-    # 3. TUJUAN [cite: 34-35]
+    # 3. TUJUAN
     pdf.cell(0, 6, "Kepada Yth.", 0, 1)
     pdf.set_font("Times", 'B', 12)
     pdf.cell(0, 6, tujuan, 0, 1)
@@ -178,30 +177,29 @@ def create_pdf(no_surat, lampiran, perihal, tujuan, isi_surat):
     pdf.cell(0, 6, "di Tempat", 0, 1)
     pdf.ln(10)
 
-    # 4. ISI SURAT (Multi Cell agar paragraf rapi) [cite: 36-39]
+    # 4. ISI SURAT
     pdf.set_font("Times", '', 12)
     pdf.multi_cell(0, 6, isi_surat)
     pdf.ln(15)
 
-    # 5. TANDA TANGAN (Sesuai Alur: Ketua PIKM) [cite: 40-44]
-    # Tanggal Otomatis (Format Indonesia)
+    # 5. TANDA TANGAN
     now = datetime.datetime.now()
     bulan_indo = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"]
     tanggal_str = f"{now.day} {bulan_indo[now.month-1]} {now.year}"
 
-    # Posisi Tanda Tangan di Kanan
     pdf.set_x(110)
+    pdf.set_font("Times", '', 12)
     pdf.cell(0, 5, f"Bandar Lampung, {tanggal_str}", 0, 1, 'C')
     pdf.set_x(110)
     pdf.cell(0, 5, "Hormat Kami,", 0, 1, 'C')
     pdf.set_x(110)
     pdf.cell(0, 5, "Ketua Departemen PIKM", 0, 1, 'C')
     
-    pdf.ln(25) # Ruang Tanda Tangan
+    pdf.ln(25)
     
     pdf.set_x(110)
-    pdf.set_font("Times", 'BU', 12) # Bold + Underline
-    pdf.cell(0, 5, "LIA ANASTASYA", 0, 1, 'C') # Nama Kamu
+    pdf.set_font("Times", 'BU', 12)
+    pdf.cell(0, 5, "LIA ANASTASYA", 0, 1, 'C')
     pdf.set_x(110)
     pdf.set_font("Times", '', 12)
     pdf.cell(0, 5, "NPM. 247103001", 0, 1, 'C')
@@ -331,7 +329,6 @@ elif selected == "Cek Status":
                     raw_data = sheet.get_all_values()
                     if len(raw_data) > 1:
                         df = pd.DataFrame(raw_data[1:], columns=raw_data[0])
-                        # Filter baris kosong
                         if 'Waktu Lapor' in df.columns:
                              df = df[df['Waktu Lapor'].astype(str).str.strip() != ""]
                         
@@ -432,19 +429,8 @@ elif selected == "Sadas Bot":
         response = ""
         if "GEMINI_API_KEY" in st.secrets:
             try:
-                available_models = []
-                for m in genai.list_models():
-                    if 'generateContent' in m.supported_generation_methods: available_models.append(m.name)
-                
-                target_model = 'gemini-1.5-flash' 
-                found_flash = False
-                for m in available_models:
-                    if 'flash' in m: target_model = m; found_flash = True; break
-                if not found_flash:
-                    for m in available_models:
-                        if 'pro' in m: target_model = m; break
-                
-                model = genai.GenerativeModel(target_model)
+                # GANTI KE MODEL 'gemini-pro' AGAR LEBIH STABIL
+                model = genai.GenerativeModel('gemini-pro')
                 system_prompt = "Kamu adalah Sadas Bot, asisten virtual dari Sains Data UIN Raden Intan Lampung. Jawab sopan dan santai."
                 full_prompt = f"{system_prompt}\nUser: {prompt}"
                 
@@ -542,7 +528,9 @@ elif selected == "Admin":
                         # --- TAB 2: SMART SURAT (AI + EDIT MANUSIA) ---
                         with tab_surat:
                             st.write("#### 📝 Generator Surat Otomatis")
-                            st.info("Langkah 1: Klik tombol AI untuk bikin draft. \nLangkah 2: Edit teks di kotak bawah sesukamu. \nLangkah 3: Klik Cetak.")
+                            
+                            # MENAMPILKAN DATA YANG SEDANG DIPROSES AGAR JELAS
+                            st.info(f"**Sedang Memproses Laporan:** \nMahasiswa: {nama_mhs} | Keluhan: {kel_mhs[:50]}...")
                             
                             if 'draft_perihal' not in st.session_state: st.session_state.draft_perihal = ""
                             if 'draft_tujuan' not in st.session_state: st.session_state.draft_tujuan = ""
@@ -559,7 +547,6 @@ elif selected == "Admin":
                             st.write("---")
                             st.write("##### ✏️ Editor Surat (Silakan Edit Di Sini)")
                             
-                            # FORM EDITOR - NILAI DIAMBIL DARI SESSION STATE
                             col_s1, col_s2, col_s3 = st.columns([1, 1, 2])
                             with col_s1:
                                 no_surat = st.text_input("Nomor Surat", value="001/PIKM-HMSD/II/2026")
@@ -572,7 +559,6 @@ elif selected == "Admin":
                             isi_lengkap = st.text_area("Isi Surat Lengkap", value=st.session_state.draft_isi, height=300)
                             
                             if st.button("🖨️ 2. Cetak PDF Final"):
-                                # PDF DIBUAT DARI HASIL EDITAN TERAKHIR (REALTIME)
                                 pdf_bytes = create_pdf(no_surat, lampiran, perihal_surat, tujuan_surat, isi_lengkap)
                                 st.download_button(
                                     label="📥 Download Surat (PDF)",
