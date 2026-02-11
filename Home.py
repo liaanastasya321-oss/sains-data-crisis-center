@@ -102,14 +102,26 @@ def get_img_as_base64(file_path):
         return base64.b64encode(data).decode()
     except: return ""
 
-# --- FUNGSI AI DRAFTER (MODEL DIGANTI KE 'GEMINI-PRO' BIAR STABIL) ---
+# --- FUNGSI AI DRAFTER (AUTO-DETECT MODEL) ---
 def draft_surat_with_ai(kategori, keluhan, nama):
     if "GEMINI_API_KEY" not in st.secrets:
         return "ERROR: API Key Hilang", "ERROR", "Kunci 'GEMINI_API_KEY' belum dipasang di Secrets. Cek pengaturan."
     
     try:
-        # KITA GANTI KE MODEL YANG LEBIH UMUM BIAR GAK 404
-        model = genai.GenerativeModel('gemini-pro')
+        # --- LOGIKA PENCARI MODEL OTOMATIS ---
+        # Kita cari model yang tersedia, prioritas ke yang terbaru
+        target_model = 'gemini-1.5-flash' # Default
+        try:
+            available_models = [m.name for m in genai.list_models() if 'generateContent' in m.supported_generation_methods]
+            
+            # Cek satu-satu, kalau ada pakai itu
+            if 'models/gemini-1.5-flash' in available_models: target_model = 'gemini-1.5-flash'
+            elif 'models/gemini-1.5-pro' in available_models: target_model = 'gemini-1.5-pro'
+            elif 'models/gemini-pro' in available_models: target_model = 'gemini-pro'
+        except:
+            pass # Kalau gagal list, nekat pake default
+            
+        model = genai.GenerativeModel(target_model)
         
         prompt = f"""
         Bertindaklah sebagai Sekretaris Himpunan Mahasiswa Sains Data (PIKM).
@@ -142,23 +154,29 @@ def draft_surat_with_ai(kategori, keluhan, nama):
     except Exception as e:
         return "Error Generate", "Admin", f"Gagal membuat draft otomatis. Pesan Error: {str(e)}"
 
-# --- FUNGSI PDF GENERATOR (TIMES NEW ROMAN) ---
+# --- FUNGSI PDF GENERATOR (MARGIN 2.5 CM & TIMES NEW ROMAN) ---
 def create_pdf(no_surat, lampiran, perihal, tujuan, isi_surat):
     pdf = FPDF()
+    
+    # SETTING MARGIN 2.5 CM (25 mm)
+    pdf.set_margins(25, 25, 25) 
+    pdf.set_auto_page_break(auto=True, margin=25)
+    
     pdf.add_page()
     
     # 1. KOP SURAT
     if os.path.exists("kop_surat.png"):
+        # Image full width A4 (210mm), X dimulai dari 0 (abaikan margin kiri khusus gambar ini)
         pdf.image("kop_surat.png", x=0, y=0, w=210) 
-        pdf.ln(40) 
+        pdf.set_y(40) # Turunkan kursor melewati kop
     elif os.path.exists("logo_him.png"):
-        pdf.image("logo_him.png", x=10, y=10, w=25)
+        pdf.image("logo_him.png", x=25, y=25, w=25) # Logo ikut margin 25mm
         pdf.set_font("Times", 'B', 14)
         pdf.cell(0, 7, "HIMPUNAN MAHASISWA PROGRAM STUDI SAINS DATA", 0, 1, 'C')
         pdf.cell(0, 7, "FAKULTAS SAINS DAN TEKNOLOGI", 0, 1, 'C')
         pdf.cell(0, 7, "UIN RADEN INTAN LAMPUNG", 0, 1, 'C')
-        pdf.line(10, 35, 200, 35)
-        pdf.ln(15)
+        pdf.line(25, 52, 185, 52) 
+        pdf.ln(10)
     else:
         pdf.ln(20)
 
@@ -171,9 +189,9 @@ def create_pdf(no_surat, lampiran, perihal, tujuan, isi_surat):
 
     # 3. TUJUAN
     pdf.cell(0, 6, "Kepada Yth.", 0, 1)
-    pdf.set_font("Times", 'B', 12)
+    pdf.set_font("Times", 'B', 12) 
     pdf.cell(0, 6, tujuan, 0, 1)
-    pdf.set_font("Times", '', 12)
+    pdf.set_font("Times", '', 12) 
     pdf.cell(0, 6, "di Tempat", 0, 1)
     pdf.ln(10)
 
@@ -187,20 +205,23 @@ def create_pdf(no_surat, lampiran, perihal, tujuan, isi_surat):
     bulan_indo = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"]
     tanggal_str = f"{now.day} {bulan_indo[now.month-1]} {now.year}"
 
-    pdf.set_x(110)
-    pdf.set_font("Times", '', 12)
+    # Posisi TTD: Kertas 210mm - Margin Kanan 25mm = 185mm. 
+    # Mulai tulisan di X=120mm biar ada di kanan.
+    posisi_ttd = 120 
+    
+    pdf.set_x(posisi_ttd)
     pdf.cell(0, 5, f"Bandar Lampung, {tanggal_str}", 0, 1, 'C')
-    pdf.set_x(110)
+    pdf.set_x(posisi_ttd)
     pdf.cell(0, 5, "Hormat Kami,", 0, 1, 'C')
-    pdf.set_x(110)
+    pdf.set_x(posisi_ttd)
     pdf.cell(0, 5, "Ketua Departemen PIKM", 0, 1, 'C')
     
-    pdf.ln(25)
+    pdf.ln(25) 
     
-    pdf.set_x(110)
-    pdf.set_font("Times", 'BU', 12)
+    pdf.set_x(posisi_ttd)
+    pdf.set_font("Times", 'BU', 12) 
     pdf.cell(0, 5, "LIA ANASTASYA", 0, 1, 'C')
-    pdf.set_x(110)
+    pdf.set_x(posisi_ttd)
     pdf.set_font("Times", '', 12)
     pdf.cell(0, 5, "NPM. 247103001", 0, 1, 'C')
 
@@ -429,8 +450,8 @@ elif selected == "Sadas Bot":
         response = ""
         if "GEMINI_API_KEY" in st.secrets:
             try:
-                # GANTI KE MODEL 'gemini-pro' AGAR LEBIH STABIL
-                model = genai.GenerativeModel('gemini-pro')
+                # GANTI KE MODEL 'gemini-1.5-flash' YANG LEBIH BARU DAN STABIL
+                model = genai.GenerativeModel('gemini-1.5-flash')
                 system_prompt = "Kamu adalah Sadas Bot, asisten virtual dari Sains Data UIN Raden Intan Lampung. Jawab sopan dan santai."
                 full_prompt = f"{system_prompt}\nUser: {prompt}"
                 
