@@ -102,26 +102,14 @@ def get_img_as_base64(file_path):
         return base64.b64encode(data).decode()
     except: return ""
 
-# --- FUNGSI AI DRAFTER (AUTO-DETECT MODEL) ---
+# --- FUNGSI AI DRAFTER (PAKE GEMINI-PRO BIAR STABIL) ---
 def draft_surat_with_ai(kategori, keluhan, nama):
     if "GEMINI_API_KEY" not in st.secrets:
         return "ERROR: API Key Hilang", "ERROR", "Kunci 'GEMINI_API_KEY' belum dipasang di Secrets. Cek pengaturan."
     
     try:
-        # --- LOGIKA PENCARI MODEL OTOMATIS ---
-        # Kita cari model yang tersedia, prioritas ke yang terbaru
-        target_model = 'gemini-1.5-flash' # Default
-        try:
-            available_models = [m.name for m in genai.list_models() if 'generateContent' in m.supported_generation_methods]
-            
-            # Cek satu-satu, kalau ada pakai itu
-            if 'models/gemini-1.5-flash' in available_models: target_model = 'gemini-1.5-flash'
-            elif 'models/gemini-1.5-pro' in available_models: target_model = 'gemini-1.5-pro'
-            elif 'models/gemini-pro' in available_models: target_model = 'gemini-pro'
-        except:
-            pass # Kalau gagal list, nekat pake default
-            
-        model = genai.GenerativeModel(target_model)
+        # KITA PAKAI 'gemini-pro' SAJA, INI PALING UMUM & STABIL
+        model = genai.GenerativeModel('gemini-pro')
         
         prompt = f"""
         Bertindaklah sebagai Sekretaris Himpunan Mahasiswa Sains Data (PIKM).
@@ -166,11 +154,12 @@ def create_pdf(no_surat, lampiran, perihal, tujuan, isi_surat):
     
     # 1. KOP SURAT
     if os.path.exists("kop_surat.png"):
-        # Image full width A4 (210mm), X dimulai dari 0 (abaikan margin kiri khusus gambar ini)
+        # Gambar Full A4, X=0, Y=0 (Abaikan Margin khusus gambar ini)
         pdf.image("kop_surat.png", x=0, y=0, w=210) 
-        pdf.set_y(40) # Turunkan kursor melewati kop
+        # Geser kursor ke bawah gambar kop (sesuaikan tinggi kop aslimu)
+        pdf.set_y(45) 
     elif os.path.exists("logo_him.png"):
-        pdf.image("logo_him.png", x=25, y=25, w=25) # Logo ikut margin 25mm
+        pdf.image("logo_him.png", x=25, y=25, w=25) 
         pdf.set_font("Times", 'B', 14)
         pdf.cell(0, 7, "HIMPUNAN MAHASISWA PROGRAM STUDI SAINS DATA", 0, 1, 'C')
         pdf.cell(0, 7, "FAKULTAS SAINS DAN TEKNOLOGI", 0, 1, 'C')
@@ -450,8 +439,8 @@ elif selected == "Sadas Bot":
         response = ""
         if "GEMINI_API_KEY" in st.secrets:
             try:
-                # GANTI KE MODEL 'gemini-1.5-flash' YANG LEBIH BARU DAN STABIL
-                model = genai.GenerativeModel('gemini-1.5-flash')
+                # GANTI KE MODEL 'gemini-pro' AGAR LEBIH STABIL
+                model = genai.GenerativeModel('gemini-pro')
                 system_prompt = "Kamu adalah Sadas Bot, asisten virtual dari Sains Data UIN Raden Intan Lampung. Jawab sopan dan santai."
                 full_prompt = f"{system_prompt}\nUser: {prompt}"
                 
