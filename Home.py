@@ -28,31 +28,74 @@ st.set_page_config(
 # =========================================================
 st.markdown("""
 <style>
+/* SETUP DASAR */
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap');
-.stApp { background: #f8fafc; font-family: 'Plus Jakarta Sans', sans-serif; color: #1e293b; }
+
+.stApp { 
+    background: #f8fafc; 
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    color: #1e293b;
+}
+
 #MainMenu, footer, header, [data-testid="stSidebar"] { display: none !important; }
 .stApp > header { display: none !important; }
 
-.hero-container { display: flex; flex-direction: row; align-items: center; justify-content: space-between; padding: 2rem 1rem; background: linear-gradient(135deg, #eff6ff 0%, #ffffff 100%); border-radius: 24px; border: 1px solid #dbeafe; margin-bottom: 30px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); }
+/* HERO SECTION */
+.hero-container {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding: 2rem 1rem;
+    background: linear-gradient(135deg, #eff6ff 0%, #ffffff 100%);
+    border-radius: 24px;
+    border: 1px solid #dbeafe;
+    margin-bottom: 30px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
 .hero-text { flex: 1; padding-right: 20px; }
-.hero-title { font-size: 42px; font-weight: 800; margin: 0; line-height: 1.1; background: linear-gradient(90deg, #1e3a8a 0%, #3b82f6 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.hero-title {
+    font-size: 42px; font-weight: 800; margin: 0; line-height: 1.1;
+    background: linear-gradient(90deg, #1e3a8a 0%, #3b82f6 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
 .hero-subtitle { font-size: 16px; color: #64748b; margin-top: 10px; font-weight: 500; }
 .hero-logo { width: 140px; height: auto; filter: drop-shadow(0 10px 15px rgba(0, 0, 0, 0.1)); }
 
-@media (max-width: 768px) { .hero-container { flex-direction: column-reverse; text-align: center; padding: 1.5rem; } .hero-text { padding-right: 0; margin-top: 15px; } .hero-title { font-size: 28px; } .hero-logo { width: 100px; } }
+@media (max-width: 768px) {
+    .hero-container { flex-direction: column-reverse; text-align: center; padding: 1.5rem; }
+    .hero-text { padding-right: 0; margin-top: 15px; }
+    .hero-title { font-size: 28px; }
+    .hero-logo { width: 100px; }
+}
 
-.glass-card { background: #ffffff; border-radius: 16px; padding: 25px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); text-align: center; height: 100%; transition: all 0.3s ease; }
-.glass-card:hover { transform: translateY(-5px); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); border-color: #bfdbfe; }
+/* CARDS */
+.glass-card { 
+    background: #ffffff; border-radius: 16px; padding: 25px; 
+    border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); 
+    text-align: center; height: 100%; transition: all 0.3s ease;
+}
+.glass-card:hover { transform: translateY(-5px); border-color: #bfdbfe; }
 .metric-value { font-size: 36px; font-weight: 800; color: #0f172a; margin-bottom: 5px; }
-.metric-label { font-size: 14px; color: #64748b; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
+.metric-label { font-size: 14px; color: #64748b; font-weight: 600; text-transform: uppercase; }
 
-.stTextInput input, .stTextArea textarea, .stSelectbox div[data-baseweb="select"] { background-color: #ffffff !important; border: 1px solid #cbd5e1 !important; color: #1e293b !important; border-radius: 10px; padding: 10px; }
-div.stButton > button { background: linear-gradient(90deg, #2563eb, #1d4ed8); color: white; border: none; padding: 12px 24px; border-radius: 10px; font-weight: 700; width: 100%; transition: opacity 0.3s; }
+/* INPUT & BUTTONS */
+.stTextInput input, .stTextArea textarea, .stSelectbox div[data-baseweb="select"] {
+    background-color: #ffffff !important; border: 1px solid #94a3b8 !important; 
+    color: #1e293b !important; border-radius: 10px; padding: 10px;
+}
+div.stButton > button { 
+    background: linear-gradient(90deg, #2563eb, #1d4ed8); color: white; border: none; 
+    padding: 12px 24px; border-radius: 10px; font-weight: 700; width: 100%;
+}
 .hapus-chat-btn button { background: #ef4444 !important; width: auto !important; padding: 5px 15px !important; font-size: 12px !important; }
 
-/* CSS CHAT BIAR RAPI KE BAWAH */
+/* CHAT AREA - RAPI KE BAWAH */
 .chat-container { display: flex; flex-direction: column; gap: 15px; margin-bottom: 20px; width: 100%; }
-.message-box { padding: 12px 18px; border-radius: 15px; max-width: 85%; font-size: 15px; line-height: 1.5; word-wrap: break-word; }
+.message-box { 
+    padding: 12px 18px; border-radius: 15px; max-width: 85%; 
+    font-size: 15px; line-height: 1.5; word-wrap: break-word;
+}
 .user-msg { align-self: flex-end; background-color: #2563eb; color: white; border-bottom-right-radius: 2px; }
 .bot-msg { align-self: flex-start; background-color: #ffffff; color: #334155; border: 1px solid #e2e8f0; border-bottom-left-radius: 2px; }
 
@@ -103,11 +146,12 @@ def get_img_as_base64(file_path):
         return base64.b64encode(data).decode()
     except: return ""
 
-# --- FUNGSI AI PINTAR (MESIN UTAMA) ---
+# --- FUNGSI AI PINTAR (ANTI ERROR 404) ---
 def panggil_ai_mesin(prompt_system, user_input):
     if "GEMINI_API_KEY" not in st.secrets:
         return "⚠️ API Key belum dipasang di Secrets."
     try:
+        # OTOMATIS CARI MODEL AGAR GAK 404
         available = [m.name for m in genai.list_models() if 'generateContent' in m.supported_generation_methods]
         target = 'models/gemini-1.5-flash' if 'models/gemini-1.5-flash' in available else ('models/gemini-pro' if 'models/gemini-pro' in available else available[0])
         model = genai.GenerativeModel(target)
@@ -116,7 +160,7 @@ def panggil_ai_mesin(prompt_system, user_input):
     except Exception as e:
         return f"🙏 Maaf, server AI sedang sibuk. (Error: {str(e)})"
 
-# --- FUNGSI DRAFT SURAT (OTOMATIS AI ASLI) ---
+# --- FUNGSI DRAFT SURAT (OTOMATIS AI) ---
 def draft_surat_with_ai(kategori, keluhan, nama):
     sys_prompt = "Kamu Sekretaris Himpunan. Buatkan isi surat formal berdasarkan keluhan mahasiswa. Output WAJIB format: PERIHAL|||TUJUAN|||ISI_LENGKAP. Gunakan Assalamu'alaikum dan bahasa baku."
     user_p = f"Nama: {nama}, Kategori: {kategori}, Keluhan: {keluhan}"
@@ -162,7 +206,12 @@ selected = option_menu(
     icons=["house", "exclamation-triangle-fill", "search", "bar-chart-fill", "robot", "lock-fill"],
     default_index=0,
     orientation="horizontal",
-    key="nav_menu"
+    key="nav_menu",
+    styles={
+        "container": {"padding": "5px", "background-color": "#ffffff", "border-radius": "12px", "border": "1px solid #e2e8f0"},
+        "nav-link": {"font-size": "12px", "color": "#64748b", "margin": "0px", "padding": "5px"}, 
+        "nav-link-selected": {"background-color": "#2563eb", "color": "white"},
+    }
 )
 
 # =========================================================
@@ -194,7 +243,8 @@ elif selected == "Lapor Masalah":
     with st.container():
         st.markdown('<div class="glass-card">', unsafe_allow_html=True)
         with st.form("form_lapor_keren", clear_on_submit=True):
-            nama = st.text_input("Nama Lengkap"); col_a, col_b = st.columns(2)
+            nama = st.text_input("Nama Lengkap")
+            col_a, col_b = st.columns(2)
             with col_a: npm = st.text_input("NPM")
             with col_b: jurusan = st.selectbox("Prodi", ["Sains Data", "Biologi", "Fisika", "Matematika"])
             kategori = st.selectbox("Kategori Masalah", ["Fasilitas", "Akademik", "Keuangan", "Lainnya"])
@@ -251,38 +301,49 @@ elif selected == "Dashboard":
         except: st.error("Error Dashboard.")
 
 # =========================================================
-# 9. HALAMAN: SADAS BOT (FIX: MEMORY & VERTIKAL)
+# 9. HALAMAN: SADAS BOT (JAWABAN RAPI & MEMORI)
 # =========================================================
 elif selected == "Sadas Bot":
     st.markdown("<h2 style='text-align:center;'>🤖 Sadas Bot</h2>", unsafe_allow_html=True)
+    
+    # SETUP MEMORI (HISTORY)
     if "chat_memori" not in st.session_state: st.session_state.chat_memori = []
     if "chat_tampilan" not in st.session_state: st.session_state.chat_tampilan = []
 
-    col_btn1, col_btn2 = st.columns([5, 1])
-    with col_btn2:
-        if st.button("🗑️ Hapus"): st.session_state.chat_memori = []; st.session_state.chat_tampilan = []; st.rerun()
+    col_del1, col_del2 = st.columns([5, 1])
+    with col_del2:
+        if st.button("🗑️ Reset"):
+            st.session_state.chat_memori = []; st.session_state.chat_tampilan = []; st.rerun()
 
+    # CONTAINER CHAT VERTIKAL
     st.markdown('<div class="chat-container">', unsafe_allow_html=True)
     for msg in st.session_state.chat_tampilan:
         cls = "user-msg" if msg["role"] == "user" else "bot-msg"
         st.markdown(f'<div class="message-box {cls}">{msg["content"]}</div>', unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
 
-    if prompt := st.chat_input("Ketik pesanmu..."):
+    if prompt := st.chat_input("Ketik pesanmu di sini..."):
         st.session_state.chat_tampilan.append({"role": "user", "content": prompt})
+        
         with st.spinner("Berpikir..."):
             try:
-                model = genai.GenerativeModel('models/gemini-pro')
+                # PAKAI SYSTEM HISTORY GEMINI ASLI
+                model = genai.GenerativeModel('gemini-pro')
                 chat = model.start_chat(history=st.session_state.chat_memori)
                 response = chat.send_message(prompt)
+                
+                # UPDATE MEMORI
                 st.session_state.chat_memori.append({"role": "user", "parts": [prompt]})
                 st.session_state.chat_memori.append({"role": "model", "parts": [response.text]})
+                
+                # UPDATE TAMPILAN
                 st.session_state.chat_tampilan.append({"role": "bot", "content": response.text})
                 st.rerun()
-            except: st.error("AI Sibuk.")
+            except Exception as e:
+                st.error(f"Error AI: {e}")
 
 # =========================================================
-# 10. HALAMAN: ADMIN
+# 10. HALAMAN: ADMIN (TETAP AMAN)
 # =========================================================
 elif selected == "Admin":
     st.markdown("<h2 style='text-align:center;'>🔐 Admin Area</h2>", unsafe_allow_html=True)
