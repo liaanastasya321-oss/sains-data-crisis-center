@@ -496,8 +496,7 @@ elif selected == "Dashboard":
 # =========================================================
 # 9. HALAMAN: SASDA BOT (WITH HISTORY MEMORY)
 # =========================================================
-# =========================================================
-# 9. HALAMAN: SASDA BOT (STABLE HISTORY VERSION)
+# 9. HALAMAN: SASDA BOT (STABLE & ANTI-QUOTA ERROR)
 # =========================================================
 elif selected == "Sasda Bot":
     st.markdown("<div style='max-width: 700px; margin: auto;'>", unsafe_allow_html=True)
@@ -528,41 +527,42 @@ elif selected == "Sasda Bot":
 
         response_text = ""
         if "GEMINI_API_KEY" in st.secrets:
-            try:
-                # Pastikan model terdeteksi
-                model_name = get_available_model()
-                model = genai.GenerativeModel(model_name)
-                
-                # Konversi history ke format yang diterima Gemini (hanya jika ada pesan sebelumnya)
-                chat_history = []
-                if len(st.session_state.messages) > 1:
-                    for m in st.session_state.messages[:-1]:
-                        role = "user" if m["role"] == "user" else "model"
-                        chat_history.append({"role": role, "parts": [m["content"]]})
-                
-                # Jalankan Chat Session
-                chat_session = model.start_chat(history=chat_history)
-                
-                with st.spinner("Sasda Bot sedang mengetik..."):
-                    # Tambahkan instruksi sistem agar bot tahu identitasnya
-                    instruction = "Kamu adalah Sasda Bot, asisten virtual dari Sains Data UIN Raden Intan Lampung. Jawab sopan, santai, dan membantu."
-                    full_query = f"{instruction}\nUser: {prompt}"
-                    
-                    ai_response = chat_session.send_message(full_query)
-                    
-                    if ai_response and ai_response.text:
-                        response_text = ai_response.text
-                    else:
-                        response_text = "🙏 Maaf, Sasda Bot belum bisa merespon. Coba ketik pesan lain ya."
+            # List model untuk dicoba satu-satu kalau kena limit
+            model_list = [get_available_model(), "gemini-1.5-flash", "gemini-1.5-pro", "gemini-pro"]
+            success = False
             
-            except Exception as e:
-                # Jika history error, coba kirim tanpa history (fallback)
-                try:
-                    model = genai.GenerativeModel(get_available_model())
-                    ai_response = model.generate_content(f"Jawab sebagai Sasda Bot HMSD: {prompt}")
-                    response_text = ai_response.text
-                except:
-                    response_text = f"⚠️ Terjadi kendala teknis. Pastikan API Key benar. (Error: {str(e)})"
+            with st.spinner("Sasda Bot sedang berpikir..."):
+                for m_name in model_list:
+                    if success: break
+                    try:
+                        model = genai.GenerativeModel(m_name)
+                        
+                        # Bangun history chat
+                        chat_history = []
+                        if len(st.session_state.messages) > 1:
+                            for m in st.session_state.messages[:-1]:
+                                role = "user" if m["role"] == "user" else "model"
+                                chat_history.append({"role": role, "parts": [m["content"]]})
+                        
+                        chat_session = model.start_chat(history=chat_history)
+                        instruction = "Kamu adalah Sasda Bot, asisten virtual dari Sains Data UIN Raden Intan Lampung. Jawab sopan dan santai."
+                        
+                        ai_response = chat_session.send_message(f"{instruction}\nUser: {prompt}")
+                        
+                        if ai_response and ai_response.text:
+                            response_text = ai_response.text
+                            success = True
+                    except Exception as e:
+                        # Jika kena limit (429), tunggu sebentar terus coba model berikutnya
+                        if "429" in str(e):
+                            time.sleep(1) # Jeda 1 detik
+                            continue
+                        else:
+                            response_text = f"⚠️ Kendala: {str(e)}"
+                            break
+
+                if not success and not response_text:
+                    response_text = "🙏 Kuota harian AI sedang penuh (Limit Tier Gratis). Coba lagi beberapa saat lagi atau hubungi Lia ya!"
         else:
             response_text = "⚠️ API Key Gemini belum dipasang di Secrets."
 
@@ -572,6 +572,7 @@ elif selected == "Sasda Bot":
             st.markdown(response_text)
             
     st.markdown("</div>", unsafe_allow_html=True)
+                 
 # =========================================================
 # 10. HALAMAN: ADMIN (FULL AUTOMATED GENERATOR)
 # =========================================================
@@ -673,3 +674,4 @@ elif selected == "Admin":
                 else: st.info("Belum ada data laporan.")
             except Exception as e:
                 st.error(f"Error Database: {str(e)}")
+
