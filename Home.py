@@ -102,48 +102,50 @@ def get_img_as_base64(file_path):
         return base64.b64encode(data).decode()
     except: return ""
 
-# --- FUNGSI AI DRAFTER (AUTO-DETECT + FALLBACK) ---
+# --- FUNGSI AI DRAFTER (ANTI-MACET / FAIL-SAFE) ---
 def draft_surat_with_ai(kategori, keluhan, nama):
+    # Template Manual (Cadangan kalau AI Mati)
+    template_manual = f"""Assalamu'alaikum Warahmatullahi Wabarakatuh,
+Dengan hormat,
+
+Sehubungan dengan adanya laporan yang masuk ke Sains Data Crisis Center (PIKM) Himpunan Mahasiswa Sains Data, kami bermaksud menyampaikan aspirasi mahasiswa sebagai berikut:
+
+Nama Mahasiswa : {nama}
+Kategori Masalah : {kategori}
+
+Inti Keluhan:
+{keluhan}
+
+Kami memohon bantuan Bapak/Ibu untuk menindaklanjuti laporan ini demi kelancaran kegiatan akademik mahasiswa yang bersangkutan. Atas perhatian dan kerjasamanya, kami ucapkan terima kasih.
+
+Wassalamu'alaikum Warahmatullahi Wabarakatuh."""
+    
+    perihal_manual = "Permohonan Tindak Lanjut Keluhan Mahasiswa"
+    tujuan_manual = "Ketua Program Studi Sains Data"
+
     if "GEMINI_API_KEY" not in st.secrets:
-        return "ERROR: API Key Hilang", "ERROR", "Kunci 'GEMINI_API_KEY' belum dipasang di Secrets. Cek pengaturan."
+        return perihal_manual, tujuan_manual, template_manual
     
     try:
-        # 1. CARI MODEL YANG TERSEDIA DI AKUN
-        available_models = []
+        # Coba cari model yang tersedia secara otomatis
+        target_model = None
         try:
             for m in genai.list_models():
                 if 'generateContent' in m.supported_generation_methods:
-                    available_models.append(m.name)
-        except:
-            pass # Kalau list error, kita lanjut coba tebak manual
+                    target_model = m.name
+                    break # Ambil model pertama yang ketemu
+        except: pass
+        
+        # Kalau gak nemu dari list, coba tebak 'gemini-pro'
+        if not target_model: target_model = 'gemini-pro'
 
-        # 2. PILIH MODEL TERBAIK DARI YANG ADA
-        target_model = 'gemini-1.5-flash' # Pilihan Utama (Cepat)
-        
-        if 'models/gemini-1.5-flash' in available_models: target_model = 'gemini-1.5-flash'
-        elif 'models/gemini-1.5-pro' in available_models: target_model = 'gemini-1.5-pro'
-        elif 'models/gemini-pro' in available_models: target_model = 'gemini-pro'
-        
-        # 3. GENERATE KONTEN
         model = genai.GenerativeModel(target_model)
         
         prompt = f"""
-        Bertindaklah sebagai Sekretaris Himpunan Mahasiswa Sains Data (PIKM).
-        Tugasmu adalah membuat DRAFT SURAT FORMAL untuk menindaklanjuti keluhan mahasiswa ke pihak kampus/fakultas.
-        
-        Data Laporan:
-        - Mahasiswa: {nama}
-        - Kategori: {kategori}
-        - Keluhan: {keluhan}
-        
-        Instruksi Gaya Bahasa:
-        1. Gunakan Bahasa Indonesia baku dan sopan.
-        2. Awali isi surat dengan "Assalamu'alaikum Warahmatullahi Wabarakatuh" dan "Dengan Hormat".
-        3. Bahasakan ulang keluhan mahasiswa menjadi kalimat formal administratif (jangan pakai bahasa gaul).
-        4. Bagian Penutup harus sopan, diakhiri "Wassalamu'alaikum Warahmatullahi Wabarakatuh".
-        
-        Format Output WAJIB (Gunakan pemisah |||):
-        PERIHAL_SINGKAT|||JABATAN_TUJUAN|||ISI_SURAT_LENGKAP_(PEMBUKA_INTI_PENUTUP)
+        Buatkan draft surat formal (Bahasa Indonesia Baku) dari Himpunan Mahasiswa Sains Data (PIKM).
+        Data: {nama}, {kategori}, {keluhan}.
+        Output WAJIB format: PERIHAL|||TUJUAN|||ISI_LENGKAP
+        Isi lengkap harus ada Pembuka (Assalamu'alaikum), Inti (Formal), Penutup.
         """
         
         response = model.generate_content(prompt)
@@ -153,11 +155,11 @@ def draft_surat_with_ai(kategori, keluhan, nama):
         if len(parts) >= 3:
             return parts[0].strip(), parts[1].strip(), parts[2].strip()
         else:
-            return "Tindak Lanjut Keluhan Mahasiswa", "Ketua Program Studi Sains Data", text
+            return perihal_manual, tujuan_manual, text
             
-    except Exception as e:
-        # Fallback terakhir kalau masih error
-        return "Error Generate", "Admin", f"Gagal membuat draft otomatis. Coba update 'requirements.txt' kamu. Pesan Error: {str(e)}"
+    except Exception:
+        # JIKA AI ERROR -> PAKAI TEMPLATE MANUAL (BIAR GAK CRASH)
+        return perihal_manual, tujuan_manual, template_manual
 
 # --- FUNGSI PDF GENERATOR (MARGIN 2.5 CM & TIMES NEW ROMAN) ---
 def create_pdf(no_surat, lampiran, perihal, tujuan, isi_surat):
@@ -171,7 +173,6 @@ def create_pdf(no_surat, lampiran, perihal, tujuan, isi_surat):
     
     # 1. KOP SURAT
     if os.path.exists("kop_surat.png"):
-        # Image full width A4 (210mm), X=0, Y=0
         pdf.image("kop_surat.png", x=0, y=0, w=210) 
         pdf.set_y(45) 
     elif os.path.exists("logo_him.png"):
@@ -454,7 +455,6 @@ elif selected == "Sadas Bot":
         if "GEMINI_API_KEY" in st.secrets:
             try:
                 # KITA GUNAKAN MODEL AUTO-DETECT AGAR AMAN
-                # Tapi defaultnya fallback ke model yang list-nya ada
                 available = []
                 try: 
                     for m in genai.list_models():
@@ -462,8 +462,10 @@ elif selected == "Sadas Bot":
                 except: pass
                 
                 target = 'gemini-1.5-flash'
+                # Fallback manual kalau list kosong
                 if 'models/gemini-1.5-flash' in available: target = 'gemini-1.5-flash'
                 elif 'models/gemini-pro' in available: target = 'gemini-pro'
+                else: target = 'gemini-pro' # Harapan terakhir
                 
                 model = genai.GenerativeModel(target)
                 system_prompt = "Kamu adalah Sadas Bot, asisten virtual dari Sains Data UIN Raden Intan Lampung. Jawab sopan dan santai."
@@ -571,13 +573,14 @@ elif selected == "Admin":
                             if 'draft_tujuan' not in st.session_state: st.session_state.draft_tujuan = ""
                             if 'draft_isi' not in st.session_state: st.session_state.draft_isi = ""
 
-                            if st.button("✨ 1. Buat Draft via AI"):
-                                with st.spinner("AI sedang berpikir..."):
+                            if st.button("✨ 1. Buat Draft (Auto AI/Manual)"):
+                                with st.spinner("Sedang memproses..."):
+                                    # PANGGIL FUNGSI YANG UDAH DI UPDATE (FAIL-SAFE)
                                     p, t, i = draft_surat_with_ai(kat_mhs, kel_mhs, nama_mhs)
                                     st.session_state.draft_perihal = p
                                     st.session_state.draft_tujuan = t
                                     st.session_state.draft_isi = i
-                                    st.success("Draft jadi! Silakan edit di bawah.")
+                                    st.success("Draft siap! Silakan edit.")
 
                             st.write("---")
                             st.write("##### ✏️ Editor Surat (Silakan Edit Di Sini)")
