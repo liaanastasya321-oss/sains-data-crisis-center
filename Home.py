@@ -90,11 +90,14 @@ div.stButton > button {
 }
 .hapus-chat-btn button { background: #ef4444 !important; width: auto !important; padding: 5px 15px !important; font-size: 12px !important; }
 
-/* CHAT BUBBLE RAPI VERTIKAL */
+/* CHAT AREA - JAWABAN DARI ATAS KE BAWAH */
 .chat-container { display: flex; flex-direction: column; gap: 15px; margin-bottom: 20px; width: 100%; }
-.chat-message { padding: 1rem; border-radius: 12px; margin-bottom: 10px; display: flex; font-size: 15px; line-height: 1.5; word-wrap: break-word; }
-.chat-message.user { background-color: #eff6ff; border: 1px solid #bfdbfe; color: #1e3a8a; justify-content: flex-end; text-align: right; align-self: flex-end; max-width: 85%; }
-.chat-message.bot { background-color: #ffffff; border: 1px solid #e2e8f0; color: #334155; align-self: flex-start; max-width: 85%; }
+.message-box { 
+    padding: 12px 18px; border-radius: 15px; max-width: 85%; 
+    font-size: 15px; line-height: 1.5; word-wrap: break-word;
+}
+.user-msg { align-self: flex-end; background-color: #2563eb; color: white; border-bottom-right-radius: 2px; }
+.bot-msg { align-self: flex-start; background-color: #ffffff; color: #334155; border: 1px solid #e2e8f0; border-bottom-left-radius: 2px; }
 
 iframe[title="streamlit_option_menu.option_menu"] { width: 100%; background: transparent; }
 .block-container { padding-top: 1rem !important; padding-bottom: 5rem !important; max-width: 1200px; }
@@ -143,23 +146,21 @@ def get_img_as_base64(file_path):
         return base64.b64encode(data).decode()
     except: return ""
 
-# --- FUNGSI AUTO-CHECK MODEL (ANTI ERROR 404) ---
-def panggil_ai_mesin(prompt_system, user_input, chat_history=[]):
+# --- FUNGSI AI PINTAR (AUTO-CHECK MODEL AGAR GAK 404) ---
+def panggil_ai_mesin(prompt_system, user_input):
     if "GEMINI_API_KEY" not in st.secrets:
         return "⚠️ API Key belum dipasang di Secrets."
     try:
-        # OTOMATIS CARI MODEL TERSEDIA
+        # OTOMATIS CARI MODEL AGAR GAK 404
         available = [m.name for m in genai.list_models() if 'generateContent' in m.supported_generation_methods]
         target = 'models/gemini-1.5-flash' if 'models/gemini-1.5-flash' in available else ('models/gemini-pro' if 'models/gemini-pro' in available else available[0])
-        
         model = genai.GenerativeModel(target)
-        chat = model.start_chat(history=chat_history)
-        res = chat.send_message(f"{prompt_system}\n\nUser: {user_input}")
+        res = model.generate_content(f"{prompt_system}\n\nUser: {user_input}")
         return res.text.strip()
     except Exception as e:
-        return f"🙏 Maaf, server AI sedang sibuk. (Error: {str(e)})"
+        return f"🙏 Maaf Lia, AI sedang sibuk. (Error: {str(e)})"
 
-# --- FUNGSI DRAFT SURAT ---
+# --- FUNGSI DRAFT SURAT (OTOMATIS AI ASLI) ---
 def draft_surat_with_ai(kategori, keluhan, nama):
     sys_prompt = "Kamu Sekretaris Himpunan. Buatkan isi surat formal berdasarkan keluhan mahasiswa. Output WAJIB format: PERIHAL|||TUJUAN|||ISI_LENGKAP. Gunakan Assalamu'alaikum dan bahasa baku."
     user_p = f"Nama: {nama}, Kategori: {kategori}, Keluhan: {keluhan}"
@@ -280,7 +281,7 @@ elif selected == "Cek Status":
             except: st.error("Gagal ambil data.")
 
 # =========================================================
-# 8. HALAMAN: DASHBOARD
+# 8. HALAMAN: DASHBOARD (ASLI SESUAI REQUEST)
 # =========================================================
 elif selected == "Dashboard":
     st.markdown("<h2 style='text-align:center;'>📊 Dashboard Analisis</h2>", unsafe_allow_html=True)
@@ -296,15 +297,17 @@ elif selected == "Dashboard":
                 with c2: st.markdown(f'<div class="glass-card"><div class="metric-value" style="color:#d97706;">{len(df[df["Status"] == "Pending"])}</div><div class="metric-label">Menunggu</div></div>', unsafe_allow_html=True)
                 with c3: st.markdown(f'<div class="glass-card"><div class="metric-value" style="color:#059669;">{len(df[df["Status"] == "Selesai"])}</div><div class="metric-label">Selesai</div></div>', unsafe_allow_html=True)
                 
+                # Dua Visualisasi
                 v1, v2 = st.columns(2)
-                with v1:
+                with v1: 
                     fig_pie = go.Figure(data=[go.Pie(labels=df['Kategori Masalah'].value_counts().index, values=df['Kategori Masalah'].value_counts().values, hole=.5)])
                     fig_pie.update_layout(title="Berdasarkan Kategori", height=350)
                     st.plotly_chart(fig_pie, use_container_width=True)
-                with v2:
+                with v2: 
                     fig_bar = go.Figure(data=[go.Bar(x=df['Status'].value_counts().index, y=df['Status'].value_counts().values, marker_color=['#d97706','#059669'])])
                     fig_bar.update_layout(title="Berdasarkan Status", height=350)
                     st.plotly_chart(fig_bar, use_container_width=True)
+                
                 st.write("### 📢 Transparansi Laporan Publik")
                 st.dataframe(df[['Waktu Lapor', 'Prodi', 'Kategori Masalah', 'Status']], use_container_width=True, hide_index=True)
             else: st.info("Data kosong.")
@@ -314,39 +317,47 @@ elif selected == "Dashboard":
 # 9. HALAMAN: SADAS BOT (FIX: VERTIKAL & MEMORY)
 # =========================================================
 elif selected == "Sadas Bot":
-    st.markdown("<div style='max-width: 700px; margin: auto;'>", unsafe_allow_html=True)
-    col_header, col_btn = st.columns([3, 1])
-    with col_header: st.markdown(f"<h2 style='text-align:left; margin:0;'>🤖 Sadas Bot</h2>", unsafe_allow_html=True)
-    with col_btn:
-        if st.button("🗑️ Hapus Chat"): st.session_state.chat_history = []; st.session_state.chat_display = []; st.rerun()
+    st.markdown("<h2 style='text-align:center;'>🤖 Sadas Bot</h2>", unsafe_allow_html=True)
     
-    # Inisialisasi Memori
-    if "chat_history" not in st.session_state: st.session_state.chat_history = []
-    if "chat_display" not in st.session_state: st.session_state.chat_display = []
+    # SETUP MEMORI (HISTORY)
+    if "chat_memori" not in st.session_state: st.session_state.chat_memori = []
+    if "chat_tampilan" not in st.session_state: st.session_state.chat_tampilan = []
 
-    # Tampilan Chat Vertikal
+    col_del1, col_del2 = st.columns([5, 1])
+    with col_del2:
+        if st.button("🗑️ Reset"):
+            st.session_state.chat_memori = []; st.session_state.chat_tampilan = []; st.rerun()
+
+    # CONTAINER CHAT VERTIKAL
     st.markdown('<div class="chat-container">', unsafe_allow_html=True)
-    for msg in st.session_state.chat_display:
-        cls = "user" if msg["role"] == "user" else "bot"
-        st.markdown(f'<div class="chat-message {cls}">{msg["content"]}</div>', unsafe_allow_html=True)
+    for msg in st.session_state.chat_tampilan:
+        cls = "user-msg" if msg["role"] == "user" else "bot-msg"
+        st.markdown(f'<div class="message-box {cls}">{msg["content"]}</div>', unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
 
     if prompt := st.chat_input("Ketik pesanmu di sini..."):
-        st.session_state.chat_display.append({"role": "user", "content": prompt})
+        st.session_state.chat_tampilan.append({"role": "user", "content": prompt})
+        
         with st.spinner("Berpikir..."):
-            ans = panggil_ai_mesin("Kamu asisten virtual mahasiswa Sains Data UIN Raden Intan Lampung. Jawab sopan.", prompt, st.session_state.chat_history)
-            
-            # Update History untuk konteks
-            st.session_state.chat_history.append({"role": "user", "parts": [prompt]})
-            st.session_state.chat_history.append({"role": "model", "parts": [ans]})
-            
-            # Update Tampilan
-            st.session_state.chat_display.append({"role": "assistant", "content": ans})
-            st.rerun()
-    st.markdown("</div>", unsafe_allow_html=True)
+            try:
+                # AUTO-CHECK MODEL AGAR GAK 404
+                available = [m.name for m in genai.list_models() if 'generateContent' in m.supported_generation_methods]
+                target = 'models/gemini-1.5-flash' if 'models/gemini-1.5-flash' in available else ('models/gemini-pro' if 'models/gemini-pro' in available else available[0])
+                
+                model = genai.GenerativeModel(target)
+                chat = model.start_chat(history=st.session_state.chat_memori)
+                response = chat.send_message(prompt)
+                
+                # UPDATE MEMORI & TAMPILAN
+                st.session_state.chat_memori.append({"role": "user", "parts": [prompt]})
+                st.session_state.chat_memori.append({"role": "model", "parts": [response.text]})
+                st.session_state.chat_tampilan.append({"role": "bot", "content": response.text})
+                st.rerun()
+            except Exception as e:
+                st.error(f"Error AI: {e}")
 
 # =========================================================
-# 10. HALAMAN: ADMIN
+# 10. HALAMAN: ADMIN (TETAP AMAN & DATA SET CONNECTED)
 # =========================================================
 elif selected == "Admin":
     st.markdown("<h2 style='text-align:center;'>🔐 Admin Area</h2>", unsafe_allow_html=True)
