@@ -102,10 +102,8 @@ def get_img_as_base64(file_path):
         return base64.b64encode(data).decode()
     except: return ""
 
-# --- FUNGSI AI SIMULASI (MODE DEMO - ANTI ERROR) ---
+# --- FUNGSI AI SIMULASI (MODE DEMO - AMAN & CEPAT) ---
 def draft_surat_with_ai(kategori, keluhan, nama):
-    # KITA GUNAKAN LOGIKA PINTAR UNTUK MEMILIH TEMPLATE
-    # INI MENJAMIN TIDAK ADA ERROR SAAT PRESENTASI
     
     perihal = ""
     tujuan = ""
@@ -172,7 +170,6 @@ Demikian surat ini kami sampaikan. Atas kerjasamanya kami ucapkan terima kasih.
 Wassalamu'alaikum Warahmatullahi Wabarakatuh."""
 
     else:
-        # Default Template
         perihal = "Penyampaian Aspirasi Mahasiswa"
         tujuan = "Pihak Terkait"
         isi = f"""Assalamu'alaikum Warahmatullahi Wabarakatuh,
@@ -192,7 +189,7 @@ Wassalamu'alaikum Warahmatullahi Wabarakatuh."""
 
     return perihal, tujuan, isi
 
-# --- FUNGSI PDF GENERATOR (MARGIN 2.5 CM & TIMES NEW ROMAN) ---
+# --- FUNGSI PDF GENERATOR (KOP SURAT PRESISI HD) ---
 def create_pdf(no_surat, lampiran, perihal, tujuan, isi_surat):
     pdf = FPDF()
     
@@ -202,29 +199,46 @@ def create_pdf(no_surat, lampiran, perihal, tujuan, isi_surat):
     
     pdf.add_page()
     
-    # 1. KOP SURAT
-    if os.path.exists("kop_surat.png"):
-        pdf.image("kop_surat.png", x=0, y=0, w=210) 
-        pdf.set_y(45) 
-    elif os.path.exists("logo_him.png"):
-        pdf.image("logo_him.png", x=25, y=25, w=25) 
-        pdf.set_font("Times", 'B', 14)
-        pdf.cell(0, 7, "HIMPUNAN MAHASISWA PROGRAM STUDI SAINS DATA", 0, 1, 'C')
-        pdf.cell(0, 7, "FAKULTAS SAINS DAN TEKNOLOGI", 0, 1, 'C')
-        pdf.cell(0, 7, "UIN RADEN INTAN LAMPUNG", 0, 1, 'C')
-        pdf.line(25, 52, 185, 52) 
-        pdf.ln(10)
-    else:
-        pdf.ln(20)
+    # --- 1. KOP SURAT (MANUAL TEXT BIAR TAJAM/HD) ---
+    # Posisi Logo Kiri (UIN)
+    if os.path.exists("logo_uin.png"):
+        pdf.image("logo_uin.png", x=25, y=25, w=22) # Ukuran 22mm
+    
+    # Posisi Logo Kanan (Himasda) - X = 210 - 25(margin) - 22(lebar) = 163
+    if os.path.exists("logo_him.png"):
+        pdf.image("logo_him.png", x=163, y=25, w=22)
 
-    # 2. HEADER SURAT
+    # Teks Kop (Center)
+    pdf.set_font("Times", 'B', 14) # Bold 14
+    pdf.set_xy(25, 25) # Reset kursor ke kiri atas margin
+    
+    # Trik Cell Width 0 = sampai margin kanan
+    pdf.cell(0, 6, "HIMPUNAN MAHASISWA SAINS DATA", 0, 1, 'C')
+    pdf.cell(0, 6, "FAKULTAS SAINS DAN TEKNOLOGI", 0, 1, 'C')
+    pdf.cell(0, 6, "UNIVERSITAS ISLAM NEGERI RADEN INTAN LAMPUNG", 0, 1, 'C')
+    
+    # Alamat (Regular 10)
+    pdf.set_font("Times", '', 10) 
+    pdf.cell(0, 5, "Sekretariat: Jl. Letkol Endro Suratmin, Sukarame, Bandar Lampung,", 0, 1, 'C')
+    pdf.cell(0, 5, "Lampung 35131 Email: himasda.radenintan@gmail.com", 0, 1, 'C')
+    
+    # Garis Pembatas (Double Line)
+    pdf.ln(2)
+    pdf.set_line_width(0.5) # Garis Tebal
+    pdf.line(25, pdf.get_y(), 185, pdf.get_y())
+    pdf.set_line_width(0.2) # Garis Tipis
+    pdf.line(25, pdf.get_y()+1, 185, pdf.get_y()+1)
+    
+    pdf.ln(8) # Spasi setelah kop
+
+    # --- 2. HEADER SURAT ---
     pdf.set_font("Times", '', 12) 
     pdf.cell(25, 6, "Nomor", 0, 0); pdf.cell(5, 6, ":", 0, 0); pdf.cell(0, 6, no_surat, 0, 1)
     pdf.cell(25, 6, "Lampiran", 0, 0); pdf.cell(5, 6, ":", 0, 0); pdf.cell(0, 6, lampiran, 0, 1)
     pdf.cell(25, 6, "Perihal", 0, 0); pdf.cell(5, 6, ":", 0, 0); pdf.cell(0, 6, perihal, 0, 1)
     pdf.ln(5)
 
-    # 3. TUJUAN
+    # --- 3. TUJUAN ---
     pdf.cell(0, 6, "Kepada Yth.", 0, 1)
     pdf.set_font("Times", 'B', 12) 
     pdf.cell(0, 6, tujuan, 0, 1)
@@ -232,16 +246,17 @@ def create_pdf(no_surat, lampiran, perihal, tujuan, isi_surat):
     pdf.cell(0, 6, "di Tempat", 0, 1)
     pdf.ln(10)
 
-    # 4. ISI SURAT
+    # --- 4. ISI SURAT ---
     pdf.set_font("Times", '', 12)
     pdf.multi_cell(0, 6, isi_surat)
     pdf.ln(15)
 
-    # 5. TANDA TANGAN
+    # --- 5. TANDA TANGAN ---
     now = datetime.datetime.now()
     bulan_indo = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"]
     tanggal_str = f"{now.day} {bulan_indo[now.month-1]} {now.year}"
 
+    # Posisi Tanda Tangan Kanan (x=120)
     posisi_ttd = 120 
     
     pdf.set_x(posisi_ttd)
@@ -251,10 +266,10 @@ def create_pdf(no_surat, lampiran, perihal, tujuan, isi_surat):
     pdf.set_x(posisi_ttd)
     pdf.cell(0, 5, "Ketua Departemen PIKM", 0, 1, 'C')
     
-    pdf.ln(25) 
+    pdf.ln(25) # Ruang Tanda Tangan
     
     pdf.set_x(posisi_ttd)
-    pdf.set_font("Times", 'BU', 12) 
+    pdf.set_font("Times", 'BU', 12) # Bold Underline
     pdf.cell(0, 5, "LIA ANASTASYA", 0, 1, 'C')
     pdf.set_x(posisi_ttd)
     pdf.set_font("Times", '', 12)
@@ -604,6 +619,7 @@ elif selected == "Admin":
 
                             if st.button("✨ 1. Buat Draft (Auto AI/Manual)"):
                                 with st.spinner("Sedang memproses..."):
+                                    # PANGGIL FUNGSI YANG UDAH DI UPDATE (FAIL-SAFE)
                                     p, t, i = draft_surat_with_ai(kat_mhs, kel_mhs, nama_mhs)
                                     st.session_state.draft_perihal = p
                                     st.session_state.draft_tujuan = t
