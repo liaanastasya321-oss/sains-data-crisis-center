@@ -318,7 +318,7 @@ if 'selected_menu' not in st.session_state: st.session_state.selected_menu = "Ho
 
 selected = option_menu(
     menu_title=None,
-    options=["Home", "Lapor Masalah", "Cek Status", "Dashboard", "Sadas Bot", "Admin"],
+    options=["Home", "Lapor Masalah", "Cek Status", "Dashboard", "Sasda Bot", "Admin"],
     icons=["house", "exclamation-triangle-fill", "search", "bar-chart-fill", "robot", "lock-fill"],
     default_index=0,
     orientation="horizontal",
@@ -348,7 +348,7 @@ if selected == "Home":
     c1, c2, c3 = st.columns(3)
     with c1: st.markdown("""<div class="glass-card"><h3 style="color:#2563eb;">📢 Pelaporan</h3><p style="color:#64748b; font-size:14px;">Saluran resmi pengaduan masalah fasilitas & akademik.</p></div>""", unsafe_allow_html=True)
     with c2: st.markdown("""<div class="glass-card"><h3 style="color:#0891b2;">📊 Transparansi</h3><p style="color:#64748b; font-size:14px;">Pantau statistik dan status penyelesaian secara real-time.</p></div>""", unsafe_allow_html=True)
-    with c3: st.markdown("""<div class="glass-card"><h3 style="color:#7c3aed;">🤖 Sadas Bot</h3><p style="color:#64748b; font-size:14px;">Asisten AI cerdas yang siap menjawab pertanyaanmu 24/7.</p></div>""", unsafe_allow_html=True)
+    with c3: st.markdown("""<div class="glass-card"><h3 style="color:#7c3aed;">🤖 Sasda Bot</h3><p style="color:#64748b; font-size:14px;">Asisten AI cerdas yang siap menjawab pertanyaanmu 24/7.</p></div>""", unsafe_allow_html=True)
 
     st.write("")
     st.subheader("📰 Informasi Terbaru")
@@ -494,13 +494,13 @@ elif selected == "Dashboard":
             st.error(f"Error memuat dashboard: {str(e)}")
 
 # =========================================================
-# 9. HALAMAN: SADAS BOT (WITH HISTORY MEMORY)
+# 9. HALAMAN: SASDA BOT (STABLE & HISTORY VERSION)
 # =========================================================
-elif selected == "Sadas Bot":
+elif selected == "Sasda Bot":
     st.markdown("<div style='max-width: 700px; margin: auto;'>", unsafe_allow_html=True)
     col_header, col_btn = st.columns([3, 1])
     with col_header:
-        st.markdown(f"<h2 style='text-align:left; margin:0;'>🤖 Sadas Bot</h2>", unsafe_allow_html=True)
+        st.markdown(f"<h2 style='text-align:left; margin:0;'>🤖 Sasda Bot</h2>", unsafe_allow_html=True)
         st.markdown("<p style='text-align:left; color:#64748b; margin-top:0px;'>Asisten Akademik Virtual</p>", unsafe_allow_html=True)
     with col_btn:
         st.markdown('<div class="hapus-chat-btn">', unsafe_allow_html=True)
@@ -513,43 +513,54 @@ elif selected == "Sadas Bot":
     
     if "messages" not in st.session_state: st.session_state.messages = []
 
+    # Tampilkan chat lama
     for message in st.session_state.messages:
         role_class = "user" if message["role"] == "user" else "bot"
         st.markdown(f"""<div class="chat-message {role_class}"><div><strong>{message['role'].capitalize()}:</strong> <br> {message['content']}</div></div>""", unsafe_allow_html=True)
 
     if prompt := st.chat_input("Ketik pesanmu di sini..."):
         st.session_state.messages.append({"role": "user", "content": prompt})
-        with st.chat_message("user"): st.markdown(prompt)
+        with st.chat_message("user"): 
+            st.markdown(prompt)
 
-        response = ""
+        response_text = ""
         if "GEMINI_API_KEY" in st.secrets:
             try:
+                # Ambil model yang aktif secara otomatis
                 model_name = get_available_model()
                 model = genai.GenerativeModel(model_name)
                 
                 # Membangun history agar bot ingat konteks sebelumnya
-                history = []
-                for m in st.session_state.messages[:-1]:
-                    role = "user" if m["role"] == "user" else "model"
-                    history.append({"role": role, "parts": [m["content"]]})
+                chat_history = []
+                if len(st.session_state.messages) > 1:
+                    for m in st.session_state.messages[:-1]:
+                        role = "user" if m["role"] == "user" else "model"
+                        chat_history.append({"role": role, "parts": [m["content"]]})
                 
-                chat_session = model.start_chat(history=history)
-                system_instruction = "Kamu adalah Sadas Bot, asisten virtual dari Sains Data UIN Raden Intan Lampung. Jawab sopan dan santai."
+                chat_session = model.start_chat(history=chat_history)
+                system_instruction = "Kamu adalah Sasda Bot, asisten virtual dari Sains Data UIN Raden Intan Lampung. Jawab sopan dan santai."
                 
-                with st.spinner("Sadas Bot sedang mengetik..."):
+                with st.spinner("Sasda Bot sedang berpikir..."):
                     ai_response = chat_session.send_message(f"{system_instruction}\nUser: {prompt}")
-                    response = ai_response.text
+                    response_text = ai_res_text = ai_response.text
             except Exception as e:
-                response = "🙏 Maaf, server AI sedang sibuk. Silakan coba lagi nanti."
+                # Fallback jika model dengan history gagal (biasanya karena limit token)
+                try:
+                    model = genai.GenerativeModel(get_available_model())
+                    ai_res = model.generate_content(prompt)
+                    response_text = ai_res.text
+                except:
+                    response_text = "🙏 Maaf, server AI sedang sibuk. Silakan coba lagi nanti."
         else:
-            response = "⚠️ API Key Gemini belum dipasang di Secrets."
+            response_text = "⚠️ API Key Gemini belum dipasang di Secrets."
 
-        st.session_state.messages.append({"role": "assistant", "content": response})
-        with st.chat_message("assistant"): st.markdown(response)
+        st.session_state.messages.append({"role": "assistant", "content": response_text})
+        with st.chat_message("assistant"): 
+            st.markdown(response_text)
     st.markdown("</div>", unsafe_allow_html=True)
 
 # =========================================================
-# 10. HALAMAN: ADMIN (FULL AUTOMATED GENERATOR)
+# 10. HALAMAN: ADMIN
 # =========================================================
 elif selected == "Admin":
     st.markdown("<h2 style='text-align:center;'>🔐 Admin Area</h2>", unsafe_allow_html=True)
@@ -638,7 +649,7 @@ elif selected == "Admin":
                             isi_lengkap = st.text_area("Isi Surat Lengkap", value=st.session_state.get('draft_isi', ''), height=300)
                             
                             if st.button("🖨️ Cetak PDF Final"):
-                                pdf_bytes = create_pdf(no_surat, lampiran, perihal_surat, tujuan_surat, isi_lengkap)
+                                pdf_bytes = create_pdf(no_surat, lampiran, perihal_surat, tujuan_surat, isi_surat)
                                 st.download_button(
                                     label="📥 Download Surat (PDF)",
                                     data=pdf_bytes,
