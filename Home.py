@@ -193,7 +193,7 @@ def get_img_as_base64(file_path):
         return base64.b64encode(data).decode()
     except: return ""
 
-# --- FUNGSI AI DRAFTER (GEMINI-PRO + BACKUP) ---
+# --- FUNGSI AI DRAFTER (UPDATE MODEL KE 1.5-FLASH) ---
 def draft_surat_with_ai(kategori, keluhan, nama):
     perihal_backup = "Tindak Lanjut Keluhan Mahasiswa"
     tujuan_backup = "Ketua Program Studi Sains Data"
@@ -215,7 +215,8 @@ Wassalamu'alaikum Warahmatullahi Wabarakatuh."""
 
     if "GEMINI_API_KEY" in st.secrets:
         try:
-            model = genai.GenerativeModel('gemini-pro') 
+            # Menggunakan gemini-1.5-flash yang lebih stabil dan didukung
+            model = genai.GenerativeModel('gemini-1.5-flash') 
             prompt = f"""
             Buatkan draft surat formal singkat dari Himpunan Mahasiswa Sains Data (PIKM).
             Data: Nama {nama}, Kategori {kategori}, Keluhan "{keluhan}".
@@ -497,7 +498,7 @@ elif selected == "Dashboard":
             st.error(f"Error memuat dashboard: {str(e)}")
 
 # =========================================================
-# 9. HALAMAN: SADAS BOT (AUTO-CHECK MODEL FIX)
+# 9. HALAMAN: SADAS BOT (UPDATE MODEL KE 1.5-FLASH)
 # =========================================================
 elif selected == "Sadas Bot":
     st.markdown("<div style='max-width: 700px; margin: auto;'>", unsafe_allow_html=True)
@@ -516,31 +517,26 @@ elif selected == "Sadas Bot":
     
     if "messages" not in st.session_state: st.session_state.messages = []
 
-    # Display Chat History
     for message in st.session_state.messages:
         role_class = "user" if message["role"] == "user" else "bot"
         st.markdown(f"""<div class="chat-message {role_class}"><div><strong>{message['role'].capitalize()}:</strong> <br> {message['content']}</div></div>""", unsafe_allow_html=True)
 
-    # Input Chat
     if prompt := st.chat_input("Ketik pesanmu di sini..."):
         st.session_state.messages.append({"role": "user", "content": prompt})
         with st.chat_message("user"): st.markdown(prompt)
 
-        # Logic Auto-Check Model
         response = ""
-        # 1. Check API Key
         if "GEMINI_API_KEY" in st.secrets and st.secrets["GEMINI_API_KEY"]:
             try:
-                # 2. Re-configure & Initialize Model
                 genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
-                model = genai.GenerativeModel('gemini-pro')
+                # Menggunakan gemini-1.5-flash yang terbaru
+                model = genai.GenerativeModel('gemini-1.5-flash')
                 
                 system_prompt = "Kamu adalah Sadas Bot, asisten virtual dari Sains Data UIN Raden Intan Lampung. Jawab sopan dan santai."
                 full_prompt = f"{system_prompt}\nUser: {prompt}"
                 
                 with st.spinner("Sadas Bot sedang mengetik..."):
                     ai_response = model.generate_content(full_prompt)
-                    # 3. Check Response Validity
                     if ai_response and hasattr(ai_response, 'text'):
                         response = ai_response.text
                     else:
