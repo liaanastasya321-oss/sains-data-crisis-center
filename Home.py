@@ -333,8 +333,6 @@ selected = option_menu(
 # =========================================================
 # 5. HALAMAN: HOME
 # =========================================================
-# 5. HALAMAN: HOME
-# =========================================================
 if selected == "Home":
     img_him = get_img_as_base64("logo_him.png")
     st.markdown(f"""
@@ -342,17 +340,11 @@ if selected == "Home":
         <div class="hero-text">
             <h1 class="hero-title">SAINS DATA <br> CRISIS CENTER</h1>
             <p class="hero-subtitle">Pusat Layanan Aspirasi, Analisis Data, dan Respon Cepat Mahasiswa PIKM.</p>
-            <div style="margin-top: 15px; padding: 10px; background: #fff3cd; border-radius: 10px; border: 1px solid #ffeeba; display: inline-block;">
-                <span style="color: #856404; font-size: 14px; font-weight: 600;">
-                    🕒 Jam Operasional Admin PIKM: 07.00 - 14.00 WIB
-                </span>
-            </div>
         </div>
         <img src="data:image/png;base64,{img_him}" class="hero-logo">
     </div>
     """, unsafe_allow_html=True)
 
-    # ... (sisa kode kolom c1, c2, c3 tetap sama)
     c1, c2, c3 = st.columns(3)
     with c1: st.markdown("""<div class="glass-card"><h3 style="color:#2563eb;">📢 Pelaporan</h3><p style="color:#64748b; font-size:14px;">Saluran resmi pengaduan masalah fasilitas & akademik.</p></div>""", unsafe_allow_html=True)
     with c2: st.markdown("""<div class="glass-card"><h3 style="color:#0891b2;">📊 Transparansi</h3><p style="color:#64748b; font-size:14px;">Pantau statistik dan status penyelesaian secara real-time.</p></div>""", unsafe_allow_html=True)
@@ -657,4 +649,3 @@ elif selected == "Admin":
                 else: st.info("Belum ada data laporan.")
             except Exception as e:
                 st.error(f"Error Database: {str(e)}")
-
