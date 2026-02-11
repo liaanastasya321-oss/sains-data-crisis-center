@@ -24,52 +24,130 @@ st.set_page_config(
 )
 
 # =========================================================
-# 2. GLOBAL CSS
+# 2. GLOBAL CSS (MODERN & PROFESSIONAL UI)
 # =========================================================
 st.markdown("""
 <style>
-/* SETUP DASAR */
-.stApp { background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%); color: #0f172a; }
+/* --- 1. SETUP DASAR --- */
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap');
+
+.stApp { 
+    background: #f8fafc; /* Light Gray Clean */
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    color: #1e293b;
+}
+
 #MainMenu, footer, header, [data-testid="stSidebar"] { display: none !important; }
 .stApp > header { display: none !important; }
 
-/* FONT & INPUT */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
-html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
+/* --- 2. HEADER HERO SECTION (RESPONSIVE) --- */
+.hero-container {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding: 2rem 1rem;
+    background: linear-gradient(135deg, #eff6ff 0%, #ffffff 100%);
+    border-radius: 24px;
+    border: 1px solid #dbeafe;
+    margin-bottom: 30px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
 
+.hero-text {
+    flex: 1;
+    padding-right: 20px;
+}
+
+.hero-title {
+    font-size: 42px;
+    font-weight: 800;
+    margin: 0;
+    line-height: 1.1;
+    background: linear-gradient(90deg, #1e3a8a 0%, #3b82f6 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    letter-spacing: -1px;
+}
+
+.hero-subtitle {
+    font-size: 16px;
+    color: #64748b;
+    margin-top: 10px;
+    font-weight: 500;
+}
+
+.hero-logo {
+    width: 140px; /* Ukuran Logo Desktop */
+    height: auto;
+    filter: drop-shadow(0 10px 15px rgba(0, 0, 0, 0.1));
+    transition: transform 0.3s ease;
+}
+
+.hero-logo:hover {
+    transform: scale(1.05) rotate(2deg);
+}
+
+/* --- MOBILE TWEAKS --- */
+@media (max-width: 768px) {
+    .hero-container {
+        flex-direction: column-reverse; /* Logo di atas Text */
+        text-align: center;
+        padding: 1.5rem;
+    }
+    .hero-text { padding-right: 0; margin-top: 15px; }
+    .hero-title { font-size: 28px; } /* Font HP lebih kecil tapi kebaca */
+    .hero-subtitle { font-size: 14px; }
+    .hero-logo { width: 100px; } /* Logo HP */
+}
+
+/* --- 3. CARDS (KARTU MENU) --- */
+.glass-card { 
+    background: #ffffff; 
+    border-radius: 16px; 
+    padding: 25px; 
+    border: 1px solid #e2e8f0; 
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); 
+    text-align: center; 
+    height: 100%; 
+    transition: all 0.3s ease;
+}
+.glass-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    border-color: #bfdbfe;
+}
+.metric-value { font-size: 36px; font-weight: 800; color: #0f172a; margin-bottom: 5px; }
+.metric-label { font-size: 14px; color: #64748b; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
+
+/* --- 4. FORM & BUTTONS --- */
 .stTextInput input, .stTextArea textarea, .stSelectbox div[data-baseweb="select"] {
-    background-color: #ffffff !important; border: 1px solid #94a3b8 !important; 
-    color: #334155 !important; border-radius: 8px;
+    background-color: #ffffff !important; 
+    border: 1px solid #cbd5e1 !important; 
+    color: #1e293b !important; 
+    border-radius: 10px;
+    padding: 10px;
 }
-label, div[data-testid="stWidgetLabel"] p { color: #0f172a !important; font-weight: 700 !important; }
+div.stButton > button { 
+    background: linear-gradient(90deg, #2563eb, #1d4ed8); 
+    color: white; 
+    border: none; 
+    padding: 12px 24px; 
+    border-radius: 10px; 
+    font-weight: 700; 
+    width: 100%;
+    transition: opacity 0.3s;
+}
+div.stButton > button:hover { opacity: 0.9; }
 
-/* MENU */
+/* --- 5. CHAT BUBBLE --- */
+.chat-message { padding: 1rem; border-radius: 12px; margin-bottom: 10px; display: flex; font-size: 15px; line-height: 1.5; }
+.chat-message.user { background-color: #eff6ff; border: 1px solid #bfdbfe; color: #1e3a8a; justify-content: flex-end; text-align: right; }
+.chat-message.bot { background-color: #ffffff; border: 1px solid #e2e8f0; color: #334155; }
+
+/* Hide Streamlit Elements */
 iframe[title="streamlit_option_menu.option_menu"] { width: 100%; background: transparent; }
-
-/* JARAK KONTEN */
-.block-container { padding-top: 2rem !important; padding-bottom: 5rem !important; max-width: 1200px; }
-
-/* HEADER */
-.header-container { display: flex; flex-direction: row; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 30px; width: 100%; }
-.logo-img { width: 90px; height: auto; object-fit: contain; }
-.title-text { flex: 1; text-align: center; }
-.title-text h1 { font-size: 32px; margin: 0; font-weight: 800; line-height: 1.2; background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-.title-text p { font-size: 14px; margin: 5px 0 0 0; color: #64748b; }
-@media (max-width: 600px) {
-    .header-container { margin-bottom: 15px; }
-    .logo-img { width: 45px !important; }
-    .title-text h1 { font-size: 18px !important; }
-    .title-text p { font-size: 10px !important; margin-top: 2px; }
-}
-
-/* COMPONENTS */
-.glass-card { background: #ffffff; border-radius: 16px; padding: 20px; border: 1px solid #cbd5e1; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); margin-bottom: 15px; text-align: center; height: 100%; }
-.announce-card { background: #ffffff; border-radius: 12px; padding: 15px; margin-bottom: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; }
-div.stButton > button { background: linear-gradient(90deg, #2563eb, #1d4ed8); color: white; border: none; padding: 12px 20px; border-radius: 8px; font-weight: bold; width: 100%; }
-.hapus-chat-btn button { background: #ef4444 !important; font-size: 12px !important; padding: 5px 10px !important; width: auto !important; float: right; }
-.chat-message { padding: 1rem; border-radius: 8px; margin-bottom: 10px; display: flex; font-size: 14px;}
-.chat-message.user { background-color: #e0f2fe; border-left: 4px solid #0284c7; }
-.chat-message.bot { background-color: #f1f5f9; border-left: 4px solid #475569; }
+.block-container { padding-top: 1rem !important; padding-bottom: 5rem !important; max-width: 1200px; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -105,7 +183,6 @@ if sh:
     try: sheet_pengumuman = sh.worksheet("Pengumuman")
     except: pass
 
-# KONFIGURASI AI (GLOBAL)
 if "GEMINI_API_KEY" in st.secrets:
     try: genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
     except: pass
@@ -116,116 +193,61 @@ def get_img_as_base64(file_path):
         return base64.b64encode(data).decode()
     except: return ""
 
-# --- FUNGSI AI SIMULASI (MODE DEMO - ADMIN SURAT) ---
-# Fitur ini dijamin 100% jalan tanpa error API Key
+# --- FUNGSI AI DRAFTER (GEMINI-PRO + BACKUP) ---
 def draft_surat_with_ai(kategori, keluhan, nama):
-    perihal = ""
-    tujuan = ""
-    isi = ""
+    # Template Backup
+    perihal_backup = "Tindak Lanjut Keluhan Mahasiswa"
+    tujuan_backup = "Ketua Program Studi Sains Data"
+    if "Fasilitas" in kategori: tujuan_backup = "Kepala Bagian Umum"
+    if "Keuangan" in kategori: tujuan_backup = "Bagian Keuangan"
     
-    if "Fasilitas" in kategori:
-        perihal = "Laporan Kerusakan Sarana dan Prasarana"
-        tujuan = "Kepala Bagian Umum & Rumah Tangga"
-        isi = f"""Assalamu'alaikum Warahmatullahi Wabarakatuh,
+    isi_backup = f"""Assalamu'alaikum Warahmatullahi Wabarakatuh,
 Dengan hormat,
 
-Sehubungan dengan adanya keluhan mahasiswa yang masuk melalui Sains Data Crisis Center (PIKM), kami bermaksud menyampaikan laporan terkait kendala fasilitas sebagai berikut:
-
-Nama Pelapor : {nama}
-Kategori Masalah : {kategori}
-
-Detail Keluhan:
-"{keluhan}"
-
-Kondisi tersebut dirasa cukup mengganggu kenyamanan proses belajar mengajar di lingkungan kampus. Oleh karena itu, kami memohon kepada Bapak/Ibu untuk dapat meninjau dan menindaklanjuti laporan ini.
-
-Demikian surat ini kami sampaikan. Atas perhatian dan tindak lanjutnya, kami ucapkan terima kasih.
-
-Wassalamu'alaikum Warahmatullahi Wabarakatuh."""
-
-    elif "Akademik" in kategori:
-        perihal = "Permohonan Tindak Lanjut Kendala Akademik"
-        tujuan = "Ketua Program Studi Sains Data"
-        isi = f"""Assalamu'alaikum Warahmatullahi Wabarakatuh,
-Dengan hormat,
-
-Melalui surat ini, kami dari Himpunan Mahasiswa Sains Data (PIKM) ingin menyampaikan aspirasi mahasiswa terkait kendala akademik yang dialami, dengan rincian sebagai berikut:
-
-Nama Mahasiswa : {nama}
-Kategori : {kategori}
-
-Permasalahan:
-"{keluhan}"
-
-Mengingat pentingnya hal tersebut bagi kelancaran studi mahasiswa yang bersangkutan, kami memohon arahan dan solusi dari Bapak/Ibu Ketua Program Studi.
-
-Demikian permohonan ini kami ajukan. Atas perhatian Bapak/Ibu, kami ucapkan terima kasih.
-
-Wassalamu'alaikum Warahmatullahi Wabarakatuh."""
-
-    elif "Keuangan" in kategori:
-        perihal = "Permohonan Keringanan/Kejelasan Administrasi Keuangan"
-        tujuan = "Kepala Bagian Keuangan"
-        isi = f"""Assalamu'alaikum Warahmatullahi Wabarakatuh,
-Dengan hormat,
-
-Bersama surat ini, kami menyampaikan keluhan mahasiswa terkait administrasi keuangan/UKT dengan data sebagai berikut:
-
-Nama Mahasiswa : {nama}
-Kategori : {kategori}
-
-Keluhan:
-"{keluhan}"
-
-Kami berharap Bapak/Ibu dapat memberikan penjelasan atau solusi terkait kendala administrasi yang dialami mahasiswa tersebut.
-
-Demikian surat ini kami sampaikan. Atas kerjasamanya kami ucapkan terima kasih.
-
-Wassalamu'alaikum Warahmatullahi Wabarakatuh."""
-
-    else:
-        perihal = "Penyampaian Aspirasi Mahasiswa"
-        tujuan = "Pihak Terkait"
-        isi = f"""Assalamu'alaikum Warahmatullahi Wabarakatuh,
-Dengan hormat,
-
-Kami dari Himpunan Mahasiswa Sains Data (PIKM) menyampaikan laporan yang masuk dari mahasiswa:
+Kami dari Himpunan Mahasiswa Sains Data (PIKM) menyampaikan laporan mahasiswa:
 
 Nama : {nama}
 Kategori : {kategori}
 Keluhan : "{keluhan}"
 
-Kami memohon agar laporan ini dapat ditindaklanjuti demi kebaikan bersama.
-
-Demikian disampaikan, terima kasih.
+Mohon kiranya dapat ditindaklanjuti. Terima kasih.
 
 Wassalamu'alaikum Warahmatullahi Wabarakatuh."""
 
-    return perihal, tujuan, isi
+    # Coba AI Gemini Pro
+    if "GEMINI_API_KEY" in st.secrets:
+        try:
+            model = genai.GenerativeModel('gemini-pro') 
+            prompt = f"""
+            Buatkan draft surat formal singkat dari Himpunan Mahasiswa Sains Data (PIKM).
+            Data: Nama {nama}, Kategori {kategori}, Keluhan "{keluhan}".
+            Output WAJIB format: PERIHAL|||TUJUAN|||ISI_LENGKAP
+            Isi harus ada Pembuka (Assalamu'alaikum), Inti (Formal), Penutup.
+            """
+            response = model.generate_content(prompt)
+            text = response.text.strip()
+            parts = text.split("|||")
+            if len(parts) >= 3:
+                return parts[0].strip(), parts[1].strip(), parts[2].strip()
+        except: pass 
 
-# --- FUNGSI PDF GENERATOR (KOP RAPI & HEMAT SPASI) ---
+    return perihal_backup, tujuan_backup, isi_backup
+
+# --- FUNGSI PDF GENERATOR ---
 def create_pdf(no_surat, lampiran, perihal, tujuan, isi_surat):
     pdf = FPDF()
-    
-    # SETTING MARGIN (Kiri 3cm, Atas 2.5cm, Kanan 2.5cm, Bawah 2.5cm)
     pdf.set_margins(30, 25, 25) 
     pdf.set_auto_page_break(auto=True, margin=25)
-    
     pdf.add_page()
     
-    # --- 1. KOP SURAT (CENTERING MANUAL) ---
-    # Logo Kiri (UIN)
+    # 1. KOP SURAT
     if os.path.exists("logo_uin.png"):
         pdf.image("logo_uin.png", x=25, y=20, w=22)
-    
-    # Logo Kanan (Himasda)
     if os.path.exists("logo_him.png"):
         pdf.image("logo_him.png", x=163, y=20, w=22)
 
-    # Teks Tengah (Times New Roman 12 BOLD)
     pdf.set_y(20) 
     pdf.set_font("Times", 'B', 12) 
-    
     pdf.set_x(0) 
     pdf.cell(210, 5, "HIMPUNAN MAHASISWA SAINS DATA", 0, 1, 'C')
     pdf.set_x(0)
@@ -233,48 +255,37 @@ def create_pdf(no_surat, lampiran, perihal, tujuan, isi_surat):
     pdf.set_x(0)
     pdf.cell(210, 5, "UNIVERSITAS ISLAM NEGERI RADEN INTAN LAMPUNG", 0, 1, 'C')
     
-    # Alamat (Regular 10)
     pdf.set_font("Times", '', 10) 
     pdf.set_x(0)
     pdf.cell(210, 5, "Sekretariat: Jl. Letkol Endro Suratmin, Sukarame, Bandar Lampung,", 0, 1, 'C')
     
-    # --- EMAIL WARNA BIRU ---
     part1 = "Lampung 35131 "
     part2 = "Email: himasda.radenintan@gmail.com"
-    
     w1 = pdf.get_string_width(part1)
     w2 = pdf.get_string_width(part2)
-    total_w = w1 + w2
+    start_x = (210 - (w1 + w2)) / 2
     
-    # Hitung posisi X awal biar center
-    start_x = (210 - total_w) / 2
     pdf.set_x(start_x)
-    
-    pdf.set_text_color(0, 0, 0) # Hitam
+    pdf.set_text_color(0, 0, 0) 
     pdf.cell(w1, 5, part1, 0, 0, 'L')
-    
-    pdf.set_text_color(0, 0, 255) # Biru
+    pdf.set_text_color(0, 0, 255) 
     pdf.cell(w2, 5, part2, 0, 1, 'L')
+    pdf.set_text_color(0, 0, 0) 
     
-    pdf.set_text_color(0, 0, 0) # Reset Hitam
-    
-    # Garis Pembatas
     pdf.ln(2)
     pdf.set_line_width(0.6)
     pdf.line(30, pdf.get_y(), 185, pdf.get_y()) 
     pdf.set_line_width(0.2)
     pdf.line(30, pdf.get_y()+1, 185, pdf.get_y()+1)
-    
     pdf.ln(6) 
 
-    # --- 2. HEADER SURAT ---
+    # 2. ISI
     pdf.set_font("Times", '', 12) 
     pdf.cell(25, 6, "Nomor", 0, 0); pdf.cell(5, 6, ":", 0, 0); pdf.cell(0, 6, no_surat, 0, 1)
     pdf.cell(25, 6, "Lampiran", 0, 0); pdf.cell(5, 6, ":", 0, 0); pdf.cell(0, 6, lampiran, 0, 1)
     pdf.cell(25, 6, "Perihal", 0, 0); pdf.cell(5, 6, ":", 0, 0); pdf.cell(0, 6, perihal, 0, 1)
     pdf.ln(4)
 
-    # --- 3. TUJUAN ---
     pdf.cell(0, 6, "Kepada Yth.", 0, 1)
     pdf.set_font("Times", 'B', 12) 
     pdf.cell(0, 6, tujuan, 0, 1)
@@ -282,30 +293,22 @@ def create_pdf(no_surat, lampiran, perihal, tujuan, isi_surat):
     pdf.cell(0, 6, "di Tempat", 0, 1)
     pdf.ln(6) 
 
-    # --- 4. ISI SURAT ---
-    pdf.set_font("Times", '', 12)
     pdf.multi_cell(0, 6, isi_surat)
     pdf.ln(8) 
 
-    # --- 5. TANDA TANGAN (ANTI POTONG HALAMAN) ---
-    if pdf.get_y() > 220:
-        pdf.add_page()
-
+    # 3. TANDA TANGAN
+    if pdf.get_y() > 220: pdf.add_page()
     now = datetime.datetime.now()
     bulan_indo = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"]
     tanggal_str = f"{now.day} {bulan_indo[now.month-1]} {now.year}"
-
     posisi_ttd = 120 
-    
     pdf.set_x(posisi_ttd)
     pdf.cell(0, 5, f"Bandar Lampung, {tanggal_str}", 0, 1, 'C')
     pdf.set_x(posisi_ttd)
     pdf.cell(0, 5, "Hormat Kami,", 0, 1, 'C')
     pdf.set_x(posisi_ttd)
     pdf.cell(0, 5, "Ketua Departemen PIKM", 0, 1, 'C')
-    
     pdf.ln(25) 
-    
     pdf.set_x(posisi_ttd)
     pdf.set_font("Times", 'BU', 12) 
     pdf.cell(0, 5, "LIA ANASTASYA", 0, 1, 'C')
@@ -335,29 +338,27 @@ selected = option_menu(
 )
 
 # =========================================================
-# 5. HALAMAN: HOME
+# 5. HALAMAN: HOME (TAMPILAN BARU!)
 # =========================================================
 if selected == "Home":
-    img_uin = get_img_as_base64("logo_uin.png")
     img_him = get_img_as_base64("logo_him.png")
     
-    header_html = f"""
-    <div class="header-container">
-        <img src="data:image/png;base64,{img_uin}" class="logo-img">
-        <div class="title-text">
-            <h1>SAINS DATA CRISIS CENTER</h1>
-            <p>Pusat Analisis, Respon Cepat, dan Mitigasi Krisis Mahasiswa</p>
+    # HERO SECTION BARU (CLEAN & PROFESSIONAL)
+    st.markdown(f"""
+    <div class="hero-container">
+        <div class="hero-text">
+            <h1 class="hero-title">SAINS DATA <br> CRISIS CENTER</h1>
+            <p class="hero-subtitle">Pusat Layanan Aspirasi, Analisis Data, dan Respon Cepat Mahasiswa PIKM.</p>
         </div>
-        <img src="data:image/png;base64,{img_him}" class="logo-img">
+        <img src="data:image/png;base64,{img_him}" class="hero-logo">
     </div>
-    """
-    st.markdown(header_html, unsafe_allow_html=True)
-    st.write("---") 
+    """, unsafe_allow_html=True)
 
+    # MENU CARDS
     c1, c2, c3 = st.columns(3)
-    with c1: st.markdown("""<div class="glass-card"><h3 style="color:#2563eb;">📢 Pelaporan</h3><p>Saluran resmi pengaduan masalah.</p></div>""", unsafe_allow_html=True)
-    with c2: st.markdown("""<div class="glass-card"><h3 style="color:#0891b2;">📊 Transparansi</h3><p>Pantau data statistik real-time.</p></div>""", unsafe_allow_html=True)
-    with c3: st.markdown("""<div class="glass-card"><h3 style="color:#7c3aed;">🤖 Sadas Bot</h3><p>Asisten AI cerdas 24/7.</p></div>""", unsafe_allow_html=True)
+    with c1: st.markdown("""<div class="glass-card"><h3 style="color:#2563eb;">📢 Pelaporan</h3><p style="color:#64748b; font-size:14px;">Saluran resmi pengaduan masalah fasilitas & akademik.</p></div>""", unsafe_allow_html=True)
+    with c2: st.markdown("""<div class="glass-card"><h3 style="color:#0891b2;">📊 Transparansi</h3><p style="color:#64748b; font-size:14px;">Pantau statistik dan status penyelesaian secara real-time.</p></div>""", unsafe_allow_html=True)
+    with c3: st.markdown("""<div class="glass-card"><h3 style="color:#7c3aed;">🤖 Sadas Bot</h3><p style="color:#64748b; font-size:14px;">Asisten AI cerdas yang siap menjawab pertanyaanmu 24/7.</p></div>""", unsafe_allow_html=True)
 
     st.write("")
     st.subheader("📰 Informasi Terbaru")
@@ -413,7 +414,7 @@ elif selected == "Lapor Masalah":
                         
                         try:
                             if sheet is None:
-                                st.error("❌ Gagal Konek Database. Pastikan 'credentials.json' benar dan Email Robot sudah diinvite ke Sheet.")
+                                st.error("❌ Gagal Konek Database.")
                             else:
                                 sheet.append_row([waktu, nama, npm, jurusan, kategori, keluhan, "Pending", link_bukti])
                                 st.success("✅ Terkirim! Laporanmu berhasil disimpan.")
@@ -490,7 +491,6 @@ elif selected == "Dashboard":
                         st.plotly_chart(fig2, use_container_width=True)
 
                 st.write("---")
-                
                 st.write("### 📝 Riwayat Laporan (Publik)")
                 kolom_rahasia = ['Nama Mahasiswa', 'NPM', 'Jurusan', 'Detail Keluhan', 'Bukti', 'Link Bukti', 'Foto']
                 kolom_tampil = [col for col in df.columns if col not in kolom_rahasia]
@@ -499,23 +499,20 @@ elif selected == "Dashboard":
                     st.dataframe(df[kolom_tampil], use_container_width=True, hide_index=True)
                 else:
                     st.info("Belum ada data.")
-                
             else: 
                 st.info("⚠️ Data masih kosong.")
         except Exception as e: 
             st.error(f"Error memuat dashboard: {str(e)}")
 
 # =========================================================
-# 9. HALAMAN: SADAS BOT (ANTI-ERROR & STABIL)
+# 9. HALAMAN: SADAS BOT
 # =========================================================
 elif selected == "Sadas Bot":
     st.markdown("<div style='max-width: 700px; margin: auto;'>", unsafe_allow_html=True)
-    
     col_header, col_btn = st.columns([3, 1])
     with col_header:
         st.markdown(f"<h2 style='text-align:left; margin:0;'>🤖 Sadas Bot</h2>", unsafe_allow_html=True)
         st.markdown("<p style='text-align:left; color:#64748b; margin-top:0px;'>Asisten Akademik Virtual</p>", unsafe_allow_html=True)
-    
     with col_btn:
         st.markdown('<div class="hapus-chat-btn">', unsafe_allow_html=True)
         if st.button("🗑️ Hapus Chat"):
@@ -538,19 +535,14 @@ elif selected == "Sadas Bot":
         response = ""
         if "GEMINI_API_KEY" in st.secrets:
             try:
-                # 1. KITA PAKAI MODEL 'gemini-pro' YANG PALING STABIL
                 model = genai.GenerativeModel('gemini-pro')
-                system_prompt = "Kamu adalah Sadas Bot, asisten mahasiswa Sains Data UIN Raden Intan Lampung. Jawab sopan, singkat, dan membantu."
+                system_prompt = "Kamu adalah Sadas Bot, asisten virtual dari Sains Data UIN Raden Intan Lampung. Jawab sopan dan santai."
                 full_prompt = f"{system_prompt}\nUser: {prompt}"
-                
                 with st.spinner("Sadas Bot sedang mengetik..."):
                     ai_response = model.generate_content(full_prompt)
                     response = ai_response.text
-
             except Exception as e:
-                # 2. FALLBACK JIKA ERROR (SUPAYA GAK MERAH)
-                response = "🙏 Maaf, server AI sedang sibuk atau ada gangguan koneksi. Silakan coba tanyakan lagi nanti ya."
-                # print(f"Error Debug: {e}") # Bisa dicek di console log kalau perlu
+                response = "🙏 Maaf, server AI sedang sibuk. Silakan coba lagi nanti."
         else:
             response = "⚠️ API Key Gemini belum dipasang di Secrets."
 
@@ -595,7 +587,6 @@ elif selected == "Admin":
                     
                     st.write("---")
                     
-                    # --- PILIH LAPORAN ---
                     pilihan_laporan = []
                     for i, row in enumerate(raw_data[1:], start=2):
                         if not row[0].strip(): continue
@@ -607,11 +598,9 @@ elif selected == "Admin":
                     
                     if pilihan_laporan:
                         laporan_terpilih = st.selectbox("Pilih Laporan:", pilihan_laporan)
-                        
                         nomor_baris = int(laporan_terpilih.split(" | ")[0])
                         data_terpilih = raw_data[nomor_baris - 1]
                         
-                        # --- DATA PELAPOR ---
                         nama_mhs = data_terpilih[1]
                         npm_mhs = data_terpilih[2]
                         jur_mhs = data_terpilih[3]
@@ -620,7 +609,6 @@ elif selected == "Admin":
                         
                         tab_status, tab_surat = st.tabs(["⚙️ Update Status", "🖨️ Generator Surat (AI)"])
                         
-                        # --- TAB 1: UPDATE STATUS ---
                         with tab_status:
                             status_baru = st.selectbox("Ubah Status Jadi:", ["Pending", "Sedang Diproses", "Selesai"])
                             if st.button("💾 Simpan Status"):
@@ -632,17 +620,15 @@ elif selected == "Admin":
                                         st.rerun()
                                     except Exception as e: st.error(f"Gagal: {e}")
 
-                        # --- TAB 2: SMART SURAT (AI + EDIT MANUSIA) ---
                         with tab_surat:
                             st.write("#### 📝 Generator Surat Otomatis")
-                            
                             st.info(f"**Sedang Memproses Laporan:** \nMahasiswa: {nama_mhs} | Keluhan: {kel_mhs[:50]}...")
                             
                             if 'draft_perihal' not in st.session_state: st.session_state.draft_perihal = ""
                             if 'draft_tujuan' not in st.session_state: st.session_state.draft_tujuan = ""
                             if 'draft_isi' not in st.session_state: st.session_state.draft_isi = ""
 
-                            if st.button("✨ 1. Buat Draft (Auto AI/Manual)"):
+                            if st.button("✨ 1. Buat Draft (Auto AI)"):
                                 with st.spinner("Sedang memproses..."):
                                     p, t, i = draft_surat_with_ai(kat_mhs, kel_mhs, nama_mhs)
                                     st.session_state.draft_perihal = p
