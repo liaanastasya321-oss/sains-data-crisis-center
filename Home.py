@@ -10,7 +10,8 @@ import requests
 import datetime
 import time
 import base64
-import google.generativeai as genai 
+import google.generativeai as genai
+from fpdf import FPDF
 
 # =========================================================
 # 1. PAGE CONFIG
@@ -48,19 +49,6 @@ iframe[title="streamlit_option_menu.option_menu"] { width: 100%; background: tra
 /* JARAK KONTEN */
 .block-container { padding-top: 2rem !important; padding-bottom: 5rem !important; max-width: 1200px; }
 
-/* HEADER */
-.header-container { display: flex; flex-direction: row; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 30px; width: 100%; }
-.logo-img { width: 90px; height: auto; object-fit: contain; }
-.title-text { flex: 1; text-align: center; }
-.title-text h1 { font-size: 32px; margin: 0; font-weight: 800; line-height: 1.2; background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-.title-text p { font-size: 14px; margin: 5px 0 0 0; color: #64748b; }
-@media (max-width: 600px) {
-    .header-container { margin-bottom: 15px; }
-    .logo-img { width: 45px !important; }
-    .title-text h1 { font-size: 18px !important; }
-    .title-text p { font-size: 10px !important; margin-top: 2px; }
-}
-
 /* COMPONENTS */
 .glass-card { background: #ffffff; border-radius: 16px; padding: 20px; border: 1px solid #cbd5e1; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); margin-bottom: 15px; text-align: center; height: 100%; }
 .announce-card { background: #ffffff; border-radius: 12px; padding: 15px; margin-bottom: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; }
@@ -73,7 +61,7 @@ div.stButton > button { background: linear-gradient(90deg, #2563eb, #1d4ed8); co
 """, unsafe_allow_html=True)
 
 # =========================================================
-# 3. KONEKSI GOOGLE SHEETS
+# 3. KONEKSI & FUNGSI BANTUAN
 # =========================================================
 ID_SPREADSHEET = "1crJl0DsswyMGmq0ej_niIMfhSLdUIUx8u42HEu-sc3g" 
 API_KEY_IMGBB  = "827ccb0eea8a706c4c34a16891f84e7b" 
@@ -93,7 +81,6 @@ def get_spreadsheet():
     except: return None
 
 sh = get_spreadsheet()
-
 sheet = None
 sheet_pengumuman = None
 
@@ -102,11 +89,9 @@ if sh:
     except: 
         try: sheet = sh.get_worksheet(0)
         except: pass
-
     try: sheet_pengumuman = sh.worksheet("Pengumuman")
     except: pass
 
-# --- KONFIGURASI AI ---
 if "GEMINI_API_KEY" in st.secrets:
     try: genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
     except: pass
@@ -116,6 +101,96 @@ def get_img_as_base64(file_path):
         with open(file_path, "rb") as f: data = f.read()
         return base64.b64encode(data).decode()
     except: return ""
+
+# --- FUNGSI AI DRAFTER ---
+def draft_surat_with_ai(kategori, keluhan, nama):
+    if "GEMINI_API_KEY" not in st.secrets:
+        return None, None, None
+    
+    try:
+        model = genai.GenerativeModel('gemini-1.5-flash')
+        prompt = f"""
+        Buatkan draft surat formal dari Himpunan Mahasiswa Sains Data (PIKM) ke pihak kampus.
+        Konteks: Mahasiswa bernama {nama} melapor: '{keluhan}' (Kategori: {kategori}).
+        
+        Output WAJIB pakai separator '|||' :
+        PERIHAL_SINGKAT|||TUJUAN_JABATAN|||ISI_SURAT_LENGKAP_(PEMBUKA_INTI_PENUTUP)
+        """
+        response = model.generate_content(prompt)
+        text = response.text.strip()
+        parts = text.split("|||")
+        if len(parts) >= 3:
+            return parts[0].strip(), parts[1].strip(), parts[2].strip()
+        else:
+            return "Pengajuan Tindak Lanjut", "Ketua Program Studi Sains Data", text
+    except:
+        return "Pengajuan Tindak Lanjut", "Ketua Program Studi Sains Data", "Gagal generate AI. Silakan tulis manual."
+
+# --- FUNGSI PDF GENERATOR ---
+def create_pdf(no_surat, lampiran, perihal, tujuan, isi_surat):
+    pdf = FPDF()
+    pdf.add_page()
+    
+    # 1. KOP SURAT (Priority: kop_surat.png)
+    if os.path.exists("kop_surat.png"):
+        # Asumsi gambar kop sudah proporsional (A4 width approx 210mm)
+        pdf.image("kop_surat.png", x=0, y=0, w=210) 
+        pdf.ln(40) # Geser ke bawah melewati gambar kop
+    elif os.path.exists("logo_him.png"):
+        # Fallback manual kalau gak ada gambar kop
+        pdf.image("logo_him.png", x=10, y=10, w=25)
+        pdf.set_font("Times", 'B', 16)
+        pdf.cell(0, 10, "HIMPUNAN MAHASISWA SAINS DATA", 0, 1, 'C')
+        pdf.set_font("Times", 'B', 12)
+        pdf.cell(0, 10, "UNIVERSITAS ISLAM NEGERI RADEN INTAN LAMPUNG", 0, 1, 'C')
+        pdf.line(10, 35, 200, 35)
+        pdf.ln(15)
+    else:
+        pdf.ln(20)
+
+    # 2. INFO SURAT
+    pdf.set_font("Times", '', 12)
+    pdf.cell(25, 6, "Nomor", 0, 0); pdf.cell(5, 6, ":", 0, 0); pdf.cell(0, 6, no_surat, 0, 1)
+    pdf.cell(25, 6, "Lampiran", 0, 0); pdf.cell(5, 6, ":", 0, 0); pdf.cell(0, 6, lampiran, 0, 1)
+    pdf.cell(25, 6, "Perihal", 0, 0); pdf.cell(5, 6, ":", 0, 0); pdf.cell(0, 6, perihal, 0, 1)
+    pdf.ln(5)
+
+    # 3. TUJUAN
+    pdf.cell(0, 6, "Kepada Yth.", 0, 1)
+    pdf.set_font("Times", 'B', 12)
+    pdf.cell(0, 6, tujuan, 0, 1)
+    pdf.set_font("Times", '', 12)
+    pdf.cell(0, 6, "di Tempat", 0, 1)
+    pdf.ln(10)
+
+    # 4. ISI SURAT (Multi Cell)
+    pdf.set_font("Times", '', 12)
+    pdf.multi_cell(0, 6, isi_surat)
+    pdf.ln(15)
+
+    # 5. TANDA TANGAN
+    # Format Tanggal Indo
+    now = datetime.datetime.now()
+    bulan_indo = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"]
+    tanggal_str = f"{now.day} {bulan_indo[now.month-1]} {now.year}"
+
+    pdf.set_x(120)
+    pdf.cell(0, 5, f"Bandar Lampung, {tanggal_str}", 0, 1, 'C')
+    pdf.set_x(120)
+    pdf.cell(0, 5, "Hormat Kami,", 0, 1, 'C')
+    pdf.set_x(120)
+    pdf.cell(0, 5, "Ketua Departemen PIKM", 0, 1, 'C')
+    
+    pdf.ln(25)
+    
+    pdf.set_x(120)
+    pdf.set_font("Times", 'BU', 12)
+    pdf.cell(0, 5, "LIA ANASTASYA", 0, 1, 'C')
+    pdf.set_x(120)
+    pdf.set_font("Times", '', 12)
+    pdf.cell(0, 5, "NPM. 247103001", 0, 1, 'C')
+
+    return pdf.output(dest='S').encode('latin-1')
 
 # =========================================================
 # 4. MENU NAVIGASI
@@ -240,7 +315,6 @@ elif selected == "Cek Status":
                     raw_data = sheet.get_all_values()
                     if len(raw_data) > 1:
                         df = pd.DataFrame(raw_data[1:], columns=raw_data[0])
-                        # Filter baris kosong
                         if 'Waktu Lapor' in df.columns:
                              df = df[df['Waktu Lapor'].astype(str).str.strip() != ""]
                         
@@ -260,24 +334,19 @@ elif selected == "Cek Status":
                 except Exception as e: st.error(f"Gagal mengambil data: {e}")
 
 # =========================================================
-# 8. HALAMAN: DASHBOARD (PRIVAT + FILTER KOSONG)
+# 8. HALAMAN: DASHBOARD
 # =========================================================
 elif selected == "Dashboard":
     st.markdown("<h2 style='text-align:center;'>📊 Dashboard Analisis</h2>", unsafe_allow_html=True)
     if sheet:
         try:
-            # 1. AMBIL SEMUA DATA
             raw_data = sheet.get_all_values()
             
             if len(raw_data) > 1:
-                # 2. BERSIHKAN DATA (HAPUS BARIS KOSONG)
                 df = pd.DataFrame(raw_data[1:], columns=raw_data[0])
-                
-                # JURUS PEMBERSIH: Hanya ambil baris yang 'Waktu Lapor' nya TIDAK KOSONG
                 if 'Waktu Lapor' in df.columns:
                     df = df[df['Waktu Lapor'].astype(str).str.strip() != ""]
                 
-                # --- VISUALISASI ---
                 col1, col2, col3 = st.columns(3)
                 with col1: st.markdown(f"""<div class="glass-card"><div class="metric-value">{len(df)}</div><div class="metric-label">Total</div></div>""", unsafe_allow_html=True)
                 with col2: st.markdown(f"""<div class="glass-card"><div class="metric-value" style="color:#d97706;">{len(df[df['Status'] == 'Pending'])}</div><div class="metric-label">Menunggu</div></div>""", unsafe_allow_html=True)
@@ -299,7 +368,6 @@ elif selected == "Dashboard":
 
                 st.write("---")
                 
-                # --- TABEL PRIVASI ---
                 st.write("### 📝 Riwayat Laporan (Publik)")
                 kolom_rahasia = ['Nama Mahasiswa', 'NPM', 'Jurusan', 'Detail Keluhan', 'Bukti', 'Link Bukti', 'Foto']
                 kolom_tampil = [col for col in df.columns if col not in kolom_rahasia]
@@ -381,7 +449,7 @@ elif selected == "Sadas Bot":
     st.markdown("</div>", unsafe_allow_html=True)
 
 # =========================================================
-# 10. HALAMAN: ADMIN (PINTAR: SKIP BARIS KOSONG)
+# 10. HALAMAN: ADMIN (SMART AI + EDITOR)
 # =========================================================
 elif selected == "Admin":
     st.markdown("<h2 style='text-align:center;'>🔐 Admin Area</h2>", unsafe_allow_html=True)
@@ -398,7 +466,6 @@ elif selected == "Admin":
                 else: st.error("Password Salah")
         st.markdown("</div>", unsafe_allow_html=True)
     else:
-        # TOMBOL LOGOUT
         if st.button("Logout", key="logout_btn"):
             st.session_state['is_logged_in'] = False
             st.rerun()
@@ -407,71 +474,100 @@ elif selected == "Admin":
         
         if sheet:
             try:
-                # 1. AMBIL DATA RAW
                 raw_data = sheet.get_all_values()
                 
                 if len(raw_data) > 1:
-                    # --- FITUR 1: DATA TABEL LENGKAP (BERSIH DARI BARIS KOSONG) ---
                     st.subheader("📋 Database Lengkap")
                     df = pd.DataFrame(raw_data[1:], columns=raw_data[0])
-                    
-                    # FILTER TAMPILAN: Hapus baris yang kosong Waktu Lapor-nya
                     if 'Waktu Lapor' in df.columns:
                         df_display = df[df['Waktu Lapor'].astype(str).str.strip() != ""]
                         st.dataframe(df_display, use_container_width=True)
                     
                     st.write("---")
                     
-                    # --- FITUR 2: UPDATE STATUS (PINTAR) ---
-                    st.subheader("⚙️ Update Status Laporan")
-                    
-                    # LOGIKA DROPDOWN PINTAR:
-                    # Kita loop data asli, TAPI kita skip yang kosong.
-                    # Kita tetap simpan NOMOR BARIS ASLI (index i) biar update-nya gak salah alamat.
+                    # --- PILIH LAPORAN ---
                     pilihan_laporan = []
-                    
-                    # Mulai dari index 2 (karena di Sheet: Baris 1 Header, Baris 2 Data Pertama)
                     for i, row in enumerate(raw_data[1:], start=2):
-                        # Cek apakah kolom pertama (Waktu) ada isinya?
-                        # Kalau kosong atau cuma spasi, SKIP.
-                        if not row[0].strip():
-                            continue
-                            
-                        # Ambil data secukupnya buat label dropdown
-                        # Pastikan list row cukup panjang biar gak error index
+                        if not row[0].strip(): continue
                         nama_pelapor = row[1] if len(row) > 1 else "Tanpa Nama"
                         kategori_lapor = row[4] if len(row) > 4 else "-"
                         isi_keluhan = row[5][:20] if len(row) > 5 else "-"
-                        
-                        # Format Label: "Baris 2 | Nama - Masalah"
                         label = f"{i} | {nama_pelapor} - {kategori_lapor} ({isi_keluhan}...)" 
                         pilihan_laporan.append(label)
                     
                     if pilihan_laporan:
-                        col_edit1, col_edit2 = st.columns([3, 1])
-                        with col_edit1:
-                            laporan_terpilih = st.selectbox("Pilih Laporan:", pilihan_laporan)
+                        laporan_terpilih = st.selectbox("Pilih Laporan:", pilihan_laporan)
                         
-                        with col_edit2:
-                            status_baru = st.selectbox("Ubah Jadi:", ["Pending", "Sedang Diproses", "Selesai"])
+                        nomor_baris = int(laporan_terpilih.split(" | ")[0])
+                        data_terpilih = raw_data[nomor_baris - 1]
                         
-                        if st.button("💾 Simpan Status"):
-                            if laporan_terpilih:
-                                # Ambil nomor baris dari string "2 | Nama..."
-                                nomor_baris = int(laporan_terpilih.split(" | ")[0])
-                                
-                                with st.spinner("Mengupdate Database..."):
-                                    # Kolom Status ada di urutan ke-7 (Kolom G)
+                        # --- DATA PELAPOR ---
+                        nama_mhs = data_terpilih[1]
+                        npm_mhs = data_terpilih[2]
+                        jur_mhs = data_terpilih[3]
+                        kat_mhs = data_terpilih[4]
+                        kel_mhs = data_terpilih[5]
+                        
+                        tab_status, tab_surat = st.tabs(["⚙️ Update Status", "🖨️ Generator Surat (AI)"])
+                        
+                        # --- TAB 1: UPDATE STATUS ---
+                        with tab_status:
+                            status_baru = st.selectbox("Ubah Status Jadi:", ["Pending", "Sedang Diproses", "Selesai"])
+                            if st.button("💾 Simpan Status"):
+                                with st.spinner("Menyimpan..."):
                                     try:
                                         sheet.update_cell(nomor_baris, 7, status_baru)
-                                        st.success(f"✅ Berhasil! Baris {nomor_baris} jadi '{status_baru}'")
+                                        st.success(f"Status berhasil diubah jadi: {status_baru}")
                                         time.sleep(1)
-                                        st.rerun() 
-                                    except Exception as e:
-                                        st.error(f"Gagal update: {e}")
+                                        st.rerun()
+                                    except Exception as e: st.error(f"Gagal: {e}")
+
+                        # --- TAB 2: SMART SURAT (AI + EDIT MANUSIA) ---
+                        with tab_surat:
+                            st.write("#### 📝 Generator Surat Otomatis")
+                            st.info("Langkah 1: Klik tombol AI untuk bikin draft. \nLangkah 2: Edit teks di kotak bawah sesukamu. \nLangkah 3: Klik Cetak.")
+                            
+                            if 'draft_perihal' not in st.session_state: st.session_state.draft_perihal = ""
+                            if 'draft_tujuan' not in st.session_state: st.session_state.draft_tujuan = ""
+                            if 'draft_isi' not in st.session_state: st.session_state.draft_isi = ""
+
+                            if st.button("✨ 1. Buat Draft via AI"):
+                                with st.spinner("AI sedang berpikir..."):
+                                    p, t, i = draft_surat_with_ai(kat_mhs, kel_mhs, nama_mhs)
+                                    st.session_state.draft_perihal = p
+                                    st.session_state.draft_tujuan = t
+                                    st.session_state.draft_isi = i
+                                    st.success("Draft jadi! Silakan edit di bawah.")
+
+                            st.write("---")
+                            st.write("##### ✏️ Editor Surat (Silakan Edit Di Sini)")
+                            
+                            # FORM EDITOR YANG MENGAMBIL NILAI DARI SESSION STATE
+                            # APAPUN YANG DIKETIK DI SINI AKAN MASUK KE PDF
+                            col_s1, col_s2, col_s3 = st.columns([1, 1, 2])
+                            with col_s1:
+                                no_surat = st.text_input("Nomor Surat", value="001/PIKM-HMSD/II/2026")
+                            with col_s2:
+                                lampiran = st.text_input("Lampiran", value="1 Berkas")
+                            with col_s3:
+                                perihal_surat = st.text_input("Perihal", value=st.session_state.draft_perihal)
+                            
+                            tujuan_surat = st.text_input("Tujuan Surat (Yth.)", value=st.session_state.draft_tujuan)
+                            isi_lengkap = st.text_area("Isi Surat Lengkap", value=st.session_state.draft_isi, height=300)
+                            
+                            if st.button("🖨️ 2. Cetak PDF Final"):
+                                # PDF DIBUAT BERDASARKAN APA YANG ADA DI KOTAK INPUT SAAT INI
+                                pdf_bytes = create_pdf(no_surat, lampiran, perihal_surat, tujuan_surat, isi_lengkap)
+                                st.download_button(
+                                    label="📥 Download Surat (PDF)",
+                                    data=pdf_bytes,
+                                    file_name=f"Surat_Tindak_Lanjut_{nama_mhs}.pdf",
+                                    mime="application/pdf"
+                                )
+                                st.balloons()
                     else:
-                        st.info("Tidak ada laporan yang valid untuk diedit.")
+                        st.info("Tidak ada laporan valid.")
                 else:
-                    st.info("Belum ada data laporan masuk.")
+                    st.info("Belum ada data laporan.")
             except Exception as e:
                 st.error(f"Error Database: {str(e)}")
