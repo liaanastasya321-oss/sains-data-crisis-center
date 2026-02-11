@@ -24,15 +24,14 @@ st.set_page_config(
 )
 
 # =========================================================
-# 2. GLOBAL CSS (MODERN & PROFESSIONAL UI)
+# 2. GLOBAL CSS
 # =========================================================
 st.markdown("""
 <style>
-/* --- 1. SETUP DASAR --- */
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap');
 
 .stApp { 
-    background: #f8fafc; /* Light Gray Clean */
+    background: #f8fafc; 
     font-family: 'Plus Jakarta Sans', sans-serif;
     color: #1e293b;
 }
@@ -40,7 +39,6 @@ st.markdown("""
 #MainMenu, footer, header, [data-testid="stSidebar"] { display: none !important; }
 .stApp > header { display: none !important; }
 
-/* --- 2. HEADER HERO SECTION (RESPONSIVE) --- */
 .hero-container {
     display: flex;
     flex-direction: row;
@@ -54,11 +52,7 @@ st.markdown("""
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
 }
 
-.hero-text {
-    flex: 1;
-    padding-right: 20px;
-}
-
+.hero-text { flex: 1; padding-right: 20px; }
 .hero-title {
     font-size: 42px;
     font-weight: 800;
@@ -69,39 +63,9 @@ st.markdown("""
     -webkit-text-fill-color: transparent;
     letter-spacing: -1px;
 }
+.hero-subtitle { font-size: 16px; color: #64748b; margin-top: 10px; font-weight: 500; }
+.hero-logo { width: 140px; height: auto; filter: drop-shadow(0 10px 15px rgba(0, 0, 0, 0.1)); transition: transform 0.3s ease; }
 
-.hero-subtitle {
-    font-size: 16px;
-    color: #64748b;
-    margin-top: 10px;
-    font-weight: 500;
-}
-
-.hero-logo {
-    width: 140px; /* Ukuran Logo Desktop */
-    height: auto;
-    filter: drop-shadow(0 10px 15px rgba(0, 0, 0, 0.1));
-    transition: transform 0.3s ease;
-}
-
-.hero-logo:hover {
-    transform: scale(1.05) rotate(2deg);
-}
-
-/* --- MOBILE TWEAKS --- */
-@media (max-width: 768px) {
-    .hero-container {
-        flex-direction: column-reverse; /* Logo di atas Text */
-        text-align: center;
-        padding: 1.5rem;
-    }
-    .hero-text { padding-right: 0; margin-top: 15px; }
-    .hero-title { font-size: 28px; } /* Font HP lebih kecil tapi kebaca */
-    .hero-subtitle { font-size: 14px; }
-    .hero-logo { width: 100px; } /* Logo HP */
-}
-
-/* --- 3. CARDS (KARTU MENU) --- */
 .glass-card { 
     background: #ffffff; 
     border-radius: 16px; 
@@ -112,41 +76,14 @@ st.markdown("""
     height: 100%; 
     transition: all 0.3s ease;
 }
-.glass-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-    border-color: #bfdbfe;
-}
+.glass-card:hover { transform: translateY(-5px); border-color: #bfdbfe; }
 .metric-value { font-size: 36px; font-weight: 800; color: #0f172a; margin-bottom: 5px; }
 .metric-label { font-size: 14px; color: #64748b; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
 
-/* --- 4. FORM & BUTTONS --- */
-.stTextInput input, .stTextArea textarea, .stSelectbox div[data-baseweb="select"] {
-    background-color: #ffffff !important; 
-    border: 1px solid #cbd5e1 !important; 
-    color: #1e293b !important; 
-    border-radius: 10px;
-    padding: 10px;
-}
-div.stButton > button { 
-    background: linear-gradient(90deg, #2563eb, #1d4ed8); 
-    color: white; 
-    border: none; 
-    padding: 12px 24px; 
-    border-radius: 10px; 
-    font-weight: 700; 
-    width: 100%;
-    transition: opacity 0.3s;
-}
-div.stButton > button:hover { opacity: 0.9; }
-
-/* --- 5. CHAT BUBBLE --- */
 .chat-message { padding: 1rem; border-radius: 12px; margin-bottom: 10px; display: flex; font-size: 15px; line-height: 1.5; }
 .chat-message.user { background-color: #eff6ff; border: 1px solid #bfdbfe; color: #1e3a8a; justify-content: flex-end; text-align: right; }
 .chat-message.bot { background-color: #ffffff; border: 1px solid #e2e8f0; color: #334155; }
 
-/* Hide Streamlit Elements */
-iframe[title="streamlit_option_menu.option_menu"] { width: 100%; background: transparent; }
 .block-container { padding-top: 1rem !important; padding-bottom: 5rem !important; max-width: 1200px; }
 </style>
 """, unsafe_allow_html=True)
@@ -193,37 +130,32 @@ def get_img_as_base64(file_path):
         return base64.b64encode(data).decode()
     except: return ""
 
-# --- FUNGSI DETEKSI MODEL OTOMATIS ---
 def get_available_model():
     if "GEMINI_API_KEY" not in st.secrets: return "gemini-pro"
     try:
         genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
         for m in genai.list_models():
-            if 'generateContent' in m.supported_generation_methods:
-                return m.name
+            if 'generateContent' in m.supported_generation_methods: return m.name
     except: return "gemini-pro"
     return "gemini-pro"
 
-# --- FUNGSI AI DRAFTER ---
 def draft_surat_with_ai(kategori, keluhan, nama):
     if "GEMINI_API_KEY" in st.secrets:
         try:
-            model_active = get_available_model()
-            model = genai.GenerativeModel(model_active) 
-            prompt = f"Buatkan draf surat formal dari PIKM UIN Raden Intan Lampung untuk pelapor {nama} kategori {kategori} keluhan {keluhan}. Format: PERIHAL|||TUJUAN|||ISI"
+            model = genai.GenerativeModel(get_available_model())
+            prompt = f"Buatkan draf surat formal dari PIKM UIN RIL. Pelapor: {nama}, Masalah: {kategori}, Keluhan: {keluhan}. Format: PERIHAL|||TUJUAN|||ISI"
             response = model.generate_content(prompt)
             parts = response.text.split("|||")
-            if len(parts) >= 3: return parts[0], parts[1], parts[2]
+            if len(parts) >= 3: return parts[0].strip(), parts[1].strip(), parts[2].strip()
         except: pass 
-    return "Laporan", "Ketua Prodi", "Isi surat..."
+    return "Tindak Lanjut", "Ketua Prodi", "Detail laporan..."
 
-# --- FUNGSI PDF GENERATOR ---
 def create_pdf(no_surat, lampiran, perihal, tujuan, isi_surat):
     pdf = FPDF()
     pdf.add_page()
-    pdf.set_font("Arial", 'B', 12)
-    pdf.cell(0, 10, "SURAT TINDAK LANJUT", 0, 1, 'C')
-    pdf.set_font("Arial", '', 12)
+    pdf.set_font("Times", 'B', 12)
+    pdf.cell(0, 10, "HIMPUNAN MAHASISWA SAINS DATA", 0, 1, 'C')
+    pdf.set_font("Times", '', 12)
     pdf.multi_cell(0, 10, f"Nomor: {no_surat}\nPerihal: {perihal}\n\nKepada: {tujuan}\n\n{isi_surat}")
     return pdf.output(dest='S').encode('latin-1')
 
@@ -236,6 +168,7 @@ selected = option_menu(
     icons=["house", "exclamation-triangle-fill", "search", "bar-chart-fill", "robot", "lock-fill"],
     default_index=0,
     orientation="horizontal",
+    styles={"nav-link-selected": {"background-color": "#2563eb"}}
 )
 
 # =========================================================
@@ -257,9 +190,61 @@ if selected == "Home":
     """, unsafe_allow_html=True)
 
     c1, c2, c3 = st.columns(3)
-    with c1: st.markdown("""<div class="glass-card"><h3 style="color:#2563eb;">📢 Pelaporan</h3><p style="color:#64748b; font-size:14px;">Saluran resmi pengaduan masalah fasilitas & akademik.</p></div>""", unsafe_allow_html=True)
-    with c2: st.markdown("""<div class="glass-card"><h3 style="color:#0891b2;">📊 Transparansi</h3><p style="color:#64748b; font-size:14px;">Pantau statistik dan status penyelesaian secara real-time.</p></div>""", unsafe_allow_html=True)
-    with c3: st.markdown("""<div class="glass-card"><h3 style="color:#7c3aed;">🤖 Sasda Bot</h3><p style="color:#64748b; font-size:14px;">Asisten AI cerdas yang siap menjawab pertanyaanmu 24/7.</p></div>""", unsafe_allow_html=True)
+    with c1: st.markdown('<div class="glass-card"><h3>📢 Pelaporan</h3><p>Aspirasi fasilitas & akademik.</p></div>', unsafe_allow_html=True)
+    with c2: st.markdown('<div class="glass-card"><h3>📊 Transparansi</h3><p>Pantau status real-time.</p></div>', unsafe_allow_html=True)
+    with c3: st.markdown('<div class="glass-card"><h3>🤖 Sasda Bot</h3><p>Asisten AI 24/7.</p></div>', unsafe_allow_html=True)
+
+    if sheet_pengumuman:
+        st.write("---")
+        st.subheader("📰 Informasi Terbaru")
+        try:
+            data_info = sheet_pengumuman.get_all_records()
+            for item in reversed(data_info):
+                st.info(f"**{item.get('Judul')}** ({item.get('Tanggal')})\n\n{item.get('Isi')}")
+        except: pass
+
+# =========================================================
+# 6. HALAMAN: LAPOR MASALAH
+# =========================================================
+elif selected == "Lapor Masalah":
+    st.markdown("<h2 style='text-align:center;'>📝 Form Pengaduan</h2>", unsafe_allow_html=True)
+    with st.form("form_lapor"):
+        nama = st.text_input("Nama Lengkap")
+        npm = st.text_input("NPM")
+        jurusan = st.selectbox("Prodi", ["Sains Data", "Biologi", "Fisika", "Matematika"])
+        kategori = st.selectbox("Kategori", ["Fasilitas", "Akademik", "Keuangan", "Lainnya"])
+        keluhan = st.text_area("Deskripsi")
+        bukti = st.file_uploader("Upload Bukti", type=["png", "jpg"])
+        submit = st.form_submit_button("Kirim Laporan")
+        
+        if submit and sheet:
+            waktu = datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+            sheet.append_row([waktu, nama, npm, jurusan, kategori, keluhan, "Pending", "-"])
+            st.success("Laporan terkirim!")
+
+# =========================================================
+# 7. HALAMAN: CEK STATUS
+# =========================================================
+elif selected == "Cek Status":
+    st.markdown("<h2 style='text-align:center;'>🔍 Cek Status</h2>", unsafe_allow_html=True)
+    npm_cek = st.text_input("Masukkan NPM")
+    if st.button("Cek") and sheet:
+        data = pd.DataFrame(sheet.get_all_records())
+        hasil = data[data['NPM'].astype(str) == npm_cek]
+        if not hasil.empty: st.write(hasil[['Waktu Lapor', 'Kategori Masalah', 'Status']])
+        else: st.warning("Data tidak ditemukan.")
+
+# =========================================================
+# 8. HALAMAN: DASHBOARD
+# =========================================================
+elif selected == "Dashboard":
+    st.markdown("<h2 style='text-align:center;'>📊 Dashboard</h2>", unsafe_allow_html=True)
+    if sheet:
+        df = pd.DataFrame(sheet.get_all_records())
+        if not df.empty:
+            st.metric("Total Laporan", len(df))
+            fig = go.Figure(data=[go.Pie(labels=df['Status'].value_counts().index, values=df['Status'].value_counts().values)])
+            st.plotly_chart(fig)
 
 # =========================================================
 # 9. HALAMAN: SASDA BOT
@@ -267,24 +252,30 @@ if selected == "Home":
 elif selected == "Sasda Bot":
     st.markdown("<h2>🤖 Sasda Bot</h2>", unsafe_allow_html=True)
     if "messages" not in st.session_state: st.session_state.messages = []
-    
     for m in st.session_state.messages:
         with st.chat_message(m["role"]): st.markdown(m["content"])
-
-    if prompt := st.chat_input("Apa yang bisa Sasda bantu?"):
+    
+    if prompt := st.chat_input("Ada yang bisa Sasda bantu?"):
         st.session_state.messages.append({"role": "user", "content": prompt})
         with st.chat_message("user"): st.markdown(prompt)
         
-        # Simpel logic buat ganti nama di sistem
-        response = "Halo! Aku Sasda Bot. Ada yang bisa dibantu?"
+        response = "Maaf, AI sedang offline."
         if "GEMINI_API_KEY" in st.secrets:
             try:
                 model = genai.GenerativeModel(get_available_model())
-                res = model.generate_content(f"Kamu adalah Sasda Bot dari Sains Data UIN RIL. User tanya: {prompt}")
-                response = res.text
+                ai_res = model.generate_content(f"Kamu adalah Sasda Bot. User: {prompt}")
+                response = ai_res.text
             except: pass
         
         st.session_state.messages.append({"role": "assistant", "content": response})
         with st.chat_message("assistant"): st.markdown(response)
 
-# (Catatan: Sisa halaman Lapor, Cek Status, Dashboard, Admin tetap ada di file kamu)
+# =========================================================
+# 10. HALAMAN: ADMIN
+# =========================================================
+elif selected == "Admin":
+    if st.text_input("Password", type="password") == "RAHASIA PIKM😭":
+        st.success("Login Berhasil")
+        if sheet:
+            df = pd.DataFrame(sheet.get_all_records())
+            st.dataframe(df)
