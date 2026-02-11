@@ -509,7 +509,8 @@ elif selected == "Dashboard":
             st.error(f"Error memuat dashboard: {str(e)}")
 
 # =========================================================
-# 9. HALAMAN: SADAS BOT (PENGGUNAAN MODEL OTOMATIS)
+# =========================================================
+# 9. HALAMAN: SADAS BOT (WITH MEMORY/HISTORY)
 # =========================================================
 elif selected == "Sadas Bot":
     st.markdown("<div style='max-width: 700px; margin: auto;'>", unsafe_allow_html=True)
@@ -528,31 +529,43 @@ elif selected == "Sadas Bot":
     
     if "messages" not in st.session_state: st.session_state.messages = []
 
+    # Menampilkan riwayat chat yang tersimpan
     for message in st.session_state.messages:
         role_class = "user" if message["role"] == "user" else "bot"
         st.markdown(f"""<div class="chat-message {role_class}"><div><strong>{message['role'].capitalize()}:</strong> <br> {message['content']}</div></div>""", unsafe_allow_html=True)
 
     if prompt := st.chat_input("Ketik pesanmu di sini..."):
+        # Tambahkan pesan user ke riwayat
         st.session_state.messages.append({"role": "user", "content": prompt})
         with st.chat_message("user"): st.markdown(prompt)
 
         response = ""
         if "GEMINI_API_KEY" in st.secrets:
             try:
-                # AUTO-CHECK: Pakai model yang terdeteksi aktif
                 model_name = get_available_model()
                 model = genai.GenerativeModel(model_name)
                 
-                system_prompt = "Kamu adalah Sadas Bot, asisten virtual dari Sains Data UIN Raden Intan Lampung. Jawab sopan dan santai."
-                full_prompt = f"{system_prompt}\nUser: {prompt}"
+                # LOGIKA MEMORI: Mengubah format pesan agar dipahami Gemini sebagai riwayat
+                history = []
+                for m in st.session_state.messages[:-1]: # Ambil semua kecuali pesan terakhir yang baru diketik
+                    role = "user" if m["role"] == "user" else "model"
+                    history.append({"role": role, "parts": [m["content"]]})
+                
+                # Memulai chat session dengan history
+                chat = model.start_chat(history=history)
+                
+                system_instruction = "Kamu adalah Sadas Bot, asisten virtual dari Sains Data UIN Raden Intan Lampung. Jawab sopan dan santai."
+                
                 with st.spinner("Sadas Bot sedang mengetik..."):
-                    ai_response = model.generate_content(full_prompt)
+                    # Kirim pesan baru ke dalam session yang punya riwayat
+                    ai_response = chat.send_message(f"{system_instruction}\nUser: {prompt}")
                     response = ai_response.text
             except Exception as e:
                 response = "🙏 Maaf, server AI sedang sibuk. Silakan coba lagi nanti."
         else:
             response = "⚠️ API Key Gemini belum dipasang di Secrets."
 
+        # Tambahkan jawaban bot ke riwayat
         st.session_state.messages.append({"role": "assistant", "content": response})
         with st.chat_message("assistant"): st.markdown(response)
     st.markdown("</div>", unsafe_allow_html=True)
@@ -667,3 +680,4 @@ elif selected == "Admin":
                 else: st.info("Belum ada data laporan.")
             except Exception as e:
                 st.error(f"Error Database: {str(e)}")
+
