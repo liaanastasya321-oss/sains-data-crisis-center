@@ -28,17 +28,28 @@ st.set_page_config(
 # =========================================================
 st.markdown("""
 <style>
+/* SETUP DASAR */
 .stApp { background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%); color: #0f172a; }
 #MainMenu, footer, header, [data-testid="stSidebar"] { display: none !important; }
 .stApp > header { display: none !important; }
+
+/* FONT & INPUT */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
 html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
+
 .stTextInput input, .stTextArea textarea, .stSelectbox div[data-baseweb="select"] {
     background-color: #ffffff !important; border: 1px solid #94a3b8 !important; 
     color: #334155 !important; border-radius: 8px;
 }
+label, div[data-testid="stWidgetLabel"] p { color: #0f172a !important; font-weight: 700 !important; }
+
+/* MENU */
 iframe[title="streamlit_option_menu.option_menu"] { width: 100%; background: transparent; }
+
+/* JARAK KONTEN */
 .block-container { padding-top: 2rem !important; padding-bottom: 5rem !important; max-width: 1200px; }
+
+/* COMPONENTS */
 .glass-card { background: #ffffff; border-radius: 16px; padding: 20px; border: 1px solid #cbd5e1; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); margin-bottom: 15px; text-align: center; height: 100%; }
 .announce-card { background: #ffffff; border-radius: 12px; padding: 15px; margin-bottom: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; }
 div.stButton > button { background: linear-gradient(90deg, #2563eb, #1d4ed8); color: white; border: none; padding: 12px 20px; border-radius: 8px; font-weight: bold; width: 100%; }
@@ -91,8 +102,9 @@ def get_img_as_base64(file_path):
         return base64.b64encode(data).decode()
     except: return ""
 
-# --- FUNGSI AI SIMULASI (MODE DEMO - ANTI ERROR) ---
+# --- FUNGSI AI SIMULASI (MODE DEMO - AMAN & CEPAT) ---
 def draft_surat_with_ai(kategori, keluhan, nama):
+    
     perihal = ""
     tujuan = ""
     isi = ""
@@ -177,67 +189,76 @@ Wassalamu'alaikum Warahmatullahi Wabarakatuh."""
 
     return perihal, tujuan, isi
 
-# --- FUNGSI PDF GENERATOR (KOP RAPI & HEMAT SPASI) ---
+# --- FUNGSI PDF GENERATOR (MARGIN STANDAR & NO BALLOONS) ---
 def create_pdf(no_surat, lampiran, perihal, tujuan, isi_surat):
     pdf = FPDF()
     
-    # SETTING MARGIN (Kiri 30mm, Atas/Kanan/Bawah 25mm)
-    # Ini Margin "Standar Surat" yang aman
+    # SETTING MARGIN (Kiri 3cm, Atas 2.5cm, Kanan 2.5cm, Bawah 2.5cm)
+    # Ini Margin paling aman buat surat dinas
     pdf.set_margins(30, 25, 25) 
     pdf.set_auto_page_break(auto=True, margin=25)
     
     pdf.add_page()
     
-    # --- 1. KOP SURAT ---
+    # --- 1. KOP SURAT (ABSOLUTE CENTERING) ---
     # Logo Kiri (UIN)
     if os.path.exists("logo_uin.png"):
-        pdf.image("logo_uin.png", x=30, y=25, w=22)
+        pdf.image("logo_uin.png", x=25, y=20, w=22)
     
     # Logo Kanan (Himasda)
     if os.path.exists("logo_him.png"):
-        pdf.image("logo_him.png", x=163, y=25, w=22)
+        pdf.image("logo_him.png", x=163, y=20, w=22)
 
-    # Teks Tengah (Times New Roman)
-    pdf.set_font("Times", 'B', 14) 
-    pdf.set_xy(30, 25) 
+    # Teks Tengah (Times New Roman 12 BOLD)
+    pdf.set_y(20) 
+    pdf.set_font("Times", 'B', 12) 
     
-    pdf.cell(0, 6, "HIMPUNAN MAHASISWA SAINS DATA", 0, 1, 'C')
-    pdf.cell(0, 6, "FAKULTAS SAINS DAN TEKNOLOGI", 0, 1, 'C')
-    pdf.cell(0, 6, "UNIVERSITAS ISLAM NEGERI RADEN INTAN LAMPUNG", 0, 1, 'C')
+    pdf.set_x(0) # Reset X ke 0 biar center di kertas
+    pdf.cell(210, 5, "HIMPUNAN MAHASISWA SAINS DATA", 0, 1, 'C')
+    pdf.set_x(0)
+    pdf.cell(210, 5, "FAKULTAS SAINS DAN TEKNOLOGI", 0, 1, 'C')
+    pdf.set_x(0)
+    pdf.cell(210, 5, "UNIVERSITAS ISLAM NEGERI RADEN INTAN LAMPUNG", 0, 1, 'C')
     
     # Alamat (Regular 10)
     pdf.set_font("Times", '', 10) 
-    pdf.cell(0, 5, "Sekretariat: Jl. Letkol Endro Suratmin, Sukarame, Bandar Lampung,", 0, 1, 'C')
+    pdf.set_x(0)
+    pdf.cell(210, 5, "Sekretariat: Jl. Letkol Endro Suratmin, Sukarame, Bandar Lampung,", 0, 1, 'C')
     
     # --- EMAIL WARNA BIRU ---
-    # Kita pakai trik: Print "Lampung 35131 Email: "
-    # Tapi bagian Emailnya kita warnain
+    part1 = "Lampung 35131 "
+    part2 = "Email: himasda.radenintan@gmail.com"
     
-    # Cari posisi tengah manual (agak tricky di fpdf standar)
-    # Kita tulis baris ini normal saja, tapi warnanya kita akalin
-    pdf.set_text_color(0, 0, 0) # Hitam dulu
-    pdf.cell(90, 5, "Lampung 35131 ", 0, 0, 'R') # Bagian Kiri (Hitam)
+    w1 = pdf.get_string_width(part1)
+    w2 = pdf.get_string_width(part2)
+    total_w = w1 + w2
     
-    pdf.set_text_color(0, 0, 255) # Ganti Biru
-    pdf.cell(0, 5, "Email: himasda.radenintan@gmail.com", 0, 1, 'L') # Bagian Kanan (Biru)
+    start_x = (210 - total_w) / 2
+    pdf.set_x(start_x)
     
-    pdf.set_text_color(0, 0, 0) # Balikin ke Hitam buat garis
+    pdf.set_text_color(0, 0, 0) # Hitam
+    pdf.cell(w1, 5, part1, 0, 0, 'L')
+    
+    pdf.set_text_color(0, 0, 255) # Biru
+    pdf.cell(w2, 5, part2, 0, 1, 'L')
+    
+    pdf.set_text_color(0, 0, 0) # Reset Hitam
     
     # Garis Pembatas
     pdf.ln(2)
-    pdf.set_line_width(0.5)
-    pdf.line(30, pdf.get_y(), 185, pdf.get_y())
+    pdf.set_line_width(0.6)
+    pdf.line(30, pdf.get_y(), 185, pdf.get_y()) # Garis sepanjang margin kiri-kanan
     pdf.set_line_width(0.2)
     pdf.line(30, pdf.get_y()+1, 185, pdf.get_y()+1)
     
-    pdf.ln(6) # Spasi dikit aja biar muat
+    pdf.ln(6) 
 
-    # --- 2. HEADER SURAT (SPASI DIHEMAT) ---
+    # --- 2. HEADER SURAT ---
     pdf.set_font("Times", '', 12) 
     pdf.cell(25, 6, "Nomor", 0, 0); pdf.cell(5, 6, ":", 0, 0); pdf.cell(0, 6, no_surat, 0, 1)
     pdf.cell(25, 6, "Lampiran", 0, 0); pdf.cell(5, 6, ":", 0, 0); pdf.cell(0, 6, lampiran, 0, 1)
     pdf.cell(25, 6, "Perihal", 0, 0); pdf.cell(5, 6, ":", 0, 0); pdf.cell(0, 6, perihal, 0, 1)
-    pdf.ln(4) # Hemat spasi
+    pdf.ln(4)
 
     # --- 3. TUJUAN ---
     pdf.cell(0, 6, "Kepada Yth.", 0, 1)
@@ -245,16 +266,16 @@ def create_pdf(no_surat, lampiran, perihal, tujuan, isi_surat):
     pdf.cell(0, 6, tujuan, 0, 1)
     pdf.set_font("Times", '', 12) 
     pdf.cell(0, 6, "di Tempat", 0, 1)
-    pdf.ln(6) # Hemat spasi
+    pdf.ln(6) 
 
     # --- 4. ISI SURAT ---
     pdf.set_font("Times", '', 12)
     pdf.multi_cell(0, 6, isi_surat)
-    pdf.ln(8) # Hemat spasi sebelum TTD (Biar gak lompat halaman)
+    pdf.ln(8) 
 
-    # --- 5. TANDA TANGAN ---
-    # Cek sisa halaman, kalau mepet banget baru pindah (tapi harusnya muat)
-    if pdf.get_y() > 220: pdf.add_page()
+    # --- 5. TANDA TANGAN (ANTI POTONG HALAMAN) ---
+    if pdf.get_y() > 220:
+        pdf.add_page()
 
     now = datetime.datetime.now()
     bulan_indo = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"]
@@ -269,7 +290,7 @@ def create_pdf(no_surat, lampiran, perihal, tujuan, isi_surat):
     pdf.set_x(posisi_ttd)
     pdf.cell(0, 5, "Ketua Departemen PIKM", 0, 1, 'C')
     
-    pdf.ln(25) # Ruang Tanda Tangan
+    pdf.ln(25) 
     
     pdf.set_x(posisi_ttd)
     pdf.set_font("Times", 'BU', 12) 
@@ -651,7 +672,7 @@ elif selected == "Admin":
                                     file_name=f"Surat_Tindak_Lanjut_{nama_mhs}.pdf",
                                     mime="application/pdf"
                                 )
-                                st.balloons()
+                                # BALLOONS DIHAPUS SESUAI REQUEST
                     else:
                         st.info("Tidak ada laporan valid.")
                 else:
