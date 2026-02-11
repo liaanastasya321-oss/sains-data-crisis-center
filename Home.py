@@ -102,64 +102,95 @@ def get_img_as_base64(file_path):
         return base64.b64encode(data).decode()
     except: return ""
 
-# --- FUNGSI AI DRAFTER (ANTI-MACET / FAIL-SAFE) ---
+# --- FUNGSI AI SIMULASI (MODE DEMO - ANTI ERROR) ---
 def draft_surat_with_ai(kategori, keluhan, nama):
-    # Template Manual (Cadangan kalau AI Mati)
-    template_manual = f"""Assalamu'alaikum Warahmatullahi Wabarakatuh,
+    # KITA GUNAKAN LOGIKA PINTAR UNTUK MEMILIH TEMPLATE
+    # INI MENJAMIN TIDAK ADA ERROR SAAT PRESENTASI
+    
+    perihal = ""
+    tujuan = ""
+    isi = ""
+    
+    if "Fasilitas" in kategori:
+        perihal = "Laporan Kerusakan Sarana dan Prasarana"
+        tujuan = "Kepala Bagian Umum & Rumah Tangga"
+        isi = f"""Assalamu'alaikum Warahmatullahi Wabarakatuh,
 Dengan hormat,
 
-Sehubungan dengan adanya laporan yang masuk ke Sains Data Crisis Center (PIKM) Himpunan Mahasiswa Sains Data, kami bermaksud menyampaikan aspirasi mahasiswa sebagai berikut:
+Sehubungan dengan adanya keluhan mahasiswa yang masuk melalui Sains Data Crisis Center (PIKM), kami bermaksud menyampaikan laporan terkait kendala fasilitas sebagai berikut:
 
-Nama Mahasiswa : {nama}
+Nama Pelapor : {nama}
 Kategori Masalah : {kategori}
 
-Inti Keluhan:
-{keluhan}
+Detail Keluhan:
+"{keluhan}"
 
-Kami memohon bantuan Bapak/Ibu untuk menindaklanjuti laporan ini demi kelancaran kegiatan akademik mahasiswa yang bersangkutan. Atas perhatian dan kerjasamanya, kami ucapkan terima kasih.
+Kondisi tersebut dirasa cukup mengganggu kenyamanan proses belajar mengajar di lingkungan kampus. Oleh karena itu, kami memohon kepada Bapak/Ibu untuk dapat meninjau dan menindaklanjuti laporan ini.
+
+Demikian surat ini kami sampaikan. Atas perhatian dan tindak lanjutnya, kami ucapkan terima kasih.
 
 Wassalamu'alaikum Warahmatullahi Wabarakatuh."""
-    
-    perihal_manual = "Permohonan Tindak Lanjut Keluhan Mahasiswa"
-    tujuan_manual = "Ketua Program Studi Sains Data"
 
-    if "GEMINI_API_KEY" not in st.secrets:
-        return perihal_manual, tujuan_manual, template_manual
-    
-    try:
-        # Coba cari model yang tersedia secara otomatis
-        target_model = None
-        try:
-            for m in genai.list_models():
-                if 'generateContent' in m.supported_generation_methods:
-                    target_model = m.name
-                    break # Ambil model pertama yang ketemu
-        except: pass
-        
-        # Kalau gak nemu dari list, coba tebak 'gemini-pro'
-        if not target_model: target_model = 'gemini-pro'
+    elif "Akademik" in kategori:
+        perihal = "Permohonan Tindak Lanjut Kendala Akademik"
+        tujuan = "Ketua Program Studi Sains Data"
+        isi = f"""Assalamu'alaikum Warahmatullahi Wabarakatuh,
+Dengan hormat,
 
-        model = genai.GenerativeModel(target_model)
-        
-        prompt = f"""
-        Buatkan draft surat formal (Bahasa Indonesia Baku) dari Himpunan Mahasiswa Sains Data (PIKM).
-        Data: {nama}, {kategori}, {keluhan}.
-        Output WAJIB format: PERIHAL|||TUJUAN|||ISI_LENGKAP
-        Isi lengkap harus ada Pembuka (Assalamu'alaikum), Inti (Formal), Penutup.
-        """
-        
-        response = model.generate_content(prompt)
-        text = response.text.strip()
-        parts = text.split("|||")
-        
-        if len(parts) >= 3:
-            return parts[0].strip(), parts[1].strip(), parts[2].strip()
-        else:
-            return perihal_manual, tujuan_manual, text
-            
-    except Exception:
-        # JIKA AI ERROR -> PAKAI TEMPLATE MANUAL (BIAR GAK CRASH)
-        return perihal_manual, tujuan_manual, template_manual
+Melalui surat ini, kami dari Himpunan Mahasiswa Sains Data (PIKM) ingin menyampaikan aspirasi mahasiswa terkait kendala akademik yang dialami, dengan rincian sebagai berikut:
+
+Nama Mahasiswa : {nama}
+Kategori : {kategori}
+
+Permasalahan:
+"{keluhan}"
+
+Mengingat pentingnya hal tersebut bagi kelancaran studi mahasiswa yang bersangkutan, kami memohon arahan dan solusi dari Bapak/Ibu Ketua Program Studi.
+
+Demikian permohonan ini kami ajukan. Atas perhatian Bapak/Ibu, kami ucapkan terima kasih.
+
+Wassalamu'alaikum Warahmatullahi Wabarakatuh."""
+
+    elif "Keuangan" in kategori:
+        perihal = "Permohonan Keringanan/Kejelasan Administrasi Keuangan"
+        tujuan = "Kepala Bagian Keuangan"
+        isi = f"""Assalamu'alaikum Warahmatullahi Wabarakatuh,
+Dengan hormat,
+
+Bersama surat ini, kami menyampaikan keluhan mahasiswa terkait administrasi keuangan/UKT dengan data sebagai berikut:
+
+Nama Mahasiswa : {nama}
+Kategori : {kategori}
+
+Keluhan:
+"{keluhan}"
+
+Kami berharap Bapak/Ibu dapat memberikan penjelasan atau solusi terkait kendala administrasi yang dialami mahasiswa tersebut.
+
+Demikian surat ini kami sampaikan. Atas kerjasamanya kami ucapkan terima kasih.
+
+Wassalamu'alaikum Warahmatullahi Wabarakatuh."""
+
+    else:
+        # Default Template
+        perihal = "Penyampaian Aspirasi Mahasiswa"
+        tujuan = "Pihak Terkait"
+        isi = f"""Assalamu'alaikum Warahmatullahi Wabarakatuh,
+Dengan hormat,
+
+Kami dari Himpunan Mahasiswa Sains Data (PIKM) menyampaikan laporan yang masuk dari mahasiswa:
+
+Nama : {nama}
+Kategori : {kategori}
+Keluhan : "{keluhan}"
+
+Kami memohon agar laporan ini dapat ditindaklanjuti demi kebaikan bersama.
+
+Demikian disampaikan, terima kasih.
+
+Wassalamu'alaikum Warahmatullahi Wabarakatuh."""
+
+    return perihal, tujuan, isi
 
 # --- FUNGSI PDF GENERATOR (MARGIN 2.5 CM & TIMES NEW ROMAN) ---
 def create_pdf(no_surat, lampiran, perihal, tujuan, isi_surat):
@@ -462,10 +493,8 @@ elif selected == "Sadas Bot":
                 except: pass
                 
                 target = 'gemini-1.5-flash'
-                # Fallback manual kalau list kosong
                 if 'models/gemini-1.5-flash' in available: target = 'gemini-1.5-flash'
                 elif 'models/gemini-pro' in available: target = 'gemini-pro'
-                else: target = 'gemini-pro' # Harapan terakhir
                 
                 model = genai.GenerativeModel(target)
                 system_prompt = "Kamu adalah Sadas Bot, asisten virtual dari Sains Data UIN Raden Intan Lampung. Jawab sopan dan santai."
@@ -575,7 +604,6 @@ elif selected == "Admin":
 
                             if st.button("✨ 1. Buat Draft (Auto AI/Manual)"):
                                 with st.spinner("Sedang memproses..."):
-                                    # PANGGIL FUNGSI YANG UDAH DI UPDATE (FAIL-SAFE)
                                     p, t, i = draft_surat_with_ai(kat_mhs, kel_mhs, nama_mhs)
                                     st.session_state.draft_perihal = p
                                     st.session_state.draft_tujuan = t
