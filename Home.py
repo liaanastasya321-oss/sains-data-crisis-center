@@ -195,7 +195,6 @@ def get_img_as_base64(file_path):
 
 # --- FUNGSI AI DRAFTER (GEMINI-PRO + BACKUP) ---
 def draft_surat_with_ai(kategori, keluhan, nama):
-    # Template Backup
     perihal_backup = "Tindak Lanjut Keluhan Mahasiswa"
     tujuan_backup = "Ketua Program Studi Sains Data"
     if "Fasilitas" in kategori: tujuan_backup = "Kepala Bagian Umum"
@@ -214,7 +213,6 @@ Mohon kiranya dapat ditindaklanjuti. Terima kasih.
 
 Wassalamu'alaikum Warahmatullahi Wabarakatuh."""
 
-    # Coba AI Gemini Pro
     if "GEMINI_API_KEY" in st.secrets:
         try:
             model = genai.GenerativeModel('gemini-pro') 
@@ -240,7 +238,6 @@ def create_pdf(no_surat, lampiran, perihal, tujuan, isi_surat):
     pdf.set_auto_page_break(auto=True, margin=25)
     pdf.add_page()
     
-    # 1. KOP SURAT
     if os.path.exists("logo_uin.png"):
         pdf.image("logo_uin.png", x=25, y=20, w=22)
     if os.path.exists("logo_him.png"):
@@ -279,7 +276,6 @@ def create_pdf(no_surat, lampiran, perihal, tujuan, isi_surat):
     pdf.line(30, pdf.get_y()+1, 185, pdf.get_y()+1)
     pdf.ln(6) 
 
-    # 2. ISI
     pdf.set_font("Times", '', 12) 
     pdf.cell(25, 6, "Nomor", 0, 0); pdf.cell(5, 6, ":", 0, 0); pdf.cell(0, 6, no_surat, 0, 1)
     pdf.cell(25, 6, "Lampiran", 0, 0); pdf.cell(5, 6, ":", 0, 0); pdf.cell(0, 6, lampiran, 0, 1)
@@ -296,7 +292,6 @@ def create_pdf(no_surat, lampiran, perihal, tujuan, isi_surat):
     pdf.multi_cell(0, 6, isi_surat)
     pdf.ln(8) 
 
-    # 3. TANDA TANGAN
     if pdf.get_y() > 220: pdf.add_page()
     now = datetime.datetime.now()
     bulan_indo = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"]
@@ -338,12 +333,11 @@ selected = option_menu(
 )
 
 # =========================================================
-# 5. HALAMAN: HOME (TAMPILAN BARU!)
+# 5. HALAMAN: HOME
 # =========================================================
 if selected == "Home":
     img_him = get_img_as_base64("logo_him.png")
     
-    # HERO SECTION BARU (CLEAN & PROFESSIONAL)
     st.markdown(f"""
     <div class="hero-container">
         <div class="hero-text">
@@ -354,7 +348,6 @@ if selected == "Home":
     </div>
     """, unsafe_allow_html=True)
 
-    # MENU CARDS
     c1, c2, c3 = st.columns(3)
     with c1: st.markdown("""<div class="glass-card"><h3 style="color:#2563eb;">📢 Pelaporan</h3><p style="color:#64748b; font-size:14px;">Saluran resmi pengaduan masalah fasilitas & akademik.</p></div>""", unsafe_allow_html=True)
     with c2: st.markdown("""<div class="glass-card"><h3 style="color:#0891b2;">📊 Transparansi</h3><p style="color:#64748b; font-size:14px;">Pantau statistik dan status penyelesaian secara real-time.</p></div>""", unsafe_allow_html=True)
@@ -465,7 +458,6 @@ elif selected == "Dashboard":
     if sheet:
         try:
             raw_data = sheet.get_all_values()
-            
             if len(raw_data) > 1:
                 df = pd.DataFrame(raw_data[1:], columns=raw_data[0])
                 if 'Waktu Lapor' in df.columns:
@@ -505,7 +497,7 @@ elif selected == "Dashboard":
             st.error(f"Error memuat dashboard: {str(e)}")
 
 # =========================================================
-# 9. HALAMAN: SADAS BOT
+# 9. HALAMAN: SADAS BOT (AUTO-CHECK MODEL FIX)
 # =========================================================
 elif selected == "Sadas Bot":
     st.markdown("<div style='max-width: 700px; margin: auto;'>", unsafe_allow_html=True)
@@ -524,34 +516,46 @@ elif selected == "Sadas Bot":
     
     if "messages" not in st.session_state: st.session_state.messages = []
 
+    # Display Chat History
     for message in st.session_state.messages:
         role_class = "user" if message["role"] == "user" else "bot"
         st.markdown(f"""<div class="chat-message {role_class}"><div><strong>{message['role'].capitalize()}:</strong> <br> {message['content']}</div></div>""", unsafe_allow_html=True)
 
+    # Input Chat
     if prompt := st.chat_input("Ketik pesanmu di sini..."):
         st.session_state.messages.append({"role": "user", "content": prompt})
         with st.chat_message("user"): st.markdown(prompt)
 
+        # Logic Auto-Check Model
         response = ""
-        if "GEMINI_API_KEY" in st.secrets:
+        # 1. Check API Key
+        if "GEMINI_API_KEY" in st.secrets and st.secrets["GEMINI_API_KEY"]:
             try:
+                # 2. Re-configure & Initialize Model
+                genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
                 model = genai.GenerativeModel('gemini-pro')
+                
                 system_prompt = "Kamu adalah Sadas Bot, asisten virtual dari Sains Data UIN Raden Intan Lampung. Jawab sopan dan santai."
                 full_prompt = f"{system_prompt}\nUser: {prompt}"
+                
                 with st.spinner("Sadas Bot sedang mengetik..."):
                     ai_response = model.generate_content(full_prompt)
-                    response = ai_response.text
+                    # 3. Check Response Validity
+                    if ai_response and hasattr(ai_response, 'text'):
+                        response = ai_response.text
+                    else:
+                        response = "🙏 Maaf, aku tidak bisa menghasilkan jawaban saat ini."
             except Exception as e:
-                response = "🙏 Maaf, server AI sedang sibuk. Silakan coba lagi nanti."
+                response = f"⚠️ Terjadi kendala teknis: {str(e)}"
         else:
-            response = "⚠️ API Key Gemini belum dipasang di Secrets."
+            response = "⚠️ API Key Gemini tidak ditemukan atau tidak valid di Secrets."
 
         st.session_state.messages.append({"role": "assistant", "content": response})
         with st.chat_message("assistant"): st.markdown(response)
     st.markdown("</div>", unsafe_allow_html=True)
 
 # =========================================================
-# 10. HALAMAN: ADMIN (SMART AI + EDITOR)
+# 10. HALAMAN: ADMIN
 # =========================================================
 elif selected == "Admin":
     st.markdown("<h2 style='text-align:center;'>🔐 Admin Area</h2>", unsafe_allow_html=True)
@@ -658,9 +662,7 @@ elif selected == "Admin":
                                     file_name=f"Surat_Tindak_Lanjut_{nama_mhs}.pdf",
                                     mime="application/pdf"
                                 )
-                    else:
-                        st.info("Tidak ada laporan valid.")
-                else:
-                    st.info("Belum ada data laporan.")
+                    else: st.info("Tidak ada laporan valid.")
+                else: st.info("Belum ada data laporan.")
             except Exception as e:
                 st.error(f"Error Database: {str(e)}")
