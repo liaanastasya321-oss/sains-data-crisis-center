@@ -90,12 +90,9 @@ div.stButton > button {
 }
 .hapus-chat-btn button { background: #ef4444 !important; width: auto !important; padding: 5px 15px !important; font-size: 12px !important; }
 
-/* CHAT AREA - RAPI KE BAWAH */
+/* CSS CHAT BIAR RAPI KE BAWAH */
 .chat-container { display: flex; flex-direction: column; gap: 15px; margin-bottom: 20px; width: 100%; }
-.message-box { 
-    padding: 12px 18px; border-radius: 15px; max-width: 85%; 
-    font-size: 15px; line-height: 1.5; word-wrap: break-word;
-}
+.message-box { padding: 12px 18px; border-radius: 15px; max-width: 85%; font-size: 15px; line-height: 1.5; word-wrap: break-word; }
 .user-msg { align-self: flex-end; background-color: #2563eb; color: white; border-bottom-right-radius: 2px; }
 .bot-msg { align-self: flex-start; background-color: #ffffff; color: #334155; border: 1px solid #e2e8f0; border-bottom-left-radius: 2px; }
 
@@ -146,12 +143,11 @@ def get_img_as_base64(file_path):
         return base64.b64encode(data).decode()
     except: return ""
 
-# --- FUNGSI AI PINTAR (ANTI ERROR 404) ---
+# --- FUNGSI AI PINTAR (MESIN UTAMA) ---
 def panggil_ai_mesin(prompt_system, user_input):
     if "GEMINI_API_KEY" not in st.secrets:
         return "⚠️ API Key belum dipasang di Secrets."
     try:
-        # OTOMATIS CARI MODEL AGAR GAK 404
         available = [m.name for m in genai.list_models() if 'generateContent' in m.supported_generation_methods]
         target = 'models/gemini-1.5-flash' if 'models/gemini-1.5-flash' in available else ('models/gemini-pro' if 'models/gemini-pro' in available else available[0])
         model = genai.GenerativeModel(target)
@@ -160,7 +156,7 @@ def panggil_ai_mesin(prompt_system, user_input):
     except Exception as e:
         return f"🙏 Maaf, server AI sedang sibuk. (Error: {str(e)})"
 
-# --- FUNGSI DRAFT SURAT (OTOMATIS AI) ---
+# --- FUNGSI DRAFT SURAT (OTOMATIS AI ASLI) ---
 def draft_surat_with_ai(kategori, keluhan, nama):
     sys_prompt = "Kamu Sekretaris Himpunan. Buatkan isi surat formal berdasarkan keluhan mahasiswa. Output WAJIB format: PERIHAL|||TUJUAN|||ISI_LENGKAP. Gunakan Assalamu'alaikum dan bahasa baku."
     user_p = f"Nama: {nama}, Kategori: {kategori}, Keluhan: {keluhan}"
@@ -301,21 +297,17 @@ elif selected == "Dashboard":
         except: st.error("Error Dashboard.")
 
 # =========================================================
-# 9. HALAMAN: SADAS BOT (JAWABAN RAPI & MEMORI)
+# 9. HALAMAN: SADAS BOT (FIX: HISTORY & VERTIKAL)
 # =========================================================
 elif selected == "Sadas Bot":
     st.markdown("<h2 style='text-align:center;'>🤖 Sadas Bot</h2>", unsafe_allow_html=True)
-    
-    # SETUP MEMORI (HISTORY)
     if "chat_memori" not in st.session_state: st.session_state.chat_memori = []
     if "chat_tampilan" not in st.session_state: st.session_state.chat_tampilan = []
 
-    col_del1, col_del2 = st.columns([5, 1])
-    with col_del2:
-        if st.button("🗑️ Reset"):
-            st.session_state.chat_memori = []; st.session_state.chat_tampilan = []; st.rerun()
+    col_btn1, col_btn2 = st.columns([5, 1])
+    with col_btn2:
+        if st.button("🗑️ Hapus"): st.session_state.chat_memori = []; st.session_state.chat_tampilan = []; st.rerun()
 
-    # CONTAINER CHAT VERTIKAL
     st.markdown('<div class="chat-container">', unsafe_allow_html=True)
     for msg in st.session_state.chat_tampilan:
         cls = "user-msg" if msg["role"] == "user" else "bot-msg"
@@ -324,23 +316,16 @@ elif selected == "Sadas Bot":
 
     if prompt := st.chat_input("Ketik pesanmu di sini..."):
         st.session_state.chat_tampilan.append({"role": "user", "content": prompt})
-        
         with st.spinner("Berpikir..."):
             try:
-                # PAKAI SYSTEM HISTORY GEMINI ASLI
                 model = genai.GenerativeModel('gemini-pro')
                 chat = model.start_chat(history=st.session_state.chat_memori)
                 response = chat.send_message(prompt)
-                
-                # UPDATE MEMORI
                 st.session_state.chat_memori.append({"role": "user", "parts": [prompt]})
                 st.session_state.chat_memori.append({"role": "model", "parts": [response.text]})
-                
-                # UPDATE TAMPILAN
                 st.session_state.chat_tampilan.append({"role": "bot", "content": response.text})
                 st.rerun()
-            except Exception as e:
-                st.error(f"Error AI: {e}")
+            except: st.error("AI Error.")
 
 # =========================================================
 # 10. HALAMAN: ADMIN (TETAP AMAN)
