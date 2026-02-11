@@ -638,7 +638,7 @@ elif selected == "Admin":
                             isi_lengkap = st.text_area("Isi Surat Lengkap", value=st.session_state.get('draft_isi', ''), height=300)
                             
                             if st.button("🖨️ Cetak PDF Final"):
-                                pdf_bytes = create_pdf(no_surat, lampiran, perihal_surat, tujuan_surat, isi_lengkap)
+                                pdf_bytes = create_pdf(no_surat, lampiran, perihal_surat, tujuan_surat, isi_surat)
                                 st.download_button(
                                     label="📥 Download Surat (PDF)",
                                     data=pdf_bytes,
