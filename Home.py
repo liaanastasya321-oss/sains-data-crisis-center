@@ -318,7 +318,7 @@ if 'selected_menu' not in st.session_state: st.session_state.selected_menu = "Ho
 
 selected = option_menu(
     menu_title=None,
-    options=["Home", "Lapor Masalah", "Cek Status", "Dashboard", "Sasda Bot", "Admin"],
+    options=["Home", "Lapor Masalah", "Cek Status", "Dashboard", "Sadas Bot", "Admin"],
     icons=["house", "exclamation-triangle-fill", "search", "bar-chart-fill", "robot", "lock-fill"],
     default_index=0,
     orientation="horizontal",
@@ -348,7 +348,7 @@ if selected == "Home":
     c1, c2, c3 = st.columns(3)
     with c1: st.markdown("""<div class="glass-card"><h3 style="color:#2563eb;">📢 Pelaporan</h3><p style="color:#64748b; font-size:14px;">Saluran resmi pengaduan masalah fasilitas & akademik.</p></div>""", unsafe_allow_html=True)
     with c2: st.markdown("""<div class="glass-card"><h3 style="color:#0891b2;">📊 Transparansi</h3><p style="color:#64748b; font-size:14px;">Pantau statistik dan status penyelesaian secara real-time.</p></div>""", unsafe_allow_html=True)
-    with c3: st.markdown("""<div class="glass-card"><h3 style="color:#7c3aed;">🤖 Sasda Bot</h3><p style="color:#64748b; font-size:14px;">Asisten AI cerdas yang siap menjawab pertanyaanmu 24/7.</p></div>""", unsafe_allow_html=True)
+    with c3: st.markdown("""<div class="glass-card"><h3 style="color:#7c3aed;">🤖 Sadas Bot</h3><p style="color:#64748b; font-size:14px;">Asisten AI cerdas yang siap menjawab pertanyaanmu 24/7.</p></div>""", unsafe_allow_html=True)
 
     st.write("")
     st.subheader("📰 Informasi Terbaru")
@@ -494,13 +494,13 @@ elif selected == "Dashboard":
             st.error(f"Error memuat dashboard: {str(e)}")
 
 # =========================================================
-# 9. HALAMAN: SASDA BOT (WITH HISTORY MEMORY)
+# 9. HALAMAN: SADAS BOT (WITH HISTORY MEMORY)
 # =========================================================
-elif selected == "Sasda Bot":
+elif selected == "Sadas Bot":
     st.markdown("<div style='max-width: 700px; margin: auto;'>", unsafe_allow_html=True)
     col_header, col_btn = st.columns([3, 1])
     with col_header:
-        st.markdown(f"<h2 style='text-align:left; margin:0;'>🤖 Sasda Bot</h2>", unsafe_allow_html=True)
+        st.markdown(f"<h2 style='text-align:left; margin:0;'>🤖 Sadas Bot</h2>", unsafe_allow_html=True)
         st.markdown("<p style='text-align:left; color:#64748b; margin-top:0px;'>Asisten Akademik Virtual</p>", unsafe_allow_html=True)
     with col_btn:
         st.markdown('<div class="hapus-chat-btn">', unsafe_allow_html=True)
@@ -534,9 +534,9 @@ elif selected == "Sasda Bot":
                     history.append({"role": role, "parts": [m["content"]]})
                 
                 chat_session = model.start_chat(history=history)
-                system_instruction = "Kamu adalah Sasda Bot, asisten virtual dari Sains Data UIN Raden Intan Lampung. Jawab sopan dan santai."
+                system_instruction = "Kamu adalah Sadas Bot, asisten virtual dari Sains Data UIN Raden Intan Lampung. Jawab sopan dan santai."
                 
-                with st.spinner("Sasda Bot sedang mengetik..."):
+                with st.spinner("Sadas Bot sedang mengetik..."):
                     ai_response = chat_session.send_message(f"{system_instruction}\nUser: {prompt}")
                     response = ai_response.text
             except Exception as e:
@@ -638,7 +638,7 @@ elif selected == "Admin":
                             isi_lengkap = st.text_area("Isi Surat Lengkap", value=st.session_state.get('draft_isi', ''), height=300)
                             
                             if st.button("🖨️ Cetak PDF Final"):
-                                pdf_bytes = create_pdf(no_surat, lampiran, perihal_surat, tujuan_surat, isi_surat)
+                                pdf_bytes = create_pdf(no_surat, lampiran, perihal_surat, tujuan_surat, isi_lengkap)
                                 st.download_button(
                                     label="📥 Download Surat (PDF)",
                                     data=pdf_bytes,
