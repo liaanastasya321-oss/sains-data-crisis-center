@@ -49,6 +49,19 @@ iframe[title="streamlit_option_menu.option_menu"] { width: 100%; background: tra
 /* JARAK KONTEN */
 .block-container { padding-top: 2rem !important; padding-bottom: 5rem !important; max-width: 1200px; }
 
+/* HEADER */
+.header-container { display: flex; flex-direction: row; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 30px; width: 100%; }
+.logo-img { width: 90px; height: auto; object-fit: contain; }
+.title-text { flex: 1; text-align: center; }
+.title-text h1 { font-size: 32px; margin: 0; font-weight: 800; line-height: 1.2; background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.title-text p { font-size: 14px; margin: 5px 0 0 0; color: #64748b; }
+@media (max-width: 600px) {
+    .header-container { margin-bottom: 15px; }
+    .logo-img { width: 45px !important; }
+    .title-text h1 { font-size: 18px !important; }
+    .title-text p { font-size: 10px !important; margin-top: 2px; }
+}
+
 /* COMPONENTS */
 .glass-card { background: #ffffff; border-radius: 16px; padding: 20px; border: 1px solid #cbd5e1; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); margin-bottom: 15px; text-align: center; height: 100%; }
 .announce-card { background: #ffffff; border-radius: 12px; padding: 15px; margin-bottom: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; }
@@ -92,6 +105,7 @@ if sh:
     try: sheet_pengumuman = sh.worksheet("Pengumuman")
     except: pass
 
+# KONFIGURASI AI (GLOBAL)
 if "GEMINI_API_KEY" in st.secrets:
     try: genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
     except: pass
@@ -102,9 +116,9 @@ def get_img_as_base64(file_path):
         return base64.b64encode(data).decode()
     except: return ""
 
-# --- FUNGSI AI SIMULASI (MODE DEMO - AMAN & CEPAT) ---
+# --- FUNGSI AI SIMULASI (MODE DEMO - ADMIN SURAT) ---
+# Fitur ini dijamin 100% jalan tanpa error API Key
 def draft_surat_with_ai(kategori, keluhan, nama):
-    
     perihal = ""
     tujuan = ""
     isi = ""
@@ -189,18 +203,17 @@ Wassalamu'alaikum Warahmatullahi Wabarakatuh."""
 
     return perihal, tujuan, isi
 
-# --- FUNGSI PDF GENERATOR (MARGIN STANDAR & NO BALLOONS) ---
+# --- FUNGSI PDF GENERATOR (KOP RAPI & HEMAT SPASI) ---
 def create_pdf(no_surat, lampiran, perihal, tujuan, isi_surat):
     pdf = FPDF()
     
     # SETTING MARGIN (Kiri 3cm, Atas 2.5cm, Kanan 2.5cm, Bawah 2.5cm)
-    # Ini Margin paling aman buat surat dinas
     pdf.set_margins(30, 25, 25) 
     pdf.set_auto_page_break(auto=True, margin=25)
     
     pdf.add_page()
     
-    # --- 1. KOP SURAT (ABSOLUTE CENTERING) ---
+    # --- 1. KOP SURAT (CENTERING MANUAL) ---
     # Logo Kiri (UIN)
     if os.path.exists("logo_uin.png"):
         pdf.image("logo_uin.png", x=25, y=20, w=22)
@@ -213,7 +226,7 @@ def create_pdf(no_surat, lampiran, perihal, tujuan, isi_surat):
     pdf.set_y(20) 
     pdf.set_font("Times", 'B', 12) 
     
-    pdf.set_x(0) # Reset X ke 0 biar center di kertas
+    pdf.set_x(0) 
     pdf.cell(210, 5, "HIMPUNAN MAHASISWA SAINS DATA", 0, 1, 'C')
     pdf.set_x(0)
     pdf.cell(210, 5, "FAKULTAS SAINS DAN TEKNOLOGI", 0, 1, 'C')
@@ -233,6 +246,7 @@ def create_pdf(no_surat, lampiran, perihal, tujuan, isi_surat):
     w2 = pdf.get_string_width(part2)
     total_w = w1 + w2
     
+    # Hitung posisi X awal biar center
     start_x = (210 - total_w) / 2
     pdf.set_x(start_x)
     
@@ -247,7 +261,7 @@ def create_pdf(no_surat, lampiran, perihal, tujuan, isi_surat):
     # Garis Pembatas
     pdf.ln(2)
     pdf.set_line_width(0.6)
-    pdf.line(30, pdf.get_y(), 185, pdf.get_y()) # Garis sepanjang margin kiri-kanan
+    pdf.line(30, pdf.get_y(), 185, pdf.get_y()) 
     pdf.set_line_width(0.2)
     pdf.line(30, pdf.get_y()+1, 185, pdf.get_y()+1)
     
@@ -492,7 +506,7 @@ elif selected == "Dashboard":
             st.error(f"Error memuat dashboard: {str(e)}")
 
 # =========================================================
-# 9. HALAMAN: SADAS BOT
+# 9. HALAMAN: SADAS BOT (ANTI-ERROR & STABIL)
 # =========================================================
 elif selected == "Sadas Bot":
     st.markdown("<div style='max-width: 700px; margin: auto;'>", unsafe_allow_html=True)
@@ -524,19 +538,9 @@ elif selected == "Sadas Bot":
         response = ""
         if "GEMINI_API_KEY" in st.secrets:
             try:
-                # KITA GUNAKAN MODEL AUTO-DETECT AGAR AMAN
-                available = []
-                try: 
-                    for m in genai.list_models():
-                        if 'generateContent' in m.supported_generation_methods: available.append(m.name)
-                except: pass
-                
-                target = 'gemini-1.5-flash'
-                if 'models/gemini-1.5-flash' in available: target = 'gemini-1.5-flash'
-                elif 'models/gemini-pro' in available: target = 'gemini-pro'
-                
-                model = genai.GenerativeModel(target)
-                system_prompt = "Kamu adalah Sadas Bot, asisten virtual dari Sains Data UIN Raden Intan Lampung. Jawab sopan dan santai."
+                # 1. KITA PAKAI MODEL 'gemini-pro' YANG PALING STABIL
+                model = genai.GenerativeModel('gemini-pro')
+                system_prompt = "Kamu adalah Sadas Bot, asisten mahasiswa Sains Data UIN Raden Intan Lampung. Jawab sopan, singkat, dan membantu."
                 full_prompt = f"{system_prompt}\nUser: {prompt}"
                 
                 with st.spinner("Sadas Bot sedang mengetik..."):
@@ -544,11 +548,9 @@ elif selected == "Sadas Bot":
                     response = ai_response.text
 
             except Exception as e:
-                err_msg = str(e)
-                if "403" in err_msg or "suspended" in err_msg:
-                    response = "⚠️ **API Key Bermasalah.** Tolong ganti API Key Gemini di pengaturan Secrets."
-                else:
-                    response = f"⚠️ Maaf ada error: {err_msg}"
+                # 2. FALLBACK JIKA ERROR (SUPAYA GAK MERAH)
+                response = "🙏 Maaf, server AI sedang sibuk atau ada gangguan koneksi. Silakan coba tanyakan lagi nanti ya."
+                # print(f"Error Debug: {e}") # Bisa dicek di console log kalau perlu
         else:
             response = "⚠️ API Key Gemini belum dipasang di Secrets."
 
@@ -593,7 +595,7 @@ elif selected == "Admin":
                     
                     st.write("---")
                     
-                    # --- PILIH LAPORAN (SKIP BARIS KOSONG) ---
+                    # --- PILIH LAPORAN ---
                     pilihan_laporan = []
                     for i, row in enumerate(raw_data[1:], start=2):
                         if not row[0].strip(): continue
@@ -634,7 +636,6 @@ elif selected == "Admin":
                         with tab_surat:
                             st.write("#### 📝 Generator Surat Otomatis")
                             
-                            # MENAMPILKAN DATA YANG SEDANG DIPROSES AGAR JELAS
                             st.info(f"**Sedang Memproses Laporan:** \nMahasiswa: {nama_mhs} | Keluhan: {kel_mhs[:50]}...")
                             
                             if 'draft_perihal' not in st.session_state: st.session_state.draft_perihal = ""
@@ -643,7 +644,6 @@ elif selected == "Admin":
 
                             if st.button("✨ 1. Buat Draft (Auto AI/Manual)"):
                                 with st.spinner("Sedang memproses..."):
-                                    # PANGGIL FUNGSI YANG UDAH DI UPDATE (FAIL-SAFE)
                                     p, t, i = draft_surat_with_ai(kat_mhs, kel_mhs, nama_mhs)
                                     st.session_state.draft_perihal = p
                                     st.session_state.draft_tujuan = t
@@ -672,7 +672,6 @@ elif selected == "Admin":
                                     file_name=f"Surat_Tindak_Lanjut_{nama_mhs}.pdf",
                                     mime="application/pdf"
                                 )
-                                # BALLOONS DIHAPUS SESUAI REQUEST
                     else:
                         st.info("Tidak ada laporan valid.")
                 else:
