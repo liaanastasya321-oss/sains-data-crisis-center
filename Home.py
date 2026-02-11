@@ -24,78 +24,34 @@ st.set_page_config(
 )
 
 # =========================================================
-# 2. GLOBAL CSS (TAMPILAN HERO, KARTU, CHAT)
+# 2. GLOBAL CSS (ASLI LIA + CHAT VERTIKAL RAPI)
 # =========================================================
 st.markdown("""
 <style>
-/* SETUP DASAR */
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap');
-
-.stApp { 
-    background: #f8fafc; 
-    font-family: 'Plus Jakarta Sans', sans-serif;
-    color: #1e293b;
-}
-
+.stApp { background: #f8fafc; font-family: 'Plus Jakarta Sans', sans-serif; color: #1e293b; }
 #MainMenu, footer, header, [data-testid="stSidebar"] { display: none !important; }
 .stApp > header { display: none !important; }
 
-/* HERO SECTION */
-.hero-container {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-    padding: 2rem 1rem;
-    background: linear-gradient(135deg, #eff6ff 0%, #ffffff 100%);
-    border-radius: 24px;
-    border: 1px solid #dbeafe;
-    margin-bottom: 30px;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-}
+.hero-container { display: flex; flex-direction: row; align-items: center; justify-content: space-between; padding: 2rem 1rem; background: linear-gradient(135deg, #eff6ff 0%, #ffffff 100%); border-radius: 24px; border: 1px solid #dbeafe; margin-bottom: 30px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); }
 .hero-text { flex: 1; padding-right: 20px; }
-.hero-title {
-    font-size: 42px; font-weight: 800; margin: 0; line-height: 1.1;
-    background: linear-gradient(90deg, #1e3a8a 0%, #3b82f6 100%);
-    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-}
+.hero-title { font-size: 42px; font-weight: 800; margin: 0; line-height: 1.1; background: linear-gradient(90deg, #1e3a8a 0%, #3b82f6 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
 .hero-subtitle { font-size: 16px; color: #64748b; margin-top: 10px; font-weight: 500; }
 .hero-logo { width: 140px; height: auto; filter: drop-shadow(0 10px 15px rgba(0, 0, 0, 0.1)); }
 
-@media (max-width: 768px) {
-    .hero-container { flex-direction: column-reverse; text-align: center; padding: 1.5rem; }
-    .hero-text { padding-right: 0; margin-top: 15px; }
-    .hero-title { font-size: 28px; }
-    .hero-logo { width: 100px; }
-}
+@media (max-width: 768px) { .hero-container { flex-direction: column-reverse; text-align: center; padding: 1.5rem; } .hero-text { padding-right: 0; margin-top: 15px; } .hero-title { font-size: 28px; } .hero-logo { width: 100px; } }
 
-/* CARDS */
-.glass-card { 
-    background: #ffffff; border-radius: 16px; padding: 25px; 
-    border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); 
-    text-align: center; height: 100%; transition: all 0.3s ease;
-}
+.glass-card { background: #ffffff; border-radius: 16px; padding: 25px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); text-align: center; height: 100%; transition: all 0.3s ease; }
 .glass-card:hover { transform: translateY(-5px); border-color: #bfdbfe; }
 .metric-value { font-size: 36px; font-weight: 800; color: #0f172a; margin-bottom: 5px; }
 .metric-label { font-size: 14px; color: #64748b; font-weight: 600; text-transform: uppercase; }
 
-/* INPUT & BUTTONS */
-.stTextInput input, .stTextArea textarea, .stSelectbox div[data-baseweb="select"] {
-    background-color: #ffffff !important; border: 1px solid #94a3b8 !important; 
-    color: #1e293b !important; border-radius: 10px; padding: 10px;
-}
-div.stButton > button { 
-    background: linear-gradient(90deg, #2563eb, #1d4ed8); color: white; border: none; 
-    padding: 12px 24px; border-radius: 10px; font-weight: 700; width: 100%;
-}
-.hapus-chat-btn button { background: #ef4444 !important; width: auto !important; padding: 5px 15px !important; font-size: 12px !important; }
+.stTextInput input, .stTextArea textarea, .stSelectbox div[data-baseweb="select"] { background-color: #ffffff !important; border: 1px solid #94a3b8 !important; color: #1e293b !important; border-radius: 10px; padding: 10px; }
+div.stButton > button { background: linear-gradient(90deg, #2563eb, #1d4ed8); color: white; border: none; padding: 12px 24px; border-radius: 10px; font-weight: 700; width: 100%; }
 
-/* CHAT AREA - JAWABAN DARI ATAS KE BAWAH */
+/* CHAT VERTIKAL RAPI */
 .chat-container { display: flex; flex-direction: column; gap: 15px; margin-bottom: 20px; width: 100%; }
-.message-box { 
-    padding: 12px 18px; border-radius: 15px; max-width: 85%; 
-    font-size: 15px; line-height: 1.5; word-wrap: break-word;
-}
+.message-box { padding: 12px 18px; border-radius: 15px; max-width: 85%; font-size: 15px; line-height: 1.5; word-wrap: break-word; }
 .user-msg { align-self: flex-end; background-color: #2563eb; color: white; border-bottom-right-radius: 2px; }
 .bot-msg { align-self: flex-start; background-color: #ffffff; color: #334155; border: 1px solid #e2e8f0; border-bottom-left-radius: 2px; }
 
@@ -105,7 +61,7 @@ iframe[title="streamlit_option_menu.option_menu"] { width: 100%; background: tra
 """, unsafe_allow_html=True)
 
 # =========================================================
-# 3. KONEKSI & FUNGSI BANTUAN
+# 3. KONEKSI & FUNGSI BANTUAN (ASLI DATA SET LIA)
 # =========================================================
 ID_SPREADSHEET = "1crJl0DsswyMGmq0ej_niIMfhSLdUIUx8u42HEu-sc3g" 
 API_KEY_IMGBB  = "827ccb0eea8a706c4c34a16891f84e7b" 
@@ -146,18 +102,21 @@ def get_img_as_base64(file_path):
         return base64.b64encode(data).decode()
     except: return ""
 
+# --- FUNGSI AI PINTAR (ANTI ERROR) ---
 def panggil_ai_mesin(prompt_system, user_input):
     if "GEMINI_API_KEY" not in st.secrets:
         return "⚠️ API Key belum dipasang di Secrets."
     try:
+        # OTOMATIS CARI MODEL AGAR GAK ERROR
         available = [m.name for m in genai.list_models() if 'generateContent' in m.supported_generation_methods]
         target = 'models/gemini-1.5-flash' if 'models/gemini-1.5-flash' in available else ('models/gemini-pro' if 'models/gemini-pro' in available else available[0])
         model = genai.GenerativeModel(target)
         res = model.generate_content(f"{prompt_system}\n\nUser: {user_input}")
         return res.text.strip()
     except Exception as e:
-        return f"🙏 Maaf, server AI sedang sibuk. (Error: {str(e)})"
+        return f"🙏 Maaf Lia, AI-nya lagi sibuk banget. (Error: {str(e)})"
 
+# --- FUNGSI DRAFT SURAT (OTOMATIS AI) ---
 def draft_surat_with_ai(kategori, keluhan, nama):
     sys_prompt = "Kamu Sekretaris Himpunan. Buatkan isi surat formal berdasarkan keluhan mahasiswa. Output WAJIB format: PERIHAL|||TUJUAN|||ISI_LENGKAP. Gunakan Assalamu'alaikum dan bahasa baku."
     user_p = f"Nama: {nama}, Kategori: {kategori}, Keluhan: {keluhan}"
@@ -168,6 +127,7 @@ def draft_surat_with_ai(kategori, keluhan, nama):
     else:
         return "Tindak Lanjut Laporan", "Ketua Program Studi", hasil
 
+# --- FUNGSI PDF ---
 def create_pdf(no_surat, lampiran, perihal, tujuan, isi_surat):
     pdf = FPDF()
     pdf.set_margins(30, 25, 25); pdf.set_auto_page_break(auto=True, margin=25); pdf.add_page()
@@ -196,197 +156,100 @@ def create_pdf(no_surat, lampiran, perihal, tujuan, isi_surat):
 # =========================================================
 if 'selected_menu' not in st.session_state: st.session_state.selected_menu = "Home"
 
-selected = option_menu(
-    menu_title=None,
-    options=["Home", "Lapor Masalah", "Cek Status", "Dashboard", "Sadas Bot", "Admin"],
-    icons=["house", "exclamation-triangle-fill", "search", "bar-chart-fill", "robot", "lock-fill"],
-    default_index=0,
-    orientation="horizontal",
-    key="nav_menu",
-    styles={
-        "container": {"padding": "5px", "background-color": "#ffffff", "border-radius": "12px", "border": "1px solid #e2e8f0"},
-        "nav-link": {"font-size": "12px", "color": "#64748b", "margin": "0px", "padding": "5px"}, 
-        "nav-link-selected": {"background-color": "#2563eb", "color": "white"},
-    }
-)
+selected = option_menu(None, ["Home", "Lapor Masalah", "Cek Status", "Dashboard", "Sadas Bot", "Admin"], 
+    icons=["house", "exclamation-triangle-fill", "search", "bar-chart-fill", "robot", "lock-fill"], 
+    default_index=0, orientation="horizontal", key="nav_menu")
 
 # =========================================================
-# 5. HALAMAN: HOME
+# 5. HALAMAN UTAMA & KONTEN
 # =========================================================
 if selected == "Home":
     img_him = get_img_as_base64("logo_him.png")
-    st.markdown(f'<div class="hero-container"><div class="hero-text"><h1 class="hero-title">SAINS DATA <br> CRISIS CENTER</h1><p class="hero-subtitle">Pusat Layanan Aspirasi, Analisis Data, dan Respon Cepat Mahasiswa PIKM.</p></div><img src="data:image/png;base64,{img_him}" class="hero-logo"></div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="hero-container"><div class="hero-text"><h1 class="hero-title">SAINS DATA <br> CRISIS CENTER</h1><p class="hero-subtitle">Pusat Layanan Aspirasi dan Respon Cepat Mahasiswa PIKM.</p></div><img src="data:image/png;base64,{img_him}" class="hero-logo"></div>', unsafe_allow_html=True)
     c1, c2, c3 = st.columns(3)
     with c1: st.markdown("""<div class="glass-card"><h3 style="color:#2563eb;">📢 Pelaporan</h3><p style="color:#64748b; font-size:14px;">Saluran resmi pengaduan masalah fasilitas & akademik.</p></div>""", unsafe_allow_html=True)
     with c2: st.markdown("""<div class="glass-card"><h3 style="color:#0891b2;">📊 Transparansi</h3><p style="color:#64748b; font-size:14px;">Pantau statistik dan status penyelesaian secara real-time.</p></div>""", unsafe_allow_html=True)
     with c3: st.markdown("""<div class="glass-card"><h3 style="color:#7c3aed;">🤖 Sadas Bot</h3><p style="color:#64748b; font-size:14px;">Asisten AI cerdas yang siap menjawab pertanyaanmu 24/7.</p></div>""", unsafe_allow_html=True)
-    st.write(""); st.subheader("📰 Informasi Terbaru")
-    if sheet_pengumuman:
-        try:
-            data_info = sheet_pengumuman.get_all_records()
-            if len(data_info) > 0:
-                for item in reversed(data_info):
-                    tipe = item.get('Tipe', 'Info'); border_color = "#ef4444" if tipe == "Urgent" else ("#f59e0b" if tipe == "Penting" else "#3b82f6")
-                    st.markdown(f'<div class="announce-card" style="border-left: 5px solid {border_color};"><div style="display:flex; justify-content:space-between;"><span style="font-weight:bold; color:{border_color}; font-size:12px;">{tipe}</span><span style="color:#94a3b8; font-size:12px;">{item.get("Tanggal", "-")}</span></div><h4 style="margin: 5px 0; color:#1e293b;">{item.get("Judul", "-")}</h4><p style="margin:0; font-size:13px; color:#475569;">{item.get("Isi", "-")}</p></div>', unsafe_allow_html=True)
-            else: st.info("Belum ada pengumuman.")
-        except: st.warning("Gagal memuat pengumuman.")
 
-# =========================================================
-# 6. HALAMAN: LAPOR MASALAH
-# =========================================================
 elif selected == "Lapor Masalah":
     st.markdown("<h2 style='text-align:center;'>📝 Form Pengaduan</h2>", unsafe_allow_html=True)
-    with st.container():
-        st.markdown('<div class="glass-card">', unsafe_allow_html=True)
-        with st.form("form_lapor_keren", clear_on_submit=True):
-            nama = st.text_input("Nama Lengkap")
-            col_a, col_b = st.columns(2)
-            with col_a: npm = st.text_input("NPM")
-            with col_b: jurusan = st.selectbox("Prodi", ["Sains Data", "Biologi", "Fisika", "Matematika"])
-            kategori = st.selectbox("Kategori Masalah", ["Fasilitas", "Akademik", "Keuangan", "Lainnya"])
-            keluhan = st.text_area("Deskripsi Detail")
-            submitted = st.form_submit_button("🚀 Kirim Laporan")
-            if submitted:
-                if not keluhan: st.warning("Mohon isi deskripsi laporan.")
-                else:
-                    with st.spinner("Mengirim..."):
-                        try:
-                            sheet.append_row([datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S"), nama, npm, jurusan, kategori, keluhan, "Pending", "-"])
-                            st.success("✅ Terkirim!")
-                        except: st.error("❌ Gagal!")
-        st.markdown('</div>', unsafe_allow_html=True)
+    with st.form("form_lapor", clear_on_submit=True):
+        nama = st.text_input("Nama"); npm = st.text_input("NPM")
+        jurusan = st.selectbox("Prodi", ["Sains Data", "Biologi", "Fisika", "Matematika"])
+        kategori = st.selectbox("Kategori", ["Fasilitas", "Akademik", "Keuangan", "Lainnya"])
+        keluhan = st.text_area("Keluhan")
+        if st.form_submit_button("🚀 Kirim"):
+            sheet.append_row([datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S"), nama, npm, jurusan, kategori, keluhan, "Pending", "-"])
+            st.success("Terkirim!")
 
-# =========================================================
-# 7. HALAMAN: CEK STATUS
-# =========================================================
-elif selected == "Cek Status":
-    st.markdown("<h2 style='text-align:center;'>🔍 Cek Status</h2>", unsafe_allow_html=True)
-    npm_input = st.text_input("Masukkan NPM", placeholder="Contoh: 2117041xxx")
-    if st.button("Lacak") and npm_input:
-        if sheet:
-            try:
-                raw_data = sheet.get_all_values()
-                if len(raw_data) > 1:
-                    df = pd.DataFrame(raw_data[1:], columns=raw_data[0])
-                    hasil = df[df['NPM'] == npm_input]
-                    if not hasil.empty:
-                        for idx, row in hasil.iterrows():
-                            status = row['Status']; color = "#d97706" if status == "Pending" else ("#059669" if status == "Selesai" else "#2563eb")
-                            st.markdown(f'<div class="glass-card" style="border-left:5px solid {color}; text-align:left;"><h4>{row["Kategori Masalah"]}</h4><small>{row["Waktu Lapor"]}</small><p>{row["Detail Keluhan"]}</p><div style="color:{color}; font-weight:bold;">{status}</div></div>', unsafe_allow_html=True)
-                    else: st.warning("NPM tidak ditemukan.")
-            except: st.error("Gagal ambil data.")
-
-# =========================================================
-# 8. HALAMAN: DASHBOARD (VISUALISASI & TRANSPARANSI)
-# =========================================================
 elif selected == "Dashboard":
     st.markdown("<h2 style='text-align:center;'>📊 Dashboard Analisis</h2>", unsafe_allow_html=True)
     if sheet:
-        try:
-            raw_data = sheet.get_all_values()
-            if len(raw_data) > 1:
-                df = pd.DataFrame(raw_data[1:], columns=raw_data[0])
-                if 'Waktu Lapor' in df.columns:
-                    df = df[df['Waktu Lapor'].astype(str).str.strip() != ""]
-                
-                c1, c2, c3 = st.columns(3)
-                with c1: st.markdown(f'<div class="glass-card"><div class="metric-value">{len(df)}</div><div class="metric-label">Total</div></div>', unsafe_allow_html=True)
-                with c2: st.markdown(f'<div class="glass-card"><div class="metric-value" style="color:#d97706;">{len(df[df["Status"] == "Pending"])}</div><div class="metric-label">Menunggu</div></div>', unsafe_allow_html=True)
-                with c3: st.markdown(f'<div class="glass-card"><div class="metric-value" style="color:#059669;">{len(df[df["Status"] == "Selesai"])}</div><div class="metric-label">Selesai</div></div>', unsafe_allow_html=True)
-                
-                va, vb = st.columns(2)
-                with va: 
-                    fig_pie = go.Figure(data=[go.Pie(labels=df['Kategori Masalah'].value_counts().index, values=df['Kategori Masalah'].value_counts().values, hole=.5)])
-                    fig_pie.update_layout(title="Berdasarkan Kategori", height=350)
-                    st.plotly_chart(fig_pie, use_container_width=True)
-                with vb: 
-                    fig_bar = go.Figure(data=[go.Bar(x=df['Status'].value_counts().index, y=df['Status'].value_counts().values, marker_color=['#d97706','#059669'])])
-                    fig_bar.update_layout(title="Berdasarkan Status", height=350)
-                    st.plotly_chart(fig_bar, use_container_width=True)
-                
-                st.write("### 📢 Transparansi Laporan Publik")
-                # Kolom yang ditampilkan: Waktu Lapor, Prodi, Kategori Masalah, Status (Sesuai request tanpa identitas)
-                st.dataframe(df[['Waktu Lapor', 'Prodi', 'Kategori Masalah', 'Status']], use_container_width=True, hide_index=True)
-            else: st.info("Data kosong.")
-        except Exception as e: st.error(f"Error Dashboard: {e}")
+        df = pd.DataFrame(sheet.get_all_records())
+        if not df.empty:
+            c1, c2, c3 = st.columns(3)
+            c1.markdown(f'<div class="glass-card"><div class="metric-value">{len(df)}</div><div class="metric-label">Total</div></div>', unsafe_allow_html=True)
+            c2.markdown(f'<div class="glass-card"><div class="metric-value" style="color:#d97706;">{len(df[df["Status"] == "Pending"])}</div><div class="metric-label">Menunggu</div></div>', unsafe_allow_html=True)
+            c3.markdown(f'<div class="glass-card"><div class="metric-value" style="color:#059669;">{len(df[df["Status"] == "Selesai"])}</div><div class="metric-label">Selesai</div></div>', unsafe_allow_html=True)
+            
+            va, vb = st.columns(2)
+            with va: 
+                f_pie = go.Figure(data=[go.Pie(labels=df['Kategori Masalah'].value_counts().index, values=df['Kategori Masalah'].value_counts().values, hole=.5)])
+                f_pie.update_layout(title="Berdasarkan Kategori", height=350)
+                st.plotly_chart(f_pie, use_container_width=True)
+            with vb: 
+                f_bar = go.Figure(data=[go.Bar(x=df['Status'].value_counts().index, y=df['Status'].value_counts().values, marker_color=['#d97706','#059669'])])
+                f_bar.update_layout(title="Berdasarkan Status", height=350)
+                st.plotly_chart(f_bar, use_container_width=True)
+            st.write("### 📢 Transparansi Laporan Publik")
+            st.dataframe(df[['Waktu Lapor', 'Prodi', 'Kategori Masalah', 'Status']], use_container_width=True, hide_index=True)
 
-# =========================================================
-# 9. HALAMAN: SADAS BOT (VERTIKAL & HISTORY)
-# =========================================================
+# --- SADAS BOT DENGAN MEMORY & VERTIKAL ---
 elif selected == "Sadas Bot":
     st.markdown("<h2 style='text-align:center;'>🤖 Sadas Bot</h2>", unsafe_allow_html=True)
     if "chat_history" not in st.session_state: st.session_state.chat_history = []
-    if "display_history" not in st.session_state: st.session_state.display_history = []
+    if "chat_display" not in st.session_state: st.session_state.chat_display = []
     
-    if st.button("🗑️ Reset Chat"):
-        st.session_state.chat_history = []; st.session_state.display_history = []; st.rerun()
+    if st.button("🗑️ Hapus Chat"): 
+        st.session_state.chat_history = []; st.session_state.chat_display = []; st.rerun()
 
     st.markdown('<div class="chat-container">', unsafe_allow_html=True)
-    for msg in st.session_state.display_history:
+    for msg in st.session_state.chat_display:
         cls = "user-msg" if msg["role"] == "user" else "bot-msg"
         st.markdown(f'<div class="message-box {cls}">{msg["content"]}</div>', unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
 
-    if prompt := st.chat_input("Ketik pesanmu..."):
-        st.session_state.display_history.append({"role": "user", "content": prompt})
-        try:
-            model = genai.GenerativeModel('gemini-pro')
-            chat = model.start_chat(history=st.session_state.chat_history)
-            response = chat.send_message(prompt)
-            # Update History
-            st.session_state.chat_history.append({"role": "user", "parts": [prompt]})
-            st.session_state.chat_history.append({"role": "model", "parts": [response.text]})
-            # Update Tampilan
-            st.session_state.display_history.append({"role": "bot", "content": response.text})
-            st.rerun()
-        except: st.error("AI Error.")
-
-# =========================================================
-# 10. HALAMAN: ADMIN (DATA SET CONNECTED)
-# =========================================================
-elif selected == "Admin":
-    st.markdown("<h2 style='text-align:center;'>🔐 Admin Area</h2>", unsafe_allow_html=True)
-    if 'is_logged_in' not in st.session_state: st.session_state['is_logged_in'] = False
-    if not st.session_state['is_logged_in']:
-        with st.form("login_form"):
-            pwd = st.text_input("Password Admin", type="password")
-            if st.form_submit_button("Login"):
-                if pwd == "RAHASIA PIKM😭": st.session_state['is_logged_in'] = True; st.rerun()
-                else: st.error("Salah")
-    else:
-        if st.button("Logout"): st.session_state['is_logged_in'] = False; st.rerun()
-        if sheet:
+    if prompt := st.chat_input("Ketik pesan..."):
+        st.session_state.chat_display.append({"role": "user", "content": prompt})
+        with st.spinner("Berpikir..."):
             try:
-                raw_data = sheet.get_all_values()
-                if len(raw_data) > 1:
-                    df = pd.DataFrame(raw_data[1:], columns=raw_data[0])
-                    st.dataframe(df, use_container_width=True)
-                    st.write("---")
-                    pilihan_laporan = []
-                    for i, row in enumerate(raw_data[1:], start=2):
-                        if not row[0].strip(): continue
-                        nama_pelapor = row[1] if len(row) > 1 else "Tanpa Nama"
-                        label = f"{i} | {nama_pelapor} - {row[4] if len(row)>4 else '-'}"
-                        pilihan_laporan.append(label)
-                    if pilihan_laporan:
-                        laporan_terpilih = st.selectbox("Pilih Laporan:", pilihan_laporan)
-                        idx = int(laporan_terpilih.split(" | ")[0]); data_t = raw_data[idx - 1]
-                        tab_status, tab_surat = st.tabs(["⚙️ Update Status", "🖨️ Generator Surat (AI)"])
-                        with tab_status:
-                            status_baru = st.selectbox("Ubah Status:", ["Pending", "Sedang Diproses", "Selesai"])
-                            if st.button("💾 Simpan"):
-                                sheet.update_cell(idx, 7, status_baru); st.success("Ok!"); time.sleep(1); st.rerun()
-                        with tab_surat:
-                            if st.button("✨ Buat Draft (Auto AI)"):
-                                with st.spinner("AI Menulis..."):
-                                    p, t, i = draft_surat_with_ai(data_t[4], data_t[5], data_t[1])
-                                    st.session_state.draft_perihal, st.session_state.draft_tujuan, st.session_state.draft_isi = p, t, i
-                                    st.success("Draft Siap!")
-                            if 'draft_isi' in st.session_state:
-                                dr_p = st.text_input("Perihal", value=st.session_state.get('draft_perihal',''))
-                                dr_t = st.text_input("Tujuan", value=st.session_state.get('draft_tujuan',''))
-                                dr_i = st.text_area("Isi", value=st.session_state.get('draft_isi',''), height=300)
-                                if st.button("🖨️ Cetak PDF"):
-                                    pdf_b = create_pdf("001/PIKM/2026", "1 Berkas", dr_p, dr_t, dr_i)
-                                    st.download_button("📥 Download PDF", pdf_b, f"Surat_{data_t[1]}.pdf", "application/pdf")
-            except Exception as e: st.error(f"Error: {e}")
+                available = [m.name for m in genai.list_models() if 'generateContent' in m.supported_generation_methods]
+                model_name = 'models/gemini-pro' if 'models/gemini-pro' in available else available[0]
+                model = genai.GenerativeModel(model_name)
+                chat = model.start_chat(history=st.session_state.chat_history)
+                response = chat.send_message(prompt)
+                st.session_state.chat_history.append({"role": "user", "parts": [prompt]})
+                st.session_state.chat_history.append({"role": "model", "parts": [response.text]})
+                st.session_state.chat_display.append({"role": "bot", "content": response.text})
+                st.rerun()
+            except: st.error("AI Sibuk.")
+
+elif selected == "Admin":
+    if 'auth' not in st.session_state: st.session_state.auth = False
+    if not st.session_state.auth:
+        pwd = st.text_input("Password", type="password")
+        if st.button("Masuk") and pwd == "RAHASIA PIKM😭": st.session_state.auth = True; st.rerun()
+    else:
+        raw_data = sheet.get_all_values()
+        if len(raw_data) > 1:
+            opts = [f"{i} | {r[1]}" for i, r in enumerate(raw_data[1:], 2) if r[0].strip()]
+            sel = st.selectbox("Laporan:", opts); idx = int(sel.split(" | ")[0]); data_t = raw_data[idx - 1]
+            if st.button("✨ Buat Draft AI"):
+                p, t, i = draft_surat_with_ai(data_t[4], data_t[5], data_t[1])
+                st.session_state.p, st.session_state.t, st.session_state.i = p, t, i
+            if 'i' in st.session_state:
+                p_in = st.text_input("Perihal", st.session_state.p)
+                t_in = st.text_input("Tujuan", st.session_state.t)
+                i_in = st.text_area("Isi", st.session_state.i, height=300)
+                if st.button("Cetak"):
+                    st.download_button("Download", create_pdf("001/2026", "1 Berkas", p_in, t_in, i_in), f"Surat_{data_t[1]}.pdf")
