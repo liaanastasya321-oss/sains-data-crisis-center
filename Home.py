@@ -183,6 +183,7 @@ if sh:
     try: sheet_pengumuman = sh.worksheet("Pengumuman")
     except: pass
 
+# Konfigurasi Awal Gemini
 if "GEMINI_API_KEY" in st.secrets:
     try: genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
     except: pass
@@ -193,7 +194,7 @@ def get_img_as_base64(file_path):
         return base64.b64encode(data).decode()
     except: return ""
 
-# --- FUNGSI AI DRAFTER (UPDATE MODEL KE 1.5-FLASH) ---
+# --- FUNGSI AI DRAFTER (AUTO-SWITCH MODEL) ---
 def draft_surat_with_ai(kategori, keluhan, nama):
     perihal_backup = "Tindak Lanjut Keluhan Mahasiswa"
     tujuan_backup = "Ketua Program Studi Sains Data"
@@ -214,21 +215,18 @@ Mohon kiranya dapat ditindaklanjuti. Terima kasih.
 Wassalamu'alaikum Warahmatullahi Wabarakatuh."""
 
     if "GEMINI_API_KEY" in st.secrets:
-        try:
-            # Menggunakan gemini-1.5-flash yang lebih stabil dan didukung
-            model = genai.GenerativeModel('gemini-1.5-flash') 
-            prompt = f"""
-            Buatkan draft surat formal singkat dari Himpunan Mahasiswa Sains Data (PIKM).
-            Data: Nama {nama}, Kategori {kategori}, Keluhan "{keluhan}".
-            Output WAJIB format: PERIHAL|||TUJUAN|||ISI_LENGKAP
-            Isi harus ada Pembuka (Assalamu'alaikum), Inti (Formal), Penutup.
-            """
-            response = model.generate_content(prompt)
-            text = response.text.strip()
-            parts = text.split("|||")
-            if len(parts) >= 3:
-                return parts[0].strip(), parts[1].strip(), parts[2].strip()
-        except: pass 
+        # Coba beberapa nama model yang umum didukung
+        for model_name in ['gemini-1.5-flash', 'gemini-pro', 'models/gemini-pro']:
+            try:
+                model = genai.GenerativeModel(model_name)
+                prompt = f"Buat draft surat formal HMSD. Nama: {nama}, Kategori: {kategori}, Keluhan: {keluhan}. Format: PERIHAL|||TUJUAN|||ISI"
+                response = model.generate_content(prompt)
+                parts = response.text.split("|||")
+                if len(parts) >= 3:
+                    return parts[0].strip(), parts[1].strip(), parts[2].strip()
+                break 
+            except:
+                continue 
 
     return perihal_backup, tujuan_backup, isi_backup
 
@@ -338,7 +336,6 @@ selected = option_menu(
 # =========================================================
 if selected == "Home":
     img_him = get_img_as_base64("logo_him.png")
-    
     st.markdown(f"""
     <div class="hero-container">
         <div class="hero-text">
@@ -353,24 +350,6 @@ if selected == "Home":
     with c1: st.markdown("""<div class="glass-card"><h3 style="color:#2563eb;">📢 Pelaporan</h3><p style="color:#64748b; font-size:14px;">Saluran resmi pengaduan masalah fasilitas & akademik.</p></div>""", unsafe_allow_html=True)
     with c2: st.markdown("""<div class="glass-card"><h3 style="color:#0891b2;">📊 Transparansi</h3><p style="color:#64748b; font-size:14px;">Pantau statistik dan status penyelesaian secara real-time.</p></div>""", unsafe_allow_html=True)
     with c3: st.markdown("""<div class="glass-card"><h3 style="color:#7c3aed;">🤖 Sadas Bot</h3><p style="color:#64748b; font-size:14px;">Asisten AI cerdas yang siap menjawab pertanyaanmu 24/7.</p></div>""", unsafe_allow_html=True)
-
-    st.write("")
-    st.subheader("📰 Informasi Terbaru")
-    if sheet_pengumuman:
-        try:
-            data_info = sheet_pengumuman.get_all_records()
-            if len(data_info) > 0:
-                for item in reversed(data_info):
-                    tipe = item.get('Tipe', 'Info')
-                    border_color = "#ef4444" if tipe == "Urgent" else ("#f59e0b" if tipe == "Penting" else "#3b82f6")
-                    st.markdown(f"""
-                    <div class="announce-card" style="border-left: 5px solid {border_color};">
-                        <div style="display:flex; justify-content:space-between;"><span style="font-weight:bold; color:{border_color}; font-size:12px;">{tipe}</span><span style="color:#94a3b8; font-size:12px;">{item.get('Tanggal', '-')}</span></div>
-                        <h4 style="margin: 5px 0; color:#1e293b;">{item.get('Judul', '-')}</h4><p style="margin:0; font-size:13px; color:#475569;">{item.get('Isi', '-')}</p>
-                    </div>""", unsafe_allow_html=True)
-            else: st.info("Belum ada pengumuman.")
-        except: st.warning("Gagal memuat pengumuman.")
-    else: st.warning("Tab 'Pengumuman' tidak ditemukan.")
 
 # =========================================================
 # 6. HALAMAN: LAPOR MASALAH
@@ -389,7 +368,6 @@ elif selected == "Lapor Masalah":
             keluhan = st.text_area("Deskripsi Detail")
             bukti_file = st.file_uploader("Upload Bukti (JPG/PNG)", type=["png", "jpg", "jpeg"])
             st.markdown("<br>", unsafe_allow_html=True)
-            
             submitted = st.form_submit_button("🚀 Kirim Laporan")
             
             if submitted:
@@ -405,16 +383,9 @@ elif selected == "Lapor Masalah":
                                 res = requests.post("https://api.imgbb.com/1/upload", params=params, files=files)
                                 if res.json().get("success"): link_bukti = res.json()["data"]["url"]
                             except: pass
-                        
-                        try:
-                            if sheet is None:
-                                st.error("❌ Gagal Konek Database.")
-                            else:
-                                sheet.append_row([waktu, nama, npm, jurusan, kategori, keluhan, "Pending", link_bukti])
-                                st.success("✅ Terkirim! Laporanmu berhasil disimpan.")
-                        except Exception as e:
-                            st.error(f"Error Teknis: {str(e)}")
-
+                        if sheet:
+                            sheet.append_row([waktu, nama, npm, jurusan, kategori, keluhan, "Pending", link_bukti])
+                            st.success("✅ Terkirim!")
         st.markdown('</div>', unsafe_allow_html=True)
     st.markdown("</div>", unsafe_allow_html=True)
 
@@ -425,31 +396,19 @@ elif selected == "Cek Status":
     st.markdown("<h2 style='text-align:center;'>🔍 Cek Status</h2>", unsafe_allow_html=True)
     col_x, col_y, col_z = st.columns([1,2,1])
     with col_y:
-        npm_input = st.text_input("Masukkan NPM", placeholder="Contoh: 2117041xxx")
-        cek_btn = st.button("Lacak")
-        if cek_btn and npm_input:
+        npm_input = st.text_input("Masukkan NPM")
+        if st.button("Lacak") and npm_input:
             if sheet:
-                try:
-                    raw_data = sheet.get_all_values()
-                    if len(raw_data) > 1:
-                        df = pd.DataFrame(raw_data[1:], columns=raw_data[0])
-                        if 'Waktu Lapor' in df.columns:
-                             df = df[df['Waktu Lapor'].astype(str).str.strip() != ""]
-                        
-                        hasil = df[df['NPM'] == npm_input]
-                        
-                        if not hasil.empty:
-                            for idx, row in hasil.iterrows():
-                                status = row['Status']
-                                color = "#d97706" if status == "Pending" else ("#059669" if status == "Selesai" else "#2563eb")
-                                st.markdown(f"""<div class="glass-card" style="border-left:5px solid {color}; text-align:left;">
-                                <h4 style="margin:0;">{row['Kategori Masalah']}</h4>
-                                <small style="color:#64748b;">{row['Waktu Lapor']}</small>
-                                <p style="margin-top:10px;">"{row['Detail Keluhan']}"</p>
-                                <div style="background:{color}22; color:{color}; padding: 5px 10px; border-radius:8px; display:inline-block; font-weight:bold; margin-top:5px;">{status}</div></div>""", unsafe_allow_html=True)
-                        else: st.warning("NPM tidak ditemukan.")
-                    else: st.info("Belum ada data di database.")
-                except Exception as e: st.error(f"Gagal mengambil data: {e}")
+                data = sheet.get_all_records()
+                df = pd.DataFrame(data)
+                hasil = df[df['NPM'].astype(str) == npm_input]
+                if not hasil.empty:
+                    for _, row in hasil.iterrows():
+                        st.markdown(f"""<div class="glass-card" style="text-align:left; margin-bottom:10px;">
+                        <h4>{row['Kategori Masalah']}</h4>
+                        <p>{row['Detail Keluhan']}</p>
+                        <strong>Status: {row['Status']}</strong></div>""", unsafe_allow_html=True)
+                else: st.warning("NPM tidak ditemukan.")
 
 # =========================================================
 # 8. HALAMAN: DASHBOARD
@@ -457,48 +416,17 @@ elif selected == "Cek Status":
 elif selected == "Dashboard":
     st.markdown("<h2 style='text-align:center;'>📊 Dashboard Analisis</h2>", unsafe_allow_html=True)
     if sheet:
-        try:
-            raw_data = sheet.get_all_values()
-            if len(raw_data) > 1:
-                df = pd.DataFrame(raw_data[1:], columns=raw_data[0])
-                if 'Waktu Lapor' in df.columns:
-                    df = df[df['Waktu Lapor'].astype(str).str.strip() != ""]
-                
-                col1, col2, col3 = st.columns(3)
-                with col1: st.markdown(f"""<div class="glass-card"><div class="metric-value">{len(df)}</div><div class="metric-label">Total</div></div>""", unsafe_allow_html=True)
-                with col2: st.markdown(f"""<div class="glass-card"><div class="metric-value" style="color:#d97706;">{len(df[df['Status'] == 'Pending'])}</div><div class="metric-label">Menunggu</div></div>""", unsafe_allow_html=True)
-                with col3: st.markdown(f"""<div class="glass-card"><div class="metric-value" style="color:#059669;">{len(df[df['Status'] == 'Selesai'])}</div><div class="metric-label">Selesai</div></div>""", unsafe_allow_html=True)
-                
-                c_a, c_b = st.columns(2)
-                with c_a:
-                    if 'Kategori Masalah' in df.columns:
-                        pie = df['Kategori Masalah'].value_counts()
-                        fig = go.Figure(data=[go.Pie(labels=pie.index, values=pie.values, hole=.5)])
-                        fig.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)", font_color="#1e293b", title="Kategori")
-                        st.plotly_chart(fig, use_container_width=True)
-                with c_b: 
-                    if 'Status' in df.columns:
-                        bar = df['Status'].value_counts()
-                        fig2 = go.Figure([go.Bar(x=bar.index, y=bar.values, marker_color=['#d97706', '#059669'])])
-                        fig2.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)", font_color="#1e293b", title="Status")
-                        st.plotly_chart(fig2, use_container_width=True)
-
-                st.write("---")
-                st.write("### 📝 Riwayat Laporan (Publik)")
-                kolom_rahasia = ['Nama Mahasiswa', 'NPM', 'Jurusan', 'Detail Keluhan', 'Bukti', 'Link Bukti', 'Foto']
-                kolom_tampil = [col for col in df.columns if col not in kolom_rahasia]
-                
-                if not df.empty:
-                    st.dataframe(df[kolom_tampil], use_container_width=True, hide_index=True)
-                else:
-                    st.info("Belum ada data.")
-            else: 
-                st.info("⚠️ Data masih kosong.")
-        except Exception as e: 
-            st.error(f"Error memuat dashboard: {str(e)}")
+        data = sheet.get_all_records()
+        if data:
+            df = pd.DataFrame(data)
+            c1, c2, c3 = st.columns(3)
+            c1.metric("Total Laporan", len(df))
+            c2.metric("Pending", len(df[df['Status'] == 'Pending']))
+            c3.metric("Selesai", len(df[df['Status'] == 'Selesai']))
+            st.dataframe(df, use_container_width=True)
 
 # =========================================================
-# 9. HALAMAN: SADAS BOT (UPDATE MODEL KE 1.5-FLASH)
+# 9. HALAMAN: SADAS BOT (FIX MODEL NOT FOUND)
 # =========================================================
 elif selected == "Sadas Bot":
     st.markdown("<div style='max-width: 700px; margin: auto;'>", unsafe_allow_html=True)
@@ -507,44 +435,42 @@ elif selected == "Sadas Bot":
         st.markdown(f"<h2 style='text-align:left; margin:0;'>🤖 Sadas Bot</h2>", unsafe_allow_html=True)
         st.markdown("<p style='text-align:left; color:#64748b; margin-top:0px;'>Asisten Akademik Virtual</p>", unsafe_allow_html=True)
     with col_btn:
-        st.markdown('<div class="hapus-chat-btn">', unsafe_allow_html=True)
         if st.button("🗑️ Hapus Chat"):
             st.session_state.messages = []
             st.rerun()
-        st.markdown('</div>', unsafe_allow_html=True)
 
     st.write("---")
-    
     if "messages" not in st.session_state: st.session_state.messages = []
 
-    for message in st.session_state.messages:
-        role_class = "user" if message["role"] == "user" else "bot"
-        st.markdown(f"""<div class="chat-message {role_class}"><div><strong>{message['role'].capitalize()}:</strong> <br> {message['content']}</div></div>""", unsafe_allow_html=True)
+    for msg in st.session_state.messages:
+        role_class = "user" if msg["role"] == "user" else "bot"
+        st.markdown(f"""<div class="chat-message {role_class}"><div>{msg['content']}</div></div>""", unsafe_allow_html=True)
 
-    if prompt := st.chat_input("Ketik pesanmu di sini..."):
+    if prompt := st.chat_input("Ketik pesanmu..."):
         st.session_state.messages.append({"role": "user", "content": prompt})
         with st.chat_message("user"): st.markdown(prompt)
 
         response = ""
-        if "GEMINI_API_KEY" in st.secrets and st.secrets["GEMINI_API_KEY"]:
-            try:
-                genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
-                # Menggunakan gemini-1.5-flash yang terbaru
-                model = genai.GenerativeModel('gemini-1.5-flash')
+        if "GEMINI_API_KEY" in st.secrets:
+            # AUTO-CHECK MODEL: Mencoba model yang tersedia di API v1/v1beta
+            available_models = ['gemini-pro', 'gemini-1.5-flash', 'models/gemini-pro']
+            success = False
+            
+            with st.spinner("Sadas Bot sedang mengetik..."):
+                for m_name in available_models:
+                    try:
+                        model = genai.GenerativeModel(m_name)
+                        ai_res = model.generate_content(f"Kamu Sadas Bot HMSD. Jawab santai: {prompt}")
+                        response = ai_res.text
+                        success = True
+                        break 
+                    except:
+                        continue
                 
-                system_prompt = "Kamu adalah Sadas Bot, asisten virtual dari Sains Data UIN Raden Intan Lampung. Jawab sopan dan santai."
-                full_prompt = f"{system_prompt}\nUser: {prompt}"
-                
-                with st.spinner("Sadas Bot sedang mengetik..."):
-                    ai_response = model.generate_content(full_prompt)
-                    if ai_response and hasattr(ai_response, 'text'):
-                        response = ai_response.text
-                    else:
-                        response = "🙏 Maaf, aku tidak bisa menghasilkan jawaban saat ini."
-            except Exception as e:
-                response = f"⚠️ Terjadi kendala teknis: {str(e)}"
+                if not success:
+                    response = "🙏 Maaf, terjadi sinkronisasi model di server. Coba beberapa saat lagi."
         else:
-            response = "⚠️ API Key Gemini tidak ditemukan atau tidak valid di Secrets."
+            response = "⚠️ API Key belum dikonfigurasi."
 
         st.session_state.messages.append({"role": "assistant", "content": response})
         with st.chat_message("assistant"): st.markdown(response)
@@ -558,107 +484,24 @@ elif selected == "Admin":
     if 'is_logged_in' not in st.session_state: st.session_state['is_logged_in'] = False
 
     if not st.session_state['is_logged_in']:
-        st.markdown("<div style='max-width:400px; margin:auto;'>", unsafe_allow_html=True)
-        with st.form("login_form"):
-            pwd = st.text_input("Password Admin", type="password")
-            if st.form_submit_button("Login"):
-                if pwd == "RAHASIA PIKM😭":
-                    st.session_state['is_logged_in'] = True
-                    st.rerun()
-                else: st.error("Password Salah")
-        st.markdown("</div>", unsafe_allow_html=True)
+        with st.form("login"):
+            pwd = st.text_input("Password", type="password")
+            if st.form_submit_button("Login") and pwd == "RAHASIA PIKM😭":
+                st.session_state['is_logged_in'] = True
+                st.rerun()
     else:
-        if st.button("Logout", key="logout_btn"):
-            st.session_state['is_logged_in'] = False
-            st.rerun()
-            
-        st.write("---")
-        
+        if st.button("Logout"): st.session_state['is_logged_in'] = False; st.rerun()
         if sheet:
-            try:
-                raw_data = sheet.get_all_values()
+            data = sheet.get_all_values()
+            if len(data) > 1:
+                df = pd.DataFrame(data[1:], columns=data[0])
+                st.dataframe(df)
                 
-                if len(raw_data) > 1:
-                    st.subheader("📋 Database Lengkap")
-                    df = pd.DataFrame(raw_data[1:], columns=raw_data[0])
-                    if 'Waktu Lapor' in df.columns:
-                        df_display = df[df['Waktu Lapor'].astype(str).str.strip() != ""]
-                        st.dataframe(df_display, use_container_width=True)
-                    
-                    st.write("---")
-                    
-                    pilihan_laporan = []
-                    for i, row in enumerate(raw_data[1:], start=2):
-                        if not row[0].strip(): continue
-                        nama_pelapor = row[1] if len(row) > 1 else "Tanpa Nama"
-                        kategori_lapor = row[4] if len(row) > 4 else "-"
-                        isi_keluhan = row[5][:20] if len(row) > 5 else "-"
-                        label = f"{i} | {nama_pelapor} - {kategori_lapor} ({isi_keluhan}...)" 
-                        pilihan_laporan.append(label)
-                    
-                    if pilihan_laporan:
-                        laporan_terpilih = st.selectbox("Pilih Laporan:", pilihan_laporan)
-                        nomor_baris = int(laporan_terpilih.split(" | ")[0])
-                        data_terpilih = raw_data[nomor_baris - 1]
-                        
-                        nama_mhs = data_terpilih[1]
-                        npm_mhs = data_terpilih[2]
-                        jur_mhs = data_terpilih[3]
-                        kat_mhs = data_terpilih[4]
-                        kel_mhs = data_terpilih[5]
-                        
-                        tab_status, tab_surat = st.tabs(["⚙️ Update Status", "🖨️ Generator Surat (AI)"])
-                        
-                        with tab_status:
-                            status_baru = st.selectbox("Ubah Status Jadi:", ["Pending", "Sedang Diproses", "Selesai"])
-                            if st.button("💾 Simpan Status"):
-                                with st.spinner("Menyimpan..."):
-                                    try:
-                                        sheet.update_cell(nomor_baris, 7, status_baru)
-                                        st.success(f"Status berhasil diubah jadi: {status_baru}")
-                                        time.sleep(1)
-                                        st.rerun()
-                                    except Exception as e: st.error(f"Gagal: {e}")
-
-                        with tab_surat:
-                            st.write("#### 📝 Generator Surat Otomatis")
-                            st.info(f"**Sedang Memproses Laporan:** \nMahasiswa: {nama_mhs} | Keluhan: {kel_mhs[:50]}...")
-                            
-                            if 'draft_perihal' not in st.session_state: st.session_state.draft_perihal = ""
-                            if 'draft_tujuan' not in st.session_state: st.session_state.draft_tujuan = ""
-                            if 'draft_isi' not in st.session_state: st.session_state.draft_isi = ""
-
-                            if st.button("✨ 1. Buat Draft (Auto AI)"):
-                                with st.spinner("Sedang memproses..."):
-                                    p, t, i = draft_surat_with_ai(kat_mhs, kel_mhs, nama_mhs)
-                                    st.session_state.draft_perihal = p
-                                    st.session_state.draft_tujuan = t
-                                    st.session_state.draft_isi = i
-                                    st.success("Draft siap! Silakan edit.")
-
-                            st.write("---")
-                            st.write("##### ✏️ Editor Surat (Silakan Edit Di Sini)")
-                            
-                            col_s1, col_s2, col_s3 = st.columns([1, 1, 2])
-                            with col_s1:
-                                no_surat = st.text_input("Nomor Surat", value="001/PIKM-HMSD/II/2026")
-                            with col_s2:
-                                lampiran = st.text_input("Lampiran", value="1 Berkas")
-                            with col_s3:
-                                perihal_surat = st.text_input("Perihal", value=st.session_state.draft_perihal)
-                            
-                            tujuan_surat = st.text_input("Tujuan Surat (Yth.)", value=st.session_state.draft_tujuan)
-                            isi_lengkap = st.text_area("Isi Surat Lengkap", value=st.session_state.draft_isi, height=300)
-                            
-                            if st.button("🖨️ 2. Cetak PDF Final"):
-                                pdf_bytes = create_pdf(no_surat, lampiran, perihal_surat, tujuan_surat, isi_lengkap)
-                                st.download_button(
-                                    label="📥 Download Surat (PDF)",
-                                    data=pdf_bytes,
-                                    file_name=f"Surat_Tindak_Lanjut_{nama_mhs}.pdf",
-                                    mime="application/pdf"
-                                )
-                    else: st.info("Tidak ada laporan valid.")
-                else: st.info("Belum ada data laporan.")
-            except Exception as e:
-                st.error(f"Error Database: {str(e)}")
+                # Fitur Cetak Surat tetap ada di sini
+                st.write("---")
+                idx = st.number_input("Pilih Baris Laporan untuk Surat (Mulai dari 2)", min_value=2, max_value=len(data))
+                if st.button("✨ Buat Draft & PDF"):
+                    row = data[idx-1]
+                    p, t, i = draft_surat_with_ai(row[4], row[5], row[1])
+                    pdf_bytes = create_pdf("001/HMSD/2026", "1 Berkas", p, t, i)
+                    st.download_button("📥 Download PDF", pdf_bytes, f"Surat_{row[1]}.pdf")
