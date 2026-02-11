@@ -24,32 +24,73 @@ st.set_page_config(
 )
 
 # =========================================================
-# 2. GLOBAL CSS (ASLI LIA + PERBAIKAN CHAT VERTIKAL)
+# 2. GLOBAL CSS (TAMPILAN HERO, KARTU, CHAT)
 # =========================================================
 st.markdown("""
 <style>
+/* SETUP DASAR */
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap');
-.stApp { background: #f8fafc; font-family: 'Plus Jakarta Sans', sans-serif; color: #1e293b; }
+
+.stApp { 
+    background: #f8fafc; 
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    color: #1e293b;
+}
+
 #MainMenu, footer, header, [data-testid="stSidebar"] { display: none !important; }
 .stApp > header { display: none !important; }
 
-.hero-container { display: flex; flex-direction: row; align-items: center; justify-content: space-between; padding: 2rem 1rem; background: linear-gradient(135deg, #eff6ff 0%, #ffffff 100%); border-radius: 24px; border: 1px solid #dbeafe; margin-bottom: 30px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); }
+/* HERO SECTION */
+.hero-container {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding: 2rem 1rem;
+    background: linear-gradient(135deg, #eff6ff 0%, #ffffff 100%);
+    border-radius: 24px;
+    border: 1px solid #dbeafe;
+    margin-bottom: 30px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
 .hero-text { flex: 1; padding-right: 20px; }
-.hero-title { font-size: 42px; font-weight: 800; margin: 0; line-height: 1.1; background: linear-gradient(90deg, #1e3a8a 0%, #3b82f6 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.hero-title {
+    font-size: 42px; font-weight: 800; margin: 0; line-height: 1.1;
+    background: linear-gradient(90deg, #1e3a8a 0%, #3b82f6 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
 .hero-subtitle { font-size: 16px; color: #64748b; margin-top: 10px; font-weight: 500; }
 .hero-logo { width: 140px; height: auto; filter: drop-shadow(0 10px 15px rgba(0, 0, 0, 0.1)); }
 
-@media (max-width: 768px) { .hero-container { flex-direction: column-reverse; text-align: center; padding: 1.5rem; } .hero-text { padding-right: 0; margin-top: 15px; } .hero-title { font-size: 28px; } .hero-logo { width: 100px; } }
+@media (max-width: 768px) {
+    .hero-container { flex-direction: column-reverse; text-align: center; padding: 1.5rem; }
+    .hero-text { padding-right: 0; margin-top: 15px; }
+    .hero-title { font-size: 28px; }
+    .hero-logo { width: 100px; }
+}
 
-.glass-card { background: #ffffff; border-radius: 16px; padding: 25px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); text-align: center; height: 100%; transition: all 0.3s ease; }
+/* CARDS */
+.glass-card { 
+    background: #ffffff; border-radius: 16px; padding: 25px; 
+    border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); 
+    text-align: center; height: 100%; transition: all 0.3s ease;
+}
 .glass-card:hover { transform: translateY(-5px); border-color: #bfdbfe; }
 .metric-value { font-size: 36px; font-weight: 800; color: #0f172a; margin-bottom: 5px; }
 .metric-label { font-size: 14px; color: #64748b; font-weight: 600; text-transform: uppercase; }
 
-.stTextInput input, .stTextArea textarea, .stSelectbox div[data-baseweb="select"] { background-color: #ffffff !important; border: 1px solid #cbd5e1 !important; color: #1e293b !important; border-radius: 10px; padding: 10px; }
-div.stButton > button { background: linear-gradient(90deg, #2563eb, #1d4ed8); color: white; border: none; padding: 12px 24px; border-radius: 10px; font-weight: 700; width: 100%; }
+/* INPUT & BUTTONS */
+.stTextInput input, .stTextArea textarea, .stSelectbox div[data-baseweb="select"] {
+    background-color: #ffffff !important; border: 1px solid #94a3b8 !important; 
+    color: #1e293b !important; border-radius: 10px; padding: 10px;
+}
+div.stButton > button { 
+    background: linear-gradient(90deg, #2563eb, #1d4ed8); color: white; border: none; 
+    padding: 12px 24px; border-radius: 10px; font-weight: 700; width: 100%;
+}
+.hapus-chat-btn button { background: #ef4444 !important; width: auto !important; padding: 5px 15px !important; font-size: 12px !important; }
 
-/* FIX CHAT VERTIKAL */
+/* CSS CHAT BIAR RAPI KE BAWAH (VERTIKAL) */
 .chat-container { display: flex; flex-direction: column; gap: 15px; margin-bottom: 20px; width: 100%; }
 .message-box { padding: 12px 18px; border-radius: 15px; max-width: 85%; font-size: 15px; line-height: 1.5; word-wrap: break-word; }
 .user-msg { align-self: flex-end; background-color: #2563eb; color: white; border-bottom-right-radius: 2px; }
@@ -61,7 +102,7 @@ iframe[title="streamlit_option_menu.option_menu"] { width: 100%; background: tra
 """, unsafe_allow_html=True)
 
 # =========================================================
-# 3. KONEKSI DATASET (ASLI PUNYA LIA)
+# 3. KONEKSI & FUNGSI BANTUAN (ASLI DATA SET LIA)
 # =========================================================
 ID_SPREADSHEET = "1crJl0DsswyMGmq0ej_niIMfhSLdUIUx8u42HEu-sc3g" 
 API_KEY_IMGBB  = "827ccb0eea8a706c4c34a16891f84e7b" 
@@ -102,7 +143,7 @@ def get_img_as_base64(file_path):
         return base64.b64encode(data).decode()
     except: return ""
 
-# --- FUNGSI AI PINTAR (ANTI ERROR 404) ---
+# --- FUNGSI AI PINTAR (BENERIN AI TANPA ERROR 404) ---
 def panggil_ai_mesin(prompt_system, user_input):
     if "GEMINI_API_KEY" not in st.secrets:
         return "⚠️ API Key belum dipasang di Secrets."
@@ -115,6 +156,7 @@ def panggil_ai_mesin(prompt_system, user_input):
     except Exception as e:
         return f"🙏 Maaf, server AI sedang sibuk. (Error: {str(e)})"
 
+# --- FUNGSI DRAFT SURAT ---
 def draft_surat_with_ai(kategori, keluhan, nama):
     sys_prompt = "Kamu Sekretaris Himpunan. Buatkan isi surat formal berdasarkan keluhan mahasiswa. Output WAJIB format: PERIHAL|||TUJUAN|||ISI_LENGKAP. Gunakan Assalamu'alaikum dan bahasa baku."
     user_p = f"Nama: {nama}, Kategori: {kategori}, Keluhan: {keluhan}"
@@ -125,6 +167,7 @@ def draft_surat_with_ai(kategori, keluhan, nama):
     else:
         return "Tindak Lanjut Laporan", "Ketua Program Studi", hasil
 
+# --- FUNGSI PDF ---
 def create_pdf(no_surat, lampiran, perihal, tujuan, isi_surat):
     pdf = FPDF()
     pdf.set_margins(30, 25, 25); pdf.set_auto_page_break(auto=True, margin=25); pdf.add_page()
@@ -153,14 +196,26 @@ def create_pdf(no_surat, lampiran, perihal, tujuan, isi_surat):
 # =========================================================
 if 'selected_menu' not in st.session_state: st.session_state.selected_menu = "Home"
 
-selected = option_menu(None, ["Home", "Lapor Masalah", "Cek Status", "Dashboard", "Sadas Bot", "Admin"], icons=["house", "exclamation-triangle-fill", "search", "bar-chart-fill", "robot", "lock-fill"], default_index=0, orientation="horizontal", key="nav_menu")
+selected = option_menu(
+    menu_title=None,
+    options=["Home", "Lapor Masalah", "Cek Status", "Dashboard", "Sadas Bot", "Admin"],
+    icons=["house", "exclamation-triangle-fill", "search", "bar-chart-fill", "robot", "lock-fill"],
+    default_index=0,
+    orientation="horizontal",
+    key="nav_menu",
+    styles={
+        "container": {"padding": "5px", "background-color": "#ffffff", "border-radius": "12px", "border": "1px solid #e2e8f0"},
+        "nav-link": {"font-size": "12px", "color": "#64748b", "margin": "0px", "padding": "5px"}, 
+        "nav-link-selected": {"background-color": "#2563eb", "color": "white"},
+    }
+)
 
 # =========================================================
 # 5. HALAMAN: HOME
 # =========================================================
 if selected == "Home":
     img_him = get_img_as_base64("logo_him.png")
-    st.markdown(f'<div class="hero-container"><div class="hero-text"><h1 class="hero-title">SAINS DATA CRISIS CENTER</h1><p class="hero-subtitle">Pusat Layanan Aspirasi, Analisis Data, dan Respon Cepat Mahasiswa PIKM.</p></div><img src="data:image/png;base64,{img_him}" class="hero-logo"></div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="hero-container"><div class="hero-text"><h1 class="hero-title">SAINS DATA <br> CRISIS CENTER</h1><p class="hero-subtitle">Pusat Layanan Aspirasi, Analisis Data, dan Respon Cepat Mahasiswa PIKM.</p></div><img src="data:image/png;base64,{img_him}" class="hero-logo"></div>', unsafe_allow_html=True)
     c1, c2, c3 = st.columns(3)
     with c1: st.markdown("""<div class="glass-card"><h3 style="color:#2563eb;">📢 Pelaporan</h3><p style="color:#64748b; font-size:14px;">Saluran resmi pengaduan masalah fasilitas & akademik.</p></div>""", unsafe_allow_html=True)
     with c2: st.markdown("""<div class="glass-card"><h3 style="color:#0891b2;">📊 Transparansi</h3><p style="color:#64748b; font-size:14px;">Pantau statistik dan status penyelesaian secara real-time.</p></div>""", unsafe_allow_html=True)
@@ -197,8 +252,8 @@ elif selected == "Lapor Masalah":
                     with st.spinner("Mengirim..."):
                         try:
                             sheet.append_row([datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S"), nama, npm, jurusan, kategori, keluhan, "Pending", "-"])
-                            st.success("✅ Terkirim! Laporanmu berhasil disimpan.")
-                        except Exception as e: st.error(f"Error: {e}")
+                            st.success("✅ Terkirim!")
+                        except: st.error("❌ Gagal!")
         st.markdown('</div>', unsafe_allow_html=True)
 
 # =========================================================
@@ -222,7 +277,7 @@ elif selected == "Cek Status":
             except: st.error("Gagal ambil data.")
 
 # =========================================================
-# 8. HALAMAN: DASHBOARD (2 VISUALISASI + TABEL TRANSPARANSI)
+# 8. HALAMAN: DASHBOARD (TAMPILAN AWAL LIA)
 # =========================================================
 elif selected == "Dashboard":
     st.markdown("<h2 style='text-align:center;'>📊 Dashboard Analisis</h2>", unsafe_allow_html=True)
@@ -239,24 +294,35 @@ elif selected == "Dashboard":
                 with c2: st.markdown(f'<div class="glass-card"><div class="metric-value" style="color:#d97706;">{len(df[df["Status"] == "Pending"])}</div><div class="metric-label">Menunggu</div></div>', unsafe_allow_html=True)
                 with c3: st.markdown(f'<div class="glass-card"><div class="metric-value" style="color:#059669;">{len(df[df["Status"] == "Selesai"])}</div><div class="metric-label">Selesai</div></div>', unsafe_allow_html=True)
                 
+                # Visualisasi
                 va, vb = st.columns(2)
-                with va: st.plotly_chart(go.Figure(data=[go.Pie(labels=df['Kategori Masalah'].value_counts().index, values=df['Kategori Masalah'].value_counts().values, hole=.5, title="Kategori")], layout=dict(height=350)), use_container_width=True)
-                with vb: st.plotly_chart(go.Figure(data=[go.Bar(x=df['Status'].value_counts().index, y=df['Status'].value_counts().values, marker_color=['#d97706','#059669'], title="Status")], layout=dict(height=350)), use_container_width=True)
+                with va:
+                    fig_pie = go.Figure(data=[go.Pie(labels=df['Kategori Masalah'].value_counts().index, values=df['Kategori Masalah'].value_counts().values, hole=.5)])
+                    fig_pie.update_layout(title="Berdasarkan Kategori", height=350)
+                    st.plotly_chart(fig_pie, use_container_width=True)
+                with vb:
+                    fig_bar = go.Figure(data=[go.Bar(x=df['Status'].value_counts().index, y=df['Status'].value_counts().values, marker_color=['#d97706','#059669'])])
+                    fig_bar.update_layout(title="Berdasarkan Status", height=350)
+                    st.plotly_chart(fig_bar, use_container_width=True)
                 
                 st.write("### 📢 Transparansi Laporan Publik")
                 st.dataframe(df[['Waktu Lapor', 'Prodi', 'Kategori Masalah', 'Status']], use_container_width=True, hide_index=True)
             else: st.info("Data kosong.")
-        except Exception as e: st.error(f"Error: {e}")
+        except Exception as e: st.error(f"Error Dashboard: {e}")
 
 # =========================================================
-# 9. HALAMAN: SADAS BOT (VERTIKAL & MEMORY)
+# 9. HALAMAN: SADAS BOT (FIX: JAWABAN VERTIKAL & MEMORY)
 # =========================================================
 elif selected == "Sadas Bot":
     st.markdown("<h2 style='text-align:center;'>🤖 Sadas Bot</h2>", unsafe_allow_html=True)
+    
     if "chat_memori" not in st.session_state: st.session_state.chat_memori = []
     if "chat_tampilan" not in st.session_state: st.session_state.chat_tampilan = []
     
-    if st.button("🗑️ Reset Chat"): st.session_state.chat_memori = []; st.session_state.chat_tampilan = []; st.rerun()
+    col_btn1, col_btn2 = st.columns([5, 1])
+    with col_btn2:
+        if st.button("🗑️ Reset"):
+            st.session_state.chat_memori = []; st.session_state.chat_tampilan = []; st.rerun()
 
     st.markdown('<div class="chat-container">', unsafe_allow_html=True)
     for msg in st.session_state.chat_tampilan:
@@ -270,14 +336,15 @@ elif selected == "Sadas Bot":
             model = genai.GenerativeModel('gemini-pro')
             chat = model.start_chat(history=st.session_state.chat_memori)
             response = chat.send_message(prompt)
+            
             st.session_state.chat_memori.append({"role": "user", "parts": [prompt]})
             st.session_state.chat_memori.append({"role": "model", "parts": [response.text]})
             st.session_state.chat_tampilan.append({"role": "bot", "content": response.text})
             st.rerun()
-        except: st.error("AI Error.")
+        except: st.error("Maaf, AI sedang sibuk.")
 
 # =========================================================
-# 10. HALAMAN: ADMIN (TETAP AMAN & DATA SET CONNECTED)
+# 10. HALAMAN: ADMIN (Tersambung ke Data Lia)
 # =========================================================
 elif selected == "Admin":
     st.markdown("<h2 style='text-align:center;'>🔐 Admin Area</h2>", unsafe_allow_html=True)
