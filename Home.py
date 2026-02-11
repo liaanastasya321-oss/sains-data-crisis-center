@@ -102,14 +102,30 @@ def get_img_as_base64(file_path):
         return base64.b64encode(data).decode()
     except: return ""
 
-# --- FUNGSI AI DRAFTER (PAKE GEMINI-PRO BIAR STABIL) ---
+# --- FUNGSI AI DRAFTER (AUTO-DETECT + FALLBACK) ---
 def draft_surat_with_ai(kategori, keluhan, nama):
     if "GEMINI_API_KEY" not in st.secrets:
         return "ERROR: API Key Hilang", "ERROR", "Kunci 'GEMINI_API_KEY' belum dipasang di Secrets. Cek pengaturan."
     
     try:
-        # KITA PAKAI 'gemini-pro' SAJA, INI PALING UMUM & STABIL
-        model = genai.GenerativeModel('gemini-pro')
+        # 1. CARI MODEL YANG TERSEDIA DI AKUN
+        available_models = []
+        try:
+            for m in genai.list_models():
+                if 'generateContent' in m.supported_generation_methods:
+                    available_models.append(m.name)
+        except:
+            pass # Kalau list error, kita lanjut coba tebak manual
+
+        # 2. PILIH MODEL TERBAIK DARI YANG ADA
+        target_model = 'gemini-1.5-flash' # Pilihan Utama (Cepat)
+        
+        if 'models/gemini-1.5-flash' in available_models: target_model = 'gemini-1.5-flash'
+        elif 'models/gemini-1.5-pro' in available_models: target_model = 'gemini-1.5-pro'
+        elif 'models/gemini-pro' in available_models: target_model = 'gemini-pro'
+        
+        # 3. GENERATE KONTEN
+        model = genai.GenerativeModel(target_model)
         
         prompt = f"""
         Bertindaklah sebagai Sekretaris Himpunan Mahasiswa Sains Data (PIKM).
@@ -140,7 +156,8 @@ def draft_surat_with_ai(kategori, keluhan, nama):
             return "Tindak Lanjut Keluhan Mahasiswa", "Ketua Program Studi Sains Data", text
             
     except Exception as e:
-        return "Error Generate", "Admin", f"Gagal membuat draft otomatis. Pesan Error: {str(e)}"
+        # Fallback terakhir kalau masih error
+        return "Error Generate", "Admin", f"Gagal membuat draft otomatis. Coba update 'requirements.txt' kamu. Pesan Error: {str(e)}"
 
 # --- FUNGSI PDF GENERATOR (MARGIN 2.5 CM & TIMES NEW ROMAN) ---
 def create_pdf(no_surat, lampiran, perihal, tujuan, isi_surat):
@@ -154,9 +171,8 @@ def create_pdf(no_surat, lampiran, perihal, tujuan, isi_surat):
     
     # 1. KOP SURAT
     if os.path.exists("kop_surat.png"):
-        # Gambar Full A4, X=0, Y=0 (Abaikan Margin khusus gambar ini)
+        # Image full width A4 (210mm), X=0, Y=0
         pdf.image("kop_surat.png", x=0, y=0, w=210) 
-        # Geser kursor ke bawah gambar kop (sesuaikan tinggi kop aslimu)
         pdf.set_y(45) 
     elif os.path.exists("logo_him.png"):
         pdf.image("logo_him.png", x=25, y=25, w=25) 
@@ -194,8 +210,6 @@ def create_pdf(no_surat, lampiran, perihal, tujuan, isi_surat):
     bulan_indo = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"]
     tanggal_str = f"{now.day} {bulan_indo[now.month-1]} {now.year}"
 
-    # Posisi TTD: Kertas 210mm - Margin Kanan 25mm = 185mm. 
-    # Mulai tulisan di X=120mm biar ada di kanan.
     posisi_ttd = 120 
     
     pdf.set_x(posisi_ttd)
@@ -439,8 +453,19 @@ elif selected == "Sadas Bot":
         response = ""
         if "GEMINI_API_KEY" in st.secrets:
             try:
-                # GANTI KE MODEL 'gemini-pro' AGAR LEBIH STABIL
-                model = genai.GenerativeModel('gemini-pro')
+                # KITA GUNAKAN MODEL AUTO-DETECT AGAR AMAN
+                # Tapi defaultnya fallback ke model yang list-nya ada
+                available = []
+                try: 
+                    for m in genai.list_models():
+                        if 'generateContent' in m.supported_generation_methods: available.append(m.name)
+                except: pass
+                
+                target = 'gemini-1.5-flash'
+                if 'models/gemini-1.5-flash' in available: target = 'gemini-1.5-flash'
+                elif 'models/gemini-pro' in available: target = 'gemini-pro'
+                
+                model = genai.GenerativeModel(target)
                 system_prompt = "Kamu adalah Sadas Bot, asisten virtual dari Sains Data UIN Raden Intan Lampung. Jawab sopan dan santai."
                 full_prompt = f"{system_prompt}\nUser: {prompt}"
                 
