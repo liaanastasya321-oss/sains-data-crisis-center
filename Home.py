@@ -339,7 +339,7 @@ if selected == "Home":
     <div class="hero-container">
         <div class="hero-text">
             <h1 class="hero-title">SAINS DATA <br> CRISIS CENTER</h1>
-            <p class="hero-subtitle">Pusat Layanan Aspirasi, Analisis Data, dan Respon Cepat Mahasiswa PIKM.</p>
+            <p class="hero-subtitle">Pusat Layanan Aspirasi, Analisis Data, dan Respon Cepat Mahasiswa Sains Data.</p>
             <p style="color: #475569; font-size: 13px; font-weight: 600; margin-top: 5px;">
                 🕒 Pelayanan Admin PIKM: 07.00 - 14.00 WIB
             </p>
@@ -654,3 +654,4 @@ elif selected == "Admin":
                 else: st.info("Belum ada data laporan.")
             except Exception as e:
                 st.error(f"Error Database: {str(e)}")
+
