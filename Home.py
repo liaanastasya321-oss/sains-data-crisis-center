@@ -24,130 +24,27 @@ st.set_page_config(
 )
 
 # =========================================================
-# 2. GLOBAL CSS (MODERN & PROFESSIONAL UI) - UTUH PUNYA LIA
+# 2. GLOBAL CSS
 # =========================================================
 st.markdown("""
 <style>
-/* --- 1. SETUP DASAR --- */
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap');
-
-.stApp { 
-    background: #f8fafc; /* Light Gray Clean */
-    font-family: 'Plus Jakarta Sans', sans-serif;
-    color: #1e293b;
-}
-
+.stApp { background: #f8fafc; font-family: 'Plus Jakarta Sans', sans-serif; color: #1e293b; }
 #MainMenu, footer, header, [data-testid="stSidebar"] { display: none !important; }
-.stApp > header { display: none !important; }
-
-/* --- 2. HEADER HERO SECTION (RESPONSIVE) --- */
 .hero-container {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-    padding: 2rem 1rem;
-    background: linear-gradient(135deg, #eff6ff 0%, #ffffff 100%);
-    border-radius: 24px;
-    border: 1px solid #dbeafe;
-    margin-bottom: 30px;
+    display: flex; flex-direction: row; align-items: center; justify-content: space-between;
+    padding: 2rem 1rem; background: linear-gradient(135deg, #eff6ff 0%, #ffffff 100%);
+    border-radius: 24px; border: 1px solid #dbeafe; margin-bottom: 30px;
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
 }
-
-.hero-text {
-    flex: 1;
-    padding-right: 20px;
-}
-
-.hero-title {
-    font-size: 42px;
-    font-weight: 800;
-    margin: 0;
-    line-height: 1.1;
-    background: linear-gradient(90deg, #1e3a8a 0%, #3b82f6 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    letter-spacing: -1px;
-}
-
-.hero-subtitle {
-    font-size: 16px;
-    color: #64748b;
-    margin-top: 10px;
-    font-weight: 500;
-}
-
-.hero-logo {
-    width: 140px; /* Ukuran Logo Desktop */
-    height: auto;
-    filter: drop-shadow(0 10px 15px rgba(0, 0, 0, 0.1));
-    transition: transform 0.3s ease;
-}
-
-.hero-logo:hover {
-    transform: scale(1.05) rotate(2deg);
-}
-
-/* --- MOBILE TWEAKS --- */
-@media (max-width: 768px) {
-    .hero-container {
-        flex-direction: column-reverse; /* Logo di atas Text */
-        text-align: center;
-        padding: 1.5rem;
-    }
-    .hero-text { padding-right: 0; margin-top: 15px; }
-    .hero-title { font-size: 28px; } /* Font HP lebih kecil tapi kebaca */
-    .hero-subtitle { font-size: 14px; }
-    .hero-logo { width: 100px; } /* Logo HP */
-}
-
-/* --- 3. CARDS (KARTU MENU) --- */
-.glass-card { 
-    background: #ffffff; 
-    border-radius: 16px; 
-    padding: 25px; 
-    border: 1px solid #e2e8f0; 
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); 
-    text-align: center; 
-    height: 100%; 
-    transition: all 0.3s ease;
-}
-.glass-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-    border-color: #bfdbfe;
-}
-.metric-value { font-size: 36px; font-weight: 800; color: #0f172a; margin-bottom: 5px; }
-.metric-label { font-size: 14px; color: #64748b; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
-
-/* --- 4. FORM & BUTTONS --- */
-.stTextInput input, .stTextArea textarea, .stSelectbox div[data-baseweb="select"] {
-    background-color: #ffffff !important; 
-    border: 1px solid #cbd5e1 !important; 
-    color: #1e293b !important; 
-    border-radius: 10px;
-    padding: 10px;
-}
-div.stButton > button { 
-    background: linear-gradient(90deg, #2563eb, #1d4ed8); 
-    color: white; 
-    border: none; 
-    padding: 12px 24px; 
-    border-radius: 10px; 
-    font-weight: 700; 
-    width: 100%;
-    transition: opacity 0.3s;
-}
-div.stButton > button:hover { opacity: 0.9; }
-
-/* --- 5. CHAT BUBBLE --- */
+.hero-title { font-size: 42px; font-weight: 800; background: linear-gradient(90deg, #1e3a8a 0%, #3b82f6 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.hero-logo { width: 140px; }
+.glass-card { background: #ffffff; border-radius: 16px; padding: 25px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); text-align: center; height: 100%; transition: all 0.3s ease; }
+.metric-value { font-size: 36px; font-weight: 800; color: #0f172a; }
 .chat-message { padding: 1rem; border-radius: 12px; margin-bottom: 10px; display: flex; font-size: 15px; line-height: 1.5; }
 .chat-message.user { background-color: #eff6ff; border: 1px solid #bfdbfe; color: #1e3a8a; justify-content: flex-end; text-align: right; }
 .chat-message.bot { background-color: #ffffff; border: 1px solid #e2e8f0; color: #334155; }
-
-/* Hide Streamlit Elements */
-iframe[title="streamlit_option_menu.option_menu"] { width: 100%; background: transparent; }
-.block-container { padding-top: 1rem !important; padding-bottom: 5rem !important; max-width: 1200px; }
+@media (max-width: 768px) { .hero-container { flex-direction: column-reverse; text-align: center; } .hero-title { font-size: 28px; } }
 </style>
 """, unsafe_allow_html=True)
 
@@ -163,59 +60,59 @@ def get_spreadsheet():
         if "google_credentials" in st.secrets:
             creds_dict = json.loads(st.secrets["google_credentials"])
             creds = Credentials.from_service_account_info(creds_dict, scopes=scopes)
-        elif os.path.exists("credentials.json"):
-            creds = Credentials.from_service_account_file("credentials.json", scopes=scopes)
-        else: return None
-        client = gspread.authorize(creds)
-        sh = client.open_by_key(ID_SPREADSHEET)
-        return sh
+            client = gspread.authorize(creds)
+            return client.open_by_key(ID_SPREADSHEET)
     except: return None
+    return None
 
 sh = get_spreadsheet()
-sheet = None
-sheet_pengumuman = None
-
-if sh:
-    try: sheet = sh.worksheet("Laporan")
-    except: 
-        try: sheet = sh.get_worksheet(0)
-        except: pass
-    try: sheet_pengumuman = sh.worksheet("Pengumuman")
-    except: pass
+sheet = sh.worksheet("Laporan") if sh else None
+sheet_pengumuman = sh.worksheet("Pengumuman") if sh else None
 
 if "GEMINI_API_KEY" in st.secrets:
-    try: genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
-    except: pass
+    genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
 
 def get_img_as_base64(file_path):
     try:
-        with open(file_path, "rb") as f: data = f.read()
-        return base64.b64encode(data).decode()
+        with open(file_path, "rb") as f: return base64.b64encode(f.read()).decode()
     except: return ""
 
 def get_available_model():
-    return "gemini-pro" # FIX: Model stabil v1
+    if "GEMINI_API_KEY" not in st.secrets: return "gemini-pro"
+    try:
+        for m in genai.list_models():
+            if 'generateContent' in m.supported_generation_methods: return m.name
+    except: return "gemini-pro"
+    return "gemini-pro"
 
 def draft_surat_with_ai(kategori, keluhan, nama):
-    if "GEMINI_API_KEY" in st.secrets:
-        try:
-            model = genai.GenerativeModel('gemini-pro')
-            prompt = f"""Buatkan draf surat formal resmi dari Himpunan Mahasiswa Sains Data (PIKM) UIN Raden Intan Lampung. Data Pelapor: Nama {nama}, Kategori Masalah: {kategori}, Detail Keluhan: "{keluhan}". Format Output WAJIB (Pisahkan dengan |||): PERIHAL SURAT|||TUJUAN SURAT (Yth. Ketua Prodi/Kepala Bagian Terkait)|||ISI LENGKAP SURAT"""
-            response = model.generate_content(prompt)
-            parts = response.text.strip().split("|||")
-            if len(parts) >= 3: return parts[0].strip(), parts[1].strip(), parts[2].strip()
-        except: pass 
+    try:
+        model = genai.GenerativeModel(get_available_model()) 
+        prompt = f"Buatkan draf surat formal resmi PIKM HMSD UIN RIL. Pelapor: {nama}, Kategori: {kategori}, Keluhan: {keluhan}. Format Output WAJIB: PERIHAL SURAT|||TUJUAN SURAT|||ISI LENGKAP SURAT"
+        response = model.generate_content(prompt)
+        parts = response.text.split("|||")
+        if len(parts) >= 3: return parts[0].strip(), parts[1].strip(), parts[2].strip()
+    except: pass 
     return "Tindak Lanjut Keluhan", "Ketua Program Studi Sains Data", f"Menyampaikan laporan keluhan dari {nama} terkait {kategori}."
 
 def create_pdf(no_surat, lampiran, perihal, tujuan, isi_surat):
     pdf = FPDF()
     pdf.set_margins(30, 25, 25); pdf.add_page()
-    pdf.set_font("Times", 'B', 12); pdf.cell(0, 5, "HIMPUNAN MAHASISWA SAINS DATA", 0, 1, 'C')
+    if os.path.exists("logo_uin.png"): pdf.image("logo_uin.png", x=25, y=20, w=22)
+    if os.path.exists("logo_him.png"): pdf.image("logo_him.png", x=163, y=20, w=22)
+    pdf.set_y(20); pdf.set_font("Times", 'B', 12)
+    pdf.cell(210, 5, "HIMPUNAN MAHASISWA SAINS DATA", 0, 1, 'C')
+    pdf.cell(210, 5, "UNIVERSITAS ISLAM NEGERI RADEN INTAN LAMPUNG", 0, 1, 'C')
+    pdf.ln(10); pdf.set_font("Times", '', 12)
+    pdf.cell(0, 6, f"Nomor : {no_surat}", 0, 1)
+    pdf.cell(0, 6, f"Lampiran : {lampiran}", 0, 1)
+    pdf.cell(0, 6, f"Perihal : {perihal}", 0, 1)
+    pdf.ln(5); pdf.cell(0, 6, f"Kepada Yth. {tujuan}", 0, 1); pdf.ln(5)
     pdf.multi_cell(0, 6, isi_surat)
     return pdf.output(dest='S').encode('latin-1')
 
 # =========================================================
-# 4. MENU NAVIGASI (SASDA BOT TETEP SASDA)
+# 4. MENU NAVIGASI
 # =========================================================
 if 'selected_menu' not in st.session_state: st.session_state.selected_menu = "Home"
 
@@ -223,121 +120,146 @@ selected = option_menu(
     menu_title=None,
     options=["Home", "Lapor Masalah", "Cek Status", "Dashboard", "Sasda Bot", "Admin"],
     icons=["house", "exclamation-triangle-fill", "search", "bar-chart-fill", "robot", "lock-fill"],
-    default_index=0, orientation="horizontal", key="nav_menu"
+    default_index=0, orientation="horizontal",
+    key="nav_menu",
+    styles={
+        "container": {"padding": "5px", "background-color": "#ffffff", "border-radius": "12px", "border": "1px solid #e2e8f0"},
+        "nav-link": {"font-size": "12px", "color": "#64748b", "margin": "0px", "padding": "5px"}, 
+        "nav-link-selected": {"background-color": "#2563eb", "color": "white"},
+    }
 )
 
 # =========================================================
-# 5. HALAMAN: HOME (ASLI LIA)
+# 5. HALAMAN: HOME
 # =========================================================
 if selected == "Home":
     img_him = get_img_as_base64("logo_him.png")
-    st.markdown(f"""<div class="hero-container"><div class="hero-text"><h1 class="hero-title">SAINS DATA <br> CRISIS CENTER</h1><p class="hero-subtitle">Pusat Layanan Aspirasi, Analisis Data, dan Respon Cepat Mahasiswa PIKM.</p></div><img src="data:image/png;base64,{img_him}" class="hero-logo"></div>""", unsafe_allow_html=True)
+    st.markdown(f"""
+    <div class="hero-container">
+        <div class="hero-text">
+            <h1 class="hero-title">SAINS DATA <br> CRISIS CENTER</h1>
+            <p class="hero-subtitle">Pusat Layanan Aspirasi, Analisis Data, dan Respon Cepat Mahasiswa PIKM.</p>
+            <p style="color: #475569; font-size: 13px; font-weight: 600; margin-top: 5px;">🕒 Pelayanan Admin PIKM: 07.00 - 14.00 WIB</p>
+        </div>
+        <img src="data:image/png;base64,{img_him}" class="hero-logo">
+    </div>""", unsafe_allow_html=True)
     c1, c2, c3 = st.columns(3)
-    with c1: st.markdown("""<div class="glass-card"><h3 style="color:#2563eb;">📢 Pelaporan</h3></div>""", unsafe_allow_html=True)
-    with c2: st.markdown("""<div class="glass-card"><h3 style="color:#0891b2;">📊 Transparansi</h3></div>""", unsafe_allow_html=True)
-    with c3: st.markdown("""<div class="glass-card"><h3 style="color:#7c3aed;">🤖 Sasda Bot</h3></div>""", unsafe_allow_html=True)
-    if sheet_pengumuman:
-        try:
-            data_info = sheet_pengumuman.get_all_records()
-            for item in reversed(data_info):
-                st.markdown(f"""<div class="announce-card">{item.get('Judul')}</div>""", unsafe_allow_html=True)
-        except: pass
+    with c1: st.markdown("""<div class="glass-card"><h3 style="color:#2563eb;">📢 Pelaporan</h3><p style="color:#64748b; font-size:14px;">Saluran resmi pengaduan masalah fasilitas & akademik.</p></div>""", unsafe_allow_html=True)
+    with c2: st.markdown("""<div class="glass-card"><h3 style="color:#0891b2;">📊 Transparansi</h3><p style="color:#64748b; font-size:14px;">Pantau statistik dan status penyelesaian secara real-time.</p></div>""", unsafe_allow_html=True)
+    with c3: st.markdown("""<div class="glass-card"><h3 style="color:#7c3aed;">🤖 Sasda Bot</h3><p style="color:#64748b; font-size:14px;">Asisten AI cerdas yang siap menjawab pertanyaanmu 24/7.</p></div>""", unsafe_allow_html=True)
 
 # =========================================================
-# 6. HALAMAN: LAPOR MASALAH (ASLI LIA)
+# 6. HALAMAN: LAPOR MASALAH
 # =========================================================
 elif selected == "Lapor Masalah":
     st.markdown("<h2 style='text-align:center;'>📝 Form Pengaduan</h2>", unsafe_allow_html=True)
-    with st.form("form_lapor_keren", clear_on_submit=True):
-        nama = st.text_input("Nama Lengkap")
-        npm = st.text_input("NPM")
-        jurusan = st.selectbox("Prodi", ["Sains Data", "Biologi", "Fisika", "Matematika"])
-        kategori = st.selectbox("Kategori Masalah", ["Fasilitas", "Akademik", "Keuangan", "Lainnya"])
-        keluhan = st.text_area("Deskripsi Detail")
-        if st.form_submit_button("🚀 Kirim Laporan"):
-            if sheet:
-                sheet.append_row([datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S"), nama, npm, jurusan, kategori, keluhan, "Pending", "-"])
-                st.success("Terkirim!")
+    with st.container():
+        st.markdown('<div class="glass-card">', unsafe_allow_html=True)
+        with st.form("form_lapor", clear_on_submit=True):
+            nama = st.text_input("Nama Lengkap"); col_a, col_b = st.columns(2); npm = col_a.text_input("NPM"); jurusan = col_b.selectbox("Prodi", ["Sains Data", "Biologi", "Fisika", "Matematika"])
+            kategori = st.selectbox("Kategori Masalah", ["Fasilitas", "Akademik", "Keuangan", "Lainnya"]); keluhan = st.text_area("Deskripsi Detail"); bukti_file = st.file_uploader("Upload Bukti (JPG/PNG)", type=["png", "jpg", "jpeg"])
+            if st.form_submit_button("🚀 Kirim Laporan"):
+                if not keluhan: st.warning("Mohon isi deskripsi.")
+                else:
+                    with st.spinner("Mengirim..."):
+                        waktu = datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S"); link_bukti = "-"
+                        if bukti_file:
+                            try:
+                                res = requests.post("https://api.imgbb.com/1/upload", params={"key": API_KEY_IMGBB}, files={"image": bukti_file.getvalue()})
+                                if res.json().get("success"): link_bukti = res.json()["data"]["url"]
+                            except: pass
+                        if sheet:
+                            sheet.append_row([waktu, nama, npm, jurusan, kategori, keluhan, "Pending", link_bukti])
+                            st.success("✅ Terkirim!")
+        st.markdown('</div>', unsafe_allow_html=True)
 
 # =========================================================
-# 7. HALAMAN: CEK STATUS (ASLI LIA)
+# 7, 8. CEK STATUS & DASHBOARD (Tetap Aman)
 # =========================================================
 elif selected == "Cek Status":
-    npm_input = st.text_input("Masukkan NPM")
-    if st.button("Lacak") and sheet:
-        df = pd.DataFrame(sheet.get_all_values()[1:], columns=sheet.get_all_values()[0])
-        st.dataframe(df[df['NPM'] == npm_input])
+    st.markdown("<h2 style='text-align:center;'>🔍 Cek Status</h2>", unsafe_allow_html=True)
+    npm_in = st.text_input("Masukkan NPM")
+    if st.button("Lacak") and sheet and npm_in:
+        df = pd.DataFrame(sheet.get_all_records())
+        res = df[df['NPM'].astype(str) == npm_in]
+        for _, row in res.iterrows():
+            st.info(f"Kategori: {row['Kategori Masalah']} | Status: {row['Status']}")
 
-# =========================================================
-# 8. HALAMAN: DASHBOARD (KAKAK BALIKIN KE ASLI 100%)
-# =========================================================
 elif selected == "Dashboard":
-    st.markdown("<h2 style='text-align:center;'>📊 Dashboard Analisis</h2>", unsafe_allow_html=True)
+    st.markdown("<h2 style='text-align:center;'>📊 Dashboard</h2>", unsafe_allow_html=True)
     if sheet:
-        try:
-            raw_data = sheet.get_all_values()
-            if len(raw_data) > 1:
-                df = pd.DataFrame(raw_data[1:], columns=raw_data[0])
-                col1, col2, col3 = st.columns(3)
-                with col1: st.markdown(f"""<div class="glass-card"><div class="metric-value">{len(df)}</div><div class="metric-label">Total</div></div>""", unsafe_allow_html=True)
-                with col2: st.markdown(f"""<div class="glass-card"><div class="metric-value" style="color:#d97706;">{len(df[df['Status'] == 'Pending'])}</div><div class="metric-label">Menunggu</div></div>""", unsafe_allow_html=True)
-                with col3: st.markdown(f"""<div class="glass-card"><div class="metric-value" style="color:#059669;">{len(df[df['Status'] == 'Selesai'])}</div><div class="metric-label">Selesai</div></div>""", unsafe_allow_html=True)
-                
-                c_a, c_b = st.columns(2)
-                with c_a:
-                    pie = df['Kategori Masalah'].value_counts()
-                    st.plotly_chart(go.Figure(data=[go.Pie(labels=pie.index, values=pie.values, hole=.5)]), use_container_width=True)
-                with c_b:
-                    bar = df['Status'].value_counts()
-                    st.plotly_chart(go.Figure([go.Bar(x=bar.index, y=bar.values)]), use_container_width=True)
-                
-                st.write("### 📝 Riwayat Laporan (Publik)")
-                kolom_tampil = [col for col in df.columns if col not in ['Nama Mahasiswa', 'NPM', 'Jurusan', 'Detail Keluhan', 'Bukti', 'Link Bukti', 'Foto']]
-                st.dataframe(df[kolom_tampil], use_container_width=True, hide_index=True)
-        except: st.error("Gagal muat dashboard.")
+        df = pd.DataFrame(sheet.get_all_records())
+        st.metric("Total Laporan", len(df))
+        st.plotly_chart(go.Figure(data=[go.Pie(labels=df['Kategori Masalah'].value_counts().index, values=df['Kategori Masalah'].value_counts().values, hole=.5)]), use_container_width=True)
 
 # =========================================================
-# 9. HALAMAN: SASDA BOT (FIXED AI LOGIC)
+# 9. HALAMAN: SASDA BOT (STABLE MEMORY)
 # =========================================================
 elif selected == "Sasda Bot":
-    st.markdown("## 🤖 Sasda Bot")
+    st.markdown("<div style='max-width: 700px; margin: auto;'>", unsafe_allow_html=True)
+    col_h, col_b = st.columns([3, 1])
+    with col_h: st.markdown("## 🤖 Sasda Bot")
+    with col_b: 
+        if st.button("🗑️ Reset Chat"): st.session_state.messages = []; st.rerun()
+
     if "messages" not in st.session_state: st.session_state.messages = []
-    if prompt := st.chat_input("Tanya Sasda..."):
-        st.session_state.messages.append({"role": "user", "content": prompt})
-        try:
-            model = genai.GenerativeModel('gemini-pro')
-            chat = model.start_chat(history=[])
-            res = chat.send_message(f"Kamu Sasda Bot PIKM. User: {prompt}")
-            st.session_state.messages.append({"role": "assistant", "content": res.text})
-        except Exception as e: st.error(str(e))
     for m in st.session_state.messages:
-        st.chat_message(m["role"]).write(m["content"])
+        role = "user" if m["role"] == "user" else "bot"
+        st.markdown(f'<div class="chat-message {role}">{m["content"]}</div>', unsafe_allow_html=True)
+
+    if prompt := st.chat_input("Ketik pesanmu..."):
+        st.session_state.messages.append({"role": "user", "content": prompt})
+        with st.chat_message("user"): st.markdown(prompt)
+        
+        final_res = ""
+        if "GEMINI_API_KEY" in st.secrets:
+            try:
+                model = genai.GenerativeModel(get_available_model())
+                history = [{"role": ("user" if msg["role"] == "user" else "model"), "parts": [msg["content"]]} for msg in st.session_state.messages[:-1]]
+                chat = model.start_chat(history=history)
+                response = chat.send_message(f"Instruksi: Kamu Sasda Bot PIKM. Jawab santai: {prompt}")
+                final_res = response.text
+            except Exception as e:
+                final_res = "🙏 Maaf, kuota harian AI penuh. Coba lagi nanti ya."
+        
+        st.session_state.messages.append({"role": "assistant", "content": final_res})
+        with st.chat_message("assistant"): st.markdown(final_res)
+    st.markdown("</div>", unsafe_allow_html=True)
 
 # =========================================================
-# 10. HALAMAN: ADMIN (FIXED AI DRAFT & SESSION)
+# 10. HALAMAN: ADMIN (FULL AUTOMATED GENERATOR FIXED)
 # =========================================================
 elif selected == "Admin":
+    st.markdown("<h2 style='text-align:center;'>🔐 Admin Area</h2>", unsafe_allow_html=True)
     if not st.session_state.get('is_logged_in', False):
-        pwd = st.text_input("Password", type="password")
-        if st.button("Login"):
-            if pwd == "RAHASIA PIKM😭": st.session_state.is_logged_in = True; st.rerun()
+        with st.form("login_form"):
+            pwd = st.text_input("Password", type="password")
+            if st.form_submit_button("Login") and pwd == "RAHASIA PIKM😭":
+                st.session_state.is_logged_in = True; st.rerun()
     else:
+        if st.button("Logout"): st.session_state.is_logged_in = False; st.rerun()
         if sheet:
             raw_data = sheet.get_all_values()
-            pilihan = [f"{i} | {r[1]}" for i, r in enumerate(raw_data[1:], 2)]
-            laporan_terpilih = st.selectbox("Pilih Laporan:", pilihan)
-            idx = int(laporan_terpilih.split(" | ")[0])
-            data_row = raw_data[idx - 1]
-            
-            tab1, tab2 = st.tabs(["Update Status", "Generator Surat AI"])
-            with tab2:
-                if st.button("✨ Generate Draft"):
-                    p, t, i = draft_surat_with_ai(data_row[4], data_row[5], data_row[1])
-                    st.session_state.d_p, st.session_state.d_t, st.session_state.d_i = p, t, i
+            if len(raw_data) > 1:
+                df = pd.DataFrame(raw_data[1:], columns=raw_data[0]); st.dataframe(df, use_container_width=True)
+                pilihan = [f"{i} | {r[1]} - {r[4]}" for i, r in enumerate(raw_data[1:], 2) if r[0].strip()]
+                lapor_pilih = st.selectbox("Pilih Laporan:", pilihan)
+                idx = int(lapor_pilih.split(" | ")[0]); data_t = raw_data[idx-1]
                 
-                # Pakai KEY biar draf gak ilang pas di-download
-                perihal = st.text_input("Perihal", value=st.session_state.get('d_p', ''), key="adm_p")
-                tujuan = st.text_input("Tujuan", value=st.session_state.get('d_t', ''), key="adm_t")
-                isi = st.text_area("Isi", value=st.session_state.get('d_i', ''), height=200, key="adm_i")
-                if st.button("Download PDF"):
-                    st.download_button("Klik di sini", data=create_pdf("001", "1", perihal, tujuan, isi), file_name="Surat.pdf")
+                t1, t2 = st.tabs(["⚙️ Status", "🖨️ Generator Surat AI"])
+                with t1:
+                    if st.button("Simpan Status"): sheet.update_cell(idx, 7, "Selesai"); st.success("Updated!"); st.rerun()
+                with t2:
+                    if st.button("✨ Hubungkan AI & Generate Draft"):
+                        with st.spinner("AI merancang..."):
+                            p, t, i = draft_surat_with_ai(data_t[4], data_t[5], data_t[1])
+                            st.session_state.draft_perihal, st.session_state.draft_tujuan, st.session_state.draft_isi = p, t, i
+                            st.success("Draft siap!")
+                    no_surat = st.text_input("Nomor Surat", value="001/PIKM-HMSD/II/2026")
+                    per = st.text_input("Perihal", value=st.session_state.get('draft_perihal', ''))
+                    tuj = st.text_input("Tujuan", value=st.session_state.get('draft_tujuan', ''))
+                    # PERBAIKAN DI SINI: Nama variabel sinkron dengan create_pdf
+                    isi_lengkap = st.text_area("Isi Surat Lengkap", value=st.session_state.get('draft_isi', ''), height=300)
+                    if st.button("🖨️ Cetak PDF Final"):
+                        pdf_bytes = create_pdf(no_surat, "1 Berkas", per, tuj, isi_lengkap)
+                        st.download_button("📥 Download PDF", data=pdf_bytes, file_name=f"Surat_{data_t[1]}.pdf")
