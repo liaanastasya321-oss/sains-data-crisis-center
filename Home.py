@@ -507,11 +507,9 @@ elif selected == "Sasda Bot":
         st.markdown(f"<h2 style='text-align:left; margin:0;'>🤖 Sasda Bot</h2>", unsafe_allow_html=True)
         st.markdown("<p style='text-align:left; color:#64748b; margin-top:0px;'>Asisten Akademik Virtual</p>", unsafe_allow_html=True)
     with col_btn:
-        st.markdown('<div class="hapus-chat-btn">', unsafe_allow_html=True)
         if st.button("🗑️ Hapus Chat"):
             st.session_state.messages = []
             st.rerun()
-        st.markdown('</div>', unsafe_allow_html=True)
 
     st.write("---")
     
@@ -521,7 +519,7 @@ elif selected == "Sasda Bot":
         role_class = "user" if message["role"] == "user" else "bot"
         st.markdown(f"""<div class="chat-message {role_class}"><div><strong>{message['role'].capitalize()}:</strong> <br> {message['content']}</div></div>""", unsafe_allow_html=True)
 
-    if prompt := st.chat_input("Ketik pesanmu di sini..."):
+    if prompt := st.chat_input("Tanya soal HMSD atau Dosen di sini..."):
         st.session_state.messages.append({"role": "user", "content": prompt})
         with st.chat_message("user"): st.markdown(prompt)
 
@@ -537,10 +535,37 @@ elif selected == "Sasda Bot":
                     history.append({"role": role, "parts": [m["content"]]})
                 
                 chat_session = model.start_chat(history=history)
-                system_instruction = "Kamu adalah Sasda Bot, asisten virtual dari Sains Data UIN Raden Intan Lampung. Jawab sopan dan santai."
+
+                # --- DATABASE INTERNAL HMSD & DOSEN ---
+                # Lia, silakan lengkapi nama-nama di bawah ini sesuai data asli ya!
+                internal_data = """
+                Kamu adalah Sasda Bot, asisten virtual resmi Prodi Sains Data UIN Raden Intan Lampung. 
+                Berikut adalah data penting yang harus kamu ingat:
                 
-                with st.spinner("Sasda Bot sedang mengetik..."):
-                    ai_response = chat_session.send_message(f"{system_instruction}\nUser: {prompt}")
+                1. STRUKTUR PRODI:
+                   - Ketua Program Studi (Kaprodi): [Farida, S.KOM.,MMSI]
+                   - Sekretaris Prodi: [Fiqih Satria, M.T.I.]
+                   - Dosen Pengajar: [Prof.Dr. Achi Rinaldi S.Si, M.Si]
+                   - Dosen Pengajar: [Dr. Nanang Supriadi, M.SC.]
+                   - Dosen Pengajar: [Singgih Yulizar Ma'ruf, M.KOM.]
+                   - Dosen Pengajar: [Rizka Pitri, M.SI.]
+                   - Dosen Pengajar: [Mezan El-Khaeri Kesuma, S.KOM., M.T.I.]
+                
+                2. STRUKTUR HMSD (Himpunan Mahasiswa Sains Data):
+                   - Ketua Himpunan (Kahim): [Azwar Kurniawan Syah]
+                   - Wakil Ketua Himpunan: [Agitsa Hasan]
+                   - Sekretaris Umum Himpunan [Elsya Putri Aisyah]
+                   - Bendahara Umum Himpunan [Fadly Anggara]
+                   - Departemen PIKM (Pengembangan Inovasi dan Kesejahteraan Mahasiswa): Dikepalai oleh Lia Anastasya.
+                   - [Tambahkan Departemen lain jika ada].
+                
+                Jika ada yang bertanya di luar data ini atau masalah teknis, arahkan untuk melapor melalui menu 'Lapor Masalah'.
+                Jawab dengan nada sopan, santai, dan membantu khas mahasiswa.
+                """
+                
+                with st.spinner("Sasda Bot sedang mengecek data..."):
+                    full_prompt = f"{internal_data}\nUser bertanya: {prompt}"
+                    ai_response = chat_session.send_message(full_prompt)
                     response = ai_response.text
             except Exception as e:
                 response = "🙏 Maaf, server AI sedang sibuk. Silakan coba lagi nanti."
@@ -550,6 +575,9 @@ elif selected == "Sasda Bot":
         st.session_state.messages.append({"role": "assistant", "content": response})
         with st.chat_message("assistant"): st.markdown(response)
     st.markdown("</div>", unsafe_allow_html=True)
+
+    
+               
 
 # =========================================================
 # 10. HALAMAN: ADMIN
@@ -654,4 +682,5 @@ elif selected == "Admin":
                 else: st.info("Belum ada data laporan.")
             except Exception as e:
                 st.error(f"Error Database: {str(e)}")
+
 
