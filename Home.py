@@ -515,11 +515,12 @@ elif selected == "Sasda Bot":
     
     if "messages" not in st.session_state: st.session_state.messages = []
 
+    # Tampilkan percakapan
     for message in st.session_state.messages:
         role_class = "user" if message["role"] == "user" else "bot"
         st.markdown(f"""<div class="chat-message {role_class}"><div><strong>{message['role'].capitalize()}:</strong> <br> {message['content']}</div></div>""", unsafe_allow_html=True)
 
-    if prompt := st.chat_input("Tanya soal HMSD atau Dosen di sini..."):
+    if prompt := st.chat_input("Tanya soal akademik atau HMSD di sini..."):
         st.session_state.messages.append({"role": "user", "content": prompt})
         with st.chat_message("user"): st.markdown(prompt)
 
@@ -529,6 +530,7 @@ elif selected == "Sasda Bot":
                 model_name = get_available_model()
                 model = genai.GenerativeModel(model_name)
                 
+                # Membangun history chat
                 history = []
                 for m in st.session_state.messages[:-1]:
                     role = "user" if m["role"] == "user" else "model"
@@ -536,36 +538,31 @@ elif selected == "Sasda Bot":
                 
                 chat_session = model.start_chat(history=history)
 
-                # --- DATABASE INTERNAL HMSD & DOSEN ---
-                # Lia, silakan lengkapi nama-nama di bawah ini sesuai data asli ya!
-                internal_data = """
-                Kamu adalah Sasda Bot, asisten virtual resmi Prodi Sains Data UIN Raden Intan Lampung. 
-                Berikut adalah data penting yang harus kamu ingat:
+                # --- DATABASE INTERNAL & INSTRUKSI FLEXIBLE ---
+                internal_info = """
+                IDENTITAS: Kamu adalah Sasda Bot, asisten virtual resmi Prodi Sains Data UIN Raden Intan Lampung.
+                GAYA BICARA: Sopan, santai, gunakan bahasa khas mahasiswa (kak/kamu).
                 
-                1. STRUKTUR PRODI:
-                   - Ketua Program Studi (Kaprodi): [Farida, S.KOM.,MMSI]
-                   - Sekretaris Prodi: [Fiqih Satria, M.T.I.]
-                   - Dosen Pengajar: [Prof.Dr. Achi Rinaldi S.Si, M.Si]
-                   - Dosen Pengajar: [Dr. Nanang Supriadi, M.SC.]
-                   - Dosen Pengajar: [Singgih Yulizar Ma'ruf, M.KOM.]
-                   - Dosen Pengajar: [Rizka Pitri, M.SI.]
-                   - Dosen Pengajar: [Mezan El-Khaeri Kesuma, S.KOM., M.T.I.]
+                DATA PENTING (Struktur Organisasi):
+                1. PRODI SAINS DATA:
+                   - Kaprodi: Farida, S.KOM., MMSI.
+                   - Sekretaris Prodi: Fiqih Satria, M.T.I.
+                   - Dosen: Prof. Dr. Achi Rinaldi S.Si, M.Si, Dr. Nanang Supriadi, M.SC., Singgih Yulizar Ma'ruf, M.KOM., Rizka Pitri, M.SI., Mezan El-Khaeri Kesuma, S.KOM., M.T.I.
                 
-                2. STRUKTUR HMSD (Himpunan Mahasiswa Sains Data):
-                   - Ketua Himpunan (Kahim): [Azwar Kurniawan Syah]
-                   - Wakil Ketua Himpunan: [Agitsa Hasan]
-                   - Sekretaris Umum Himpunan [Elsya Putri Aisyah]
-                   - Bendahara Umum Himpunan [Fadly Anggara]
-                   - Departemen PIKM (Pengembangan Inovasi dan Kesejahteraan Mahasiswa): Dikepalai oleh Lia Anastasya.
-                   - [Tambahkan Departemen lain jika ada].
-                
-                Jika ada yang bertanya di luar data ini atau masalah teknis, arahkan untuk melapor melalui menu 'Lapor Masalah'.
-                Jawab dengan nada sopan, santai, dan membantu khas mahasiswa.
+                2. HMSD (Himpunan Mahasiswa):
+                   - Kahim: Azwar Kurniawan Syah | Wakahim: Agitsa Hasan.
+                   - Sekum: Elsya Putri Aisyah | Benum: Fadly Anggara.
+                   - Kepala Departemen PIKM: Lia Anastasya.
+
+                TUGAS:
+                - Jawablah pertanyaan UMUM akademik (banding UKT, cara belajar, KRS, dll) menggunakan pengetahuan luasmu sebagai AI.
+                - Jika ditanya soal struktur, gunakan data di atas.
+                - JANGAN membatasi diri hanya pada data struktur. Bantu mahasiswa sebisa mungkin.
                 """
                 
-                with st.spinner("Sasda Bot sedang mengecek data..."):
-                    full_prompt = f"{internal_data}\nUser bertanya: {prompt}"
-                    ai_response = chat_session.send_message(full_prompt)
+                with st.spinner("Sasda Bot sedang berpikir..."):
+                    full_query = f"{internal_info}\nUser bertanya: {prompt}"
+                    ai_response = chat_session.send_message(full_query)
                     response = ai_response.text
             except Exception as e:
                 response = "🙏 Maaf, server AI sedang sibuk. Silakan coba lagi nanti."
@@ -575,10 +572,8 @@ elif selected == "Sasda Bot":
         st.session_state.messages.append({"role": "assistant", "content": response})
         with st.chat_message("assistant"): st.markdown(response)
     st.markdown("</div>", unsafe_allow_html=True)
-
-    
-               
-
+          
+                
 # =========================================================
 # 10. HALAMAN: ADMIN
 # =========================================================
@@ -682,5 +677,6 @@ elif selected == "Admin":
                 else: st.info("Belum ada data laporan.")
             except Exception as e:
                 st.error(f"Error Database: {str(e)}")
+
 
 
