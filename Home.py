@@ -155,7 +155,7 @@ iframe[title="streamlit_option_menu.option_menu"] { width: 100%; background: tra
 # 3. KONEKSI & FUNGSI BANTUAN
 # =========================================================
 ID_SPREADSHEET = "1crJl0DsswyMGmq0ej_niIMfhSLdUIUx8u42HEu-sc3g" 
-API_KEY_IMGBB  = "827ccb0eea8a706c4c34a16891f84e7b" 
+API_KEY_IMGBB  = "bb772455cfbcde364472c845947a0fad" 
 scopes = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
 
 def get_spreadsheet():
@@ -660,3 +660,4 @@ elif selected == "Admin":
                 else: st.info("Belum ada data laporan.")
             except Exception as e:
                 st.error(f"Error Database: {str(e)}")
+
