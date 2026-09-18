@@ -86,24 +86,28 @@ with st.form("form_lapor", clear_on_submit=True):
                     except:
                         pass
                 
-                # ==========================================
-                # 🔍 PEMILAHAN MUTLAK (KAHIM / AZWAR)
-                # ==========================================
-                teks_gabungan = (kategori + " " + keluhan).lower()
+                # ==========================================================
+                # 🔍 PEMILAHAN MUTLAK & BLOKIR JALUR SHEET PUBLIK
+                # ==========================================================
+                teks_gabungan = (str(kategori) + " " + str(keluhan)).lower()
+                kata_kunci_khusus = ["kahim", "azwar"]
+                
+                is_khusus_pimpinan = any(kata in teks_gabungan for kata in kata_kunci_khusus)
                 
                 try:
-                    if "kahim" in teks_gabungan or "azwar" in teks_gabungan:
-                        # HANYA masuk ke Aspirasi_Kahim, TIDAK MASUK KE LAPORAN PUBLIK SAMA SEKALI
+                    if is_khusus_pimpinan:
+                        # 1. HANYA LEMPAR KE SHEET ASPIRASI_KAHIM
                         sheet_kahim = spreadsheet_utama.worksheet("Aspirasi_Kahim")
                         sheet_kahim.append_row([waktu, nama, npm, jurusan, "Azwar Kurniawan Syah (Kahim)", keluhan, "Masuk"])
-                        st.session_state['pesan_sukses'] = "✅ Aspirasi rahasia untuk pimpinan berhasil dikirim secara aman!"
+                        st.session_state['pesan_sukses'] = "✅ Aspirasi khusus pimpinan berhasil dikirim secara rahasia dan aman!"
+                        st.rerun() # Hentikan eksekusi di sini agar tidak lanjut ke bawah
+                    
                     else:
-                        # Masuk ke Laporan publik biasa
+                        # 2. Murni masuk ke sheet Laporan publik biasa
                         sheet_laporan = spreadsheet_utama.worksheet("Laporan")
                         sheet_laporan.append_row([waktu, nama, npm, jurusan, kategori, keluhan, "Pending", link_bukti])
                         st.session_state['pesan_sukses'] = "✅ Laporan Berhasil Dikirim!"
-
-                    st.rerun()
+                        st.rerun()
                     
                 except Exception as e:
                     st.error(f"❌ Gagal Simpan Database: {e}")
