@@ -17,7 +17,7 @@ if 'kahim_logged_in' not in st.session_state:
     st.session_state['kahim_logged_in'] = False
 
 PASSWORD_ADMIN = "RAHASIA PIKM😭"
-PASSWORD_KAHIM = "RAHASIA_KAHIM2026"
+PASSWORD_KAHIM = "RAHASIA_KAHIM2026"  # Password untuk membuka laporan khusus kahim
 
 st.markdown("""
 <style>
@@ -67,6 +67,7 @@ def get_google_sheet(sheet_name):
 if st.session_state['is_logged_in']:
     st.title("⚡ Dashboard Admin & Pimpinan")
 
+    # Dua Tab Menu Utama di Admin
     tab_publik, tab_kahim = st.tabs(["📋 Laporan Publik", "👑 Laporan Khusus Kahim / Pejabat"])
 
     with tab_publik:
@@ -130,7 +131,7 @@ if st.session_state['is_logged_in']:
 
     with tab_kahim:
         st.subheader("🔒 Area Rahasia: Laporan & Aspirasi Terkait Kahim / Azwar")
-        st.markdown("Data di sini dipisahkan otomatis dari laporan publik dan memerlukan **Password Khusus Pimpinan** untuk membukanya.")
+        st.markdown("Menu ini tersembunyi dan memerlukan **Password Khusus Pimpinan** agar bisa melihat isinya.")
 
         if not st.session_state['kahim_logged_in']:
             st.markdown("<div style='max-width: 400px; padding: 20px; background: white; border-radius: 10px; border: 1px solid #cbd5e1;'>", unsafe_allow_html=True)
@@ -168,4 +169,4 @@ if st.session_state['is_logged_in']:
                 st.warning("⚠️ Worksheet 'Aspirasi_Kahim' belum dibuat di Google Sheets.")
 
 else:
-    st.warning("⚠️ Silakan login melalui password admin di sidebar sebelah kiri.")
+    st.warning("⚠️ Silakan login menggunakan password admin di sidebar sebelah kiri.")
