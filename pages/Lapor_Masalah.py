@@ -5,7 +5,6 @@ import requests
 from datetime import datetime
 import os
 import json
-import time
 
 # ==========================================
 # 👇 SETTING PENTING
@@ -40,8 +39,8 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# 3. KONEKSI GOOGLE SHEETS
-scopes = ["https://www.googleapis.com/auth/spreadsheets"]
+# 3. KONEKSI GOOGLE SHEETS CREDENTIALS
+scopes = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
 
 try:
     if "google_credentials" in st.secrets:
@@ -54,7 +53,7 @@ try:
         st.stop()
     
     client = gspread.authorize(creds)
-    sheet = client.open_by_key(ID_SPREADSHEET).worksheet("Laporan")
+    spreadsheet_utama = client.open_by_key(ID_SPREADSHEET)
     
 except Exception as e:
     st.error(f"⚠️ Koneksi Database Gagal: {e}")
@@ -88,49 +87,47 @@ with st.form("form_lapor", clear_on_submit=True):
                 waktu = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
                 link_bukti = "-" 
                 
-                # --- UPLOAD KE IMGBB (VERSI FIX) ---
+                # --- UPLOAD KE IMGBB ---
                 if bukti_file:
                     try:
-                        # 1. Siapkan Parameter (Kunci)
-                        params_data = {
-                            "key": API_KEY_IMGBB
-                        }
+                        params_data = {"key": API_KEY_IMGBB}
+                        files_data = {"image": bukti_file.getvalue()}
                         
-                        # 2. Siapkan File (Bungkus yang benar pakai 'files')
-                        files_data = {
-                            "image": bukti_file.getvalue()
-                        }
-                        
-                        # 3. Kirim Paket
                         response = requests.post(
                             "https://api.imgbb.com/1/upload", 
                             data=params_data, 
                             files=files_data
                         )
-                        
-                        # 4. Baca Jawaban
                         hasil = response.json()
                         
-                        # Cek apakah sukses (Gunakan .get biar gak KeyError lagi)
                         if response.status_code == 200 and hasil.get("success"):
                             link_bukti = hasil["data"]["url"]
                         else:
-                            # Tampilkan pesan error asli dari ImgBB
                             pesan_error = hasil.get("error", {}).get("message", "Unknown Error")
                             st.error(f"❌ Gagal Upload Gambar: {pesan_error}")
                             st.stop()
-                            
                     except Exception as e:
                         st.error(f"❌ Error Sistem Upload: {e}")
                         st.stop()
                 
-                # --- SIMPAN KE SHEETS ---
+                # ==========================================
+                # 🔍 OTOMATIS PEMILAHAN DATA (KAHIM / AZWAR)
+                # ==========================================
+                teks_gabungan = (kategori + " " + keluhan).lower()
+                
                 try:
-                    sheet.append_row([waktu, nama, npm, jurusan, kategori, keluhan, "Pending", link_bukti])
-                    st.session_state['pesan_sukses'] = "✅ Laporan Berhasil Dikirim!"
+                    if "kahim" in teks_gabungan or "azwar" in teks_gabungan:
+                        # Masuk otomatis ke sheet Aspirasi_Kahim
+                        sheet_kahim = spreadsheet_utama.worksheet("Aspirasi_Kahim")
+                        sheet_kahim.append_row([waktu, nama, npm, jurusan, "Azwar Kurniawan Syah (Kahim)", keluhan, "Masuk"])
+                        st.session_state['pesan_sukses'] = "✅ Aspirasi khusus pimpinan berhasil dikirim secara rahasia!"
+                    else:
+                        # Masuk ke sheet Laporan publik biasa
+                        sheet_laporan = spreadsheet_utama.worksheet("Laporan")
+                        sheet_laporan.append_row([waktu, nama, npm, jurusan, kategori, keluhan, "Pending", link_bukti])
+                        st.session_state['pesan_sukses'] = "✅ Laporan Berhasil Dikirim!"
+
                     st.rerun()
                     
                 except Exception as e:
                     st.error(f"❌ Gagal Simpan Database: {e}")
-
-
