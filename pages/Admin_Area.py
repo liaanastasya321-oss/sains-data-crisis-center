@@ -10,7 +10,6 @@ st.set_page_config(page_title="Admin Area", page_icon="🔐", layout="wide")
 
 ID_SPREADSHEET = "1crJl0DsswyMGmq0ej_niIMfhSLdUIUx8u42HEu-sc3g"
 
-# Session State untuk Login Admin Umum & Login Khusus Kahim
 if 'is_logged_in' not in st.session_state:
     st.session_state['is_logged_in'] = False
 
@@ -18,9 +17,8 @@ if 'kahim_logged_in' not in st.session_state:
     st.session_state['kahim_logged_in'] = False
 
 PASSWORD_ADMIN = "RAHASIA PIKM😭"
-PASSWORD_KAHIM = "RAHASIA_KAHIM2026"  # Password khusus untuk buka data kahim
+PASSWORD_KAHIM = "RAHASIA_KAHIM2026"
 
-# CSS Styling
 st.markdown("""
 <style>
     .stApp {background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);}
@@ -34,7 +32,6 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# Sidebar Login Admin
 with st.sidebar:
     st.header("🔐 Admin Panel")
     if not st.session_state['is_logged_in']:
@@ -67,18 +64,11 @@ def get_google_sheet(sheet_name):
     except:
         return None
 
-# ==========================================
-# DASHBOARD UTAMA ADMIN
-# ==========================================
 if st.session_state['is_logged_in']:
     st.title("⚡ Dashboard Admin & Pimpinan")
 
-    # Membuat 2 Tab Utama di Admin
     tab_publik, tab_kahim = st.tabs(["📋 Laporan Publik", "👑 Laporan Khusus Kahim / Pejabat"])
 
-    # ------------------------------------------
-    # TAB 1: LAPORAN PUBLIK
-    # ------------------------------------------
     with tab_publik:
         st.subheader("Manajemen Pengaduan Publik (Fasilitas & Akademik)")
         sheet = get_google_sheet("Laporan")
@@ -138,9 +128,6 @@ if st.session_state['is_logged_in']:
         else:
             st.info("Belum ada laporan publik.")
 
-    # ------------------------------------------
-    # TAB 2: LAPORAN KHUSUS KAHIM (DENGAN PASSWORD KEDUA)
-    # ------------------------------------------
     with tab_kahim:
         st.subheader("🔒 Area Rahasia: Laporan & Aspirasi Terkait Kahim / Azwar")
         st.markdown("Data di sini dipisahkan otomatis dari laporan publik dan memerlukan **Password Khusus Pimpinan** untuk membukanya.")
@@ -171,7 +158,7 @@ if st.session_state['is_logged_in']:
                 except:
                     df_k = pd.DataFrame()
 
-                if not df_kahim := df_k.empty:
+                if not df_k.empty:
                     st.success("✅ Berhasil memuat data laporan khusus kahim.")
                     st.dataframe(df_k, use_container_width=True, hide_index=True)
                     st.metric("Total Aspirasi/Laporan Kahim", len(df_k))
