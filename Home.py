@@ -1,184 +1,67 @@
 import streamlit as st
 import gspread
 from google.oauth2.service_account import Credentials
+import pandas as pd
 import os
 
-# 1. SETUP HALAMAN
 st.set_page_config(
-    page_title="Sains Data Crisis Center",
-    page_icon="🛡️",
-    layout="wide",
-    initial_sidebar_state="expanded"
+    page_title="Suara Kahim & Pimpinan",
+    page_icon="🔒",
+    layout="wide"
 )
 
-# ==========================================
-# MASTER DESIGN SYSTEM (CSS PRO)
-# ==========================================
-st.markdown("""
-<style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+st.markdown("<h2 style='text-align:center;'>🔒 Area Khusus Pimpinan: Suara Kahim</h2>", unsafe_allow_html=True)
+st.markdown("<p style='text-align:center; color:#64748b;'>Halaman ini berisi daftar kritik, saran, dan aspirasi rahasia yang ditujukan khusus untuk Kahim, Wakahim, dan pengurus inti.</p>", unsafe_allow_html=True)
 
-    html, body, [class*="css"] {
-        font-family: 'Inter', sans-serif;
-        color: #1e293b;
-    }
-
-    .stApp {
-        background-color: #f8fafc;
-        background-image: radial-gradient(#e2e8f0 1px, transparent 1px);
-        background-size: 20px 20px;
-    }
-
-    [data-testid="stSidebar"] {
-        background-color: #0f172a;
-        border-right: 1px solid #1e293b;
-    }
-    [data-testid="stSidebar"] h1, [data-testid="stSidebar"] span, [data-testid="stSidebar"] p {
-        color: #e2e8f0 !important;
-    }
-
-    #MainMenu {visibility: hidden;}
-    footer {visibility: hidden;} 
-    header {visibility: hidden;}
-
-    .pro-card {
-        background: white;
-        padding: 24px;
-        border-radius: 12px;
-        border: 1px solid #e2e8f0;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-        margin-bottom: 16px;
-        transition: transform 0.2s;
-    }
-    .pro-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
-        border-color: #cbd5e1;
-    }
-
-    h1 {
-        font-weight: 800;
-        letter-spacing: -0.025em;
-        color: #0f172a;
-    }
-    h3 {
-        font-weight: 600;
-        color: #334155;
-    }
-    
-    .stButton > button {
-        background-color: #2563eb;
-        color: white;
-        border: none;
-        border-radius: 8px;
-        font-weight: 600;
-        padding: 0.5rem 1rem;
-        box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);
-    }
-    .stButton > button:hover {
-        background-color: #1d4ed8;
-    }
-</style>
-""", unsafe_allow_html=True)
-
-# ==========================================
-# LOGIC DATABASE
-# ==========================================
 scopes = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
 if os.path.exists("credentials.json"):
     creds_file = "credentials.json"
 else:
     creds_file = "../credentials.json"
 
-try:
-    creds = Credentials.from_service_account_file(creds_file, scopes=scopes)
-    client = gspread.authorize(creds)
-    sheet = client.open("Database_Advokasi").worksheet("Pengumuman")
-    data_pengumuman = sheet.get_all_records()
-except:
-    data_pengumuman = []
+def get_sheet_aspirasi():
+    try:
+        creds = Credentials.from_service_account_file(creds_file, scopes=scopes)
+        client = gspread.authorize(creds)
+        return client.open("Database_Advokasi").worksheet("Aspirasi_Kahim")
+    except:
+        return None
 
-# ==========================================
-# HERO SECTION
-# ==========================================
-col_spacer_l, col_main, col_spacer_r = st.columns([1, 8, 1])
+if 'kahim_logged_in' not in st.session_state:
+    st.session_state['kahim_logged_in'] = False
 
-with col_main:
-    st.markdown("""
-    <div style="text-align: center; padding-top: 40px; padding-bottom: 40px;">
-        <h1 style="font-size: 3rem; margin-bottom: 10px;">Sains Data <span style="color:#2563eb;">Crisis Center</span></h1>
-        <p style="font-size: 1.2rem; color: #64748b; max-width: 600px; margin: 0 auto;">
-            Platform Advokasi Terintegrasi Himpunan Mahasiswa Sains Data.<br>
-            Transparan. Cepat. Berbasis Data.
-        </p>
-    </div>
-    """, unsafe_allow_html=True)
-
-    # Menu Cepat
-    c1, c2, c3 = st.columns(3)
-    
-    with c1:
-        st.markdown("""
-        <div class="pro-card" style="text-align:center; border-top: 4px solid #ef4444;">
-            <h3>📝 Lapor Masalah</h3>
-            <p style="font-size:0.9rem; color:#64748b;">Punya kendala akademik atau fasilitas? Laporkan di sini secara aman.</p>
-        </div>
-        """, unsafe_allow_html=True)
-        st.info("👈 Akses menu di Sidebar")
+if not st.session_state['kahim_logged_in']:
+    st.markdown("<div style='max-width: 400px; margin: 40px auto;'>", unsafe_allow_html=True)
+    with st.form("login_kahim_form"):
+        st.subheader("Autentikasi Pimpinan")
+        pwd_input = st.text_input("Masukkan Password Khusus Pimpinan", type="password")
+        submit_login = st.form_submit_button("Buka Akses")
         
-    with c2:
-        st.markdown("""
-        <div class="pro-card" style="text-align:center; border-top: 4px solid #3b82f6;">
-            <h3>📊 Dashboard</h3>
-            <p style="font-size:0.9rem; color:#64748b;">Pantau status penanganan masalah secara real-time dan transparan.</p>
-        </div>
-        """, unsafe_allow_html=True)
-        
-    with c3:
-        st.markdown("""
-        <div class="pro-card" style="text-align:center; border-top: 4px solid #f59e0b;">
-            <h3>🤖 Sadas Bot</h3>
-            <p style="font-size:0.9rem; color:#64748b;">Asisten AI 24 jam. Tanya info beasiswa, UKT, dan akademik.</p>
-        </div>
-        """, unsafe_allow_html=True)
-
-    # ==========================================
-    # OFFICIAL ANNOUNCEMENTS
-    # ==========================================
-    st.write("---")
-    st.subheader("📢 Informasi Resmi Himpunan")
-
-    if len(data_pengumuman) > 0:
-        for item in reversed(data_pengumuman):
-            tipe = item.get('Tipe', 'Info')
-            
-            if tipe == "Urgent":
-                badge_color = "#fee2e2"; text_color = "#991b1b"; border_l = "#ef4444"
-            elif tipe == "Penting":
-                badge_color = "#fef3c7"; text_color = "#92400e"; border_l = "#f59e0b"
+        if submit_login:
+            if pwd_input == "RAHASIA_KAHIM2026":
+                st.session_state['kahim_logged_in'] = True
+                st.rerun()
             else:
-                badge_color = "#dbeafe"; text_color = "#1e40af"; border_l = "#3b82f6"
+                st.error("Password salah! Akses ditolak.")
+    st.markdown("</div>", unsafe_allow_html=True)
+else:
+    if st.button("Keluar"):
+        st.session_state['kahim_logged_in'] = False
+        st.rerun()
 
-            html_content = f"""
-            <div class="pro-card" style="border-left: 5px solid {border_l}; display: flex; flex-direction: column; gap: 8px;">
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <span style="background-color:{badge_color}; color:{text_color}; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 700;">
-                        {tipe.upper()}
-                    </span>
-                    <span style="font-size: 0.85rem; color: #94a3b8; font-weight:500;">📅 {item.get('Tanggal','-')}</span>
-                </div>
-                <div style="font-size: 1.1rem; font-weight: 700; color: #0f172a;">
-                    {item.get('Judul','-')}
-                </div>
-                <div style="font-size: 0.95rem; color: #475569; line-height: 1.6;">
-                    {item.get('Isi','-')}
-                </div>
-            </div>
-            """
-            st.markdown(html_content, unsafe_allow_html=True)
+    st.write("---")
+    sheet_asp = get_sheet_aspirasi()
+    if sheet_asp:
+        try:
+            data = sheet_asp.get_all_records()
+            if len(data) > 0:
+                df = pd.DataFrame(data)
+                st.success("✅ Berhasil memuat data aspirasi rahasia.")
+                st.dataframe(df, use_container_width=True, hide_index=True)
+                st.metric("Total Aspirasi Masuk", len(df))
+            else:
+                st.info("Belum ada aspirasi atau kritik yang masuk ke database.")
+        except Exception as e:
+            st.error(f"Gagal mengambil data dari Google Sheets: {e}")
     else:
-        st.markdown("""
-        <div class="pro-card" style="text-align:center; padding: 40px; color: #94a3b8;">
-            <p>Tidak ada pengumuman aktif saat ini.</p>
-        </div>
-        """, unsafe_allow_html=True)
+        st.warning("⚠️ Worksheet 'Aspirasi_Kahim' belum ditemukan di Google Sheets.")
